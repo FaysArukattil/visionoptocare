@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Visiaxx — 12 clinical-grade eye tests from your couch. Digital eye care reimagined.">
+  <meta name="keywords" content="eye care, vision test, eye test online, digital eye care, visiaxx">
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Visiaxx">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Visiaxx — Vision Care, Reimagined</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Preconnect Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0A0F1E;
+      overflow: hidden;
+    }
+    /* Loading indicator */
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #0A0F1E;
+    }
+    .loading::after {
+      content: '';
+      width: 40px;
+      height: 40px;
+      border: 3px solid #1C2540;
+      border-top-color: #00D4C8;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="loading" id="loading"></div>
+  <script>
+    window.addEventListener('flutter-first-frame', function() {
+      var el = document.getElementById('loading');
+      if (el) el.remove();
+    });
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
