@@ -104,35 +104,31 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
       focusNode: _focusNode,
       autofocus: true,
       onKeyEvent: _onKey,
-      child: GestureDetector(
-        onVerticalDragUpdate: _onPanUpdate,
-        onVerticalDragEnd: _onPanEnd,
-        child: Container(
-          height: MediaQuery.of(context).size.height,
-          color: AppColors.background,
-          child: Stack(
-            children: [
-              // Background Particles
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: ParticlePainter(
-                    animValue: _scrollPos * 0.1,
-                    color: themeColor.withValues(alpha: 0.1),
-                    count: 15,
-                  ),
+      child: Container(
+        height: MediaQuery.of(context).size.height,
+        color: AppColors.background,
+        child: Stack(
+          children: [
+            // Background Particles
+            Positioned.fill(
+              child: CustomPaint(
+                painter: ParticlePainter(
+                  animValue: _scrollPos * 0.1,
+                  color: themeColor.withValues(alpha: 0.1),
+                  count: 15,
                 ),
               ),
+            ),
 
-              Center(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: isMob ? 16 : 60, vertical: 40),
-                  child: isMob 
-                      ? _buildMobileLayout(test, themeColor, selectedIndex) 
-                      : _buildDesktopLayout(test, themeColor, selectedIndex),
-                ),
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: isMob ? 16 : 60, vertical: 40),
+                child: isMob 
+                    ? _buildMobileLayout(test, themeColor, selectedIndex) 
+                    : _buildDesktopLayout(test, themeColor, selectedIndex),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -213,114 +209,130 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   }
 
   Widget _buildCircularWheel({required bool isMob}) {
-    return Stack(
-      children: [
-        // Selection Frame Indicator (The "thingy")
-        Center(
-          child: Container(
-            width: isMob ? 200 : 350,
-            height: 80,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.03),
-              borderRadius: BorderRadius.circular(40),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-              boxShadow: [
-                BoxShadow(color: AppColors.accent2.withValues(alpha: 0.05), blurRadius: 20),
-              ],
-            ),
-          ),
-        ),
-
-        // The Curved List
-        ClipRect(
-          child: Center(
-            child: SizedBox(
-              height: 500,
-              width: isMob ? 300 : 400,
-              child: Stack(
-                children: List.generate(_tests.length, (i) {
-                  // Calculate distance from scrollPos
-                  double diff = i - _scrollPos;
-                  
-                  // Wrap diff for looping feel (assuming 12 items)
-                  while (diff > 6) {
-                    diff -= 12;
-                  }
-                  while (diff < -6) {
-                    diff += 12;
-                  }
-
-                  if (diff.abs() > 3) {
-                    return const SizedBox.shrink(); // Hide far items
-                  }
-
-                  final absDiff = diff.abs();
-                  final opacity = (1.0 - (absDiff / 3.0)).clamp(0.0, 1.0);
-                  final scale = (1.0 - (absDiff * 0.1)).clamp(0.5, 1.0);
-                  final translateY = diff * 110; // Vertical spacing
-                  final translateX = absDiff * 30; // The "Curve" factor
-                  
-                  final isSelected = absDiff < 0.5;
-                  final themeColor = _getTierColor(_tests[i].tier);
-
-                  return Positioned(
-                    top: 250 - 40 + translateY, // Center point - half text height + offset
-                    left: 20 + translateX,
-                    right: 20 + translateX,
-                    child: Opacity(
-                      opacity: opacity,
-                      child: Transform.scale(
-                        scale: scale,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                          child: Row(
-                            mainAxisAlignment: isMob ? MainAxisAlignment.center : MainAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: 44, height: 44,
-                                decoration: BoxDecoration(
-                                  color: isSelected ? themeColor : Colors.white.withValues(alpha: 0.05),
-                                  shape: BoxShape.circle,
-                                  boxShadow: isSelected ? [
-                                    BoxShadow(color: themeColor.withValues(alpha: 0.4), blurRadius: 15)
-                                  ] : null,
-                                ),
-                                child: Icon(_tests[i].icon, size: 20, color: isSelected ? Colors.black : Colors.white24),
-                              ),
-                              const SizedBox(width: 20),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      _tests[i].name.toUpperCase(),
-                                      style: AppFonts.heading(
-                                        fontSize: isSelected ? 20 : 16,
-                                        color: isSelected ? Colors.white : Colors.white38,
-                                        letterSpacing: 2,
-                                      ),
-                                    ),
-                                    if (isSelected && !isMob)
-                                      Text(
-                                        '${_tests[i].tier.name.toUpperCase()} TEST',
-                                        style: AppFonts.caption.copyWith(color: themeColor, fontSize: 10, letterSpacing: 2),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
+    return GestureDetector(
+      onVerticalDragUpdate: _onPanUpdate,
+      onVerticalDragEnd: _onPanEnd,
+      behavior: HitTestBehavior.translucent,
+      child: Stack(
+        children: [
+          // Selection Frame Indicator (The "thingy")
+          Center(
+            child: Container(
+              width: isMob ? 200 : 380,
+              height: 110, // Increased height to fit "MOBILE REFRACTOMETRY"
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.03),
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.accent2.withValues(alpha: 0.05),
+                    blurRadius: 30,
+                  ),
+                ],
               ),
             ),
           ),
-        ),
-      ],
+
+          // The Curved List
+          ClipRect(
+            child: Center(
+              child: SizedBox(
+                height: 500,
+                width: isMob ? 300 : 450,
+                child: Stack(
+                  children: List.generate(_tests.length, (i) {
+                    // Calculate distance from scrollPos
+                    double diff = i - _scrollPos;
+                    
+                    // Wrap diff for looping feel (assuming 12 items)
+                    while (diff > 6) {
+                      diff -= 12;
+                    }
+                    while (diff < -6) {
+                      diff += 12;
+                    }
+
+                    if (diff.abs() > 3) {
+                      return const SizedBox.shrink(); // Hide far items
+                    }
+
+                    final absDiff = diff.abs();
+                    final opacity = (1.0 - (absDiff / 3.0)).clamp(0.0, 1.0);
+                    final scale = (1.0 - (absDiff * 0.12)).clamp(0.5, 1.0);
+                    final translateY = diff * 120; // Increased spacing for the larger frame
+                    final translateX = absDiff * 40; // The "Curve" factor
+                    
+                    final isSelected = absDiff < 0.5;
+                    final themeColor = _getTierColor(_tests[i].tier);
+
+                    return Positioned(
+                      top: 250 - 55 + translateY, // Center point - half height of the larger area
+                      left: 20 + translateX,
+                      right: 20 + translateX,
+                      child: Opacity(
+                        opacity: opacity,
+                        child: Transform.scale(
+                          scale: scale,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            child: Row(
+                              mainAxisAlignment: isMob ? MainAxisAlignment.center : MainAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 48, height: 48,
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? themeColor : Colors.white.withValues(alpha: 0.05),
+                                    shape: BoxShape.circle,
+                                    boxShadow: isSelected ? [
+                                      BoxShadow(color: themeColor.withValues(alpha: 0.4), blurRadius: 15)
+                                    ] : null,
+                                  ),
+                                  child: Icon(_tests[i].icon, size: 22, color: isSelected ? Colors.black : Colors.white24),
+                                ),
+                                const SizedBox(width: 24),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        _tests[i].name.toUpperCase(),
+                                        style: AppFonts.heading(
+                                          fontSize: isSelected ? 22 : 16,
+                                          color: isSelected ? Colors.white : Colors.white24,
+                                          letterSpacing: 2,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.visible,
+                                      ),
+                                      if (isSelected && !isMob)
+                                        Text(
+                                          '${_tests[i].tier.name.toUpperCase()} TEST',
+                                          style: AppFonts.caption.copyWith(
+                                            color: themeColor, 
+                                            fontSize: 11, 
+                                            letterSpacing: 2,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
