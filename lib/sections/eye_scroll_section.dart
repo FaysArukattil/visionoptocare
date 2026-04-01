@@ -4,7 +4,6 @@ import 'dart:ui_web' as ui_web;
 import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_fonts.dart';
 
 class EyeScrollSection extends StatefulWidget {
   final double scrollProgress;
@@ -92,38 +91,13 @@ class _EyeScrollSectionState extends State<EyeScrollSection> {
                       child: Transform.translate(
                         // ignore: deprecated_member_use
                         offset: Offset(0, 50 * (1.0 - tValue)),
-                        child: Column(
-                          children: [
-                            Text(
-                              'PRECISION DIAGNOSTICS',
-                              style: AppFonts.caption.copyWith(
-                                color: AppColors.accent2, 
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 4,
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            Text(
-                              'Clinical Grade.\nAnywhere.',
-                              style: AppFonts.h1.copyWith(fontSize: 64, height: 1.1),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 32),
-                            Container(
-                              height: 3, width: 80,
-                              decoration: BoxDecoration(
-                                gradient: AppColors.blueGradient,
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                        child: const SizedBox.shrink(), // Taglines removed as per user request
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
+          ),
           ),
         ],
       ),
