@@ -68,7 +68,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
                   mainAxisAlignment: MainAxisAlignment.start, 
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(height: isMob ? 100 : 180), // Increased margin to clear the Navbar line
+                    SizedBox(height: isMob ? 150 : 260), // Clear Navbar line initially
                     
                     // 1. Authoritative Branding (Massive centerpiece) - Sinks with scroll for parallax
                     Transform.translate(

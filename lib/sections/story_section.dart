@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../utils/responsive.dart';
-import '../utils/scroll_helpers.dart';
 
 class StorySection extends StatefulWidget {
   const StorySection({super.key});

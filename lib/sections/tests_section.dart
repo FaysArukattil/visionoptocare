@@ -59,216 +59,329 @@ class _TestsContent extends StatelessWidget {
     final test = _tests[currentIndex];
     final isPro = test.isPro;
     final isMob = screenWidth <= 768;
-    final bgColor = isPro ? const Color(0xFF150F1E) : AppColors.background;
+    
+    // Aesthetic Switch: User (Teal) vs. Pro (Gold)
+    final themeColor = isPro ? const Color(0xFFFFD700) : AppColors.accent2;
+    final bgColor = isPro ? const Color(0xFF0A080D) : AppColors.background;
 
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 800),
       curve: Curves.easeInOutQuart,
       color: bgColor,
       child: Stack(
         children: [
-          // Background Glow
+          // 1. Cinematic Background (Glow + Particles)
           Center(
             child: Container(
-              width: isMob ? 300 : 600,
-              height: isMob ? 300 : 600,
+              width: isMob ? 350 : 700,
+              height: isMob ? 350 : 700,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: (isPro ? AppColors.gold : AppColors.accent2).withValues(alpha: 0.08),
-                    blurRadius: 120,
-                    spreadRadius: 20,
-                  )
-                ],
+                gradient: RadialGradient(
+                  colors: [
+                    themeColor.withValues(alpha: 0.12),
+                    Colors.transparent,
+                  ],
+                ),
               ),
             ),
           ),
-          // Particle bg
+          
           Positioned.fill(
             child: CustomPaint(
               painter: ParticlePainter(
-                animValue: (currentIndex * 0.08 + progress * 0.08),
-                color: isPro ? AppColors.gold : AppColors.accent2,
-                count: 35,
+                animValue: currentIndex * 0.1 + progress * 0.05,
+                color: themeColor.withValues(alpha: 0.4),
+                count: 40,
               ),
             ),
           ),
-          // Content
+          
+          // 2. 3D Test Stage (Depth Swap Translation)
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: isMob ? 24 : 80, vertical: 40),
-            child: isMob ? _buildMobile(context, test) : _buildDesktop(context, test),
+            padding: EdgeInsets.symmetric(horizontal: isMob ? 24 : 100),
+            child: Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, 0.0015)
+                ..setTranslationRaw(0.0, 0.0, -150 * progress) // Sink away
+                ..rotateX(-0.1 * progress), // Tilt away
+              child: Opacity(
+                opacity: (1 - progress).clamp(0.0, 1.0),
+                child: isMob 
+                    ? _buildMobile(context, test, themeColor) 
+                    : _buildDesktop(context, test, themeColor),
+              ),
+            ),
+          ),
+
+          // 3. Status Bar (Diagnostic Progress)
+          Positioned(
+            bottom: 40, left: 0, right: 0,
+            child: Center(child: _buildDiagnosticStatus(currentIndex, themeColor)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDesktop(BuildContext context, TestData test) {
+  Widget _buildDesktop(BuildContext context, TestData test, Color themeColor) {
     return Row(
       children: [
-        // Left info
-        Expanded(
-          flex: 5,
-          child: _buildInfo(test),
-        ),
-        const SizedBox(width: 80),
-        // Right phone
+        // A. Information Column
         Expanded(
           flex: 4,
-          child: Center(child: _buildPhone(test)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildBadge(test.isPro, themeColor),
+              const SizedBox(height: 32),
+              Text(
+                test.number,
+                style: AppFonts.heading(
+                  fontSize: 24, 
+                  color: themeColor.withValues(alpha: 0.6), 
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 4,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                test.name.toUpperCase(),
+                style: AppFonts.h1.copyWith(
+                  color: AppColors.white, 
+                  height: 1, 
+                  fontSize: 72, 
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -1,
+                ),
+              ),
+              const SizedBox(height: 32),
+              Text(
+                test.desc,
+                style: AppFonts.bodyLarge.copyWith(
+                  color: AppColors.muted, 
+                  fontSize: 20, 
+                  height: 1.6,
+                ),
+              ),
+            ],
+          ),
+        ),
+        
+        // B. Holographic Smartphone Column
+        Expanded(
+          flex: 5,
+          child: Center(
+            child: Transform(
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, 0.001)
+                ..rotateY(-0.15)
+                ..rotateX(0.1),
+              alignment: Alignment.center,
+              child: _buildPhone(test, themeColor),
+            ),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildMobile(BuildContext context, TestData test) {
+  Widget _buildMobile(BuildContext context, TestData test, Color themeColor) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildInfo(test),
+        _buildBadge(test.isPro, themeColor),
+        const SizedBox(height: 32),
+        Text(
+          test.name.toUpperCase(),
+          style: AppFonts.h2.copyWith(color: AppColors.white, fontWeight: FontWeight.w900, fontSize: 36),
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: 48),
-        SizedBox(height: 380, child: _buildPhone(test)),
-      ],
-    );
-  }
-
-  Widget _buildInfo(TestData test) {
-    final isPro = test.isPro;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Badge
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: (isPro ? AppColors.gold : AppColors.accent1).withValues(alpha: 0.1),
-            border: Border.all(color: (isPro ? AppColors.gold : AppColors.accent1).withValues(alpha: 0.3)),
-          ),
-          child: Text(
-            isPro ? 'PRACTITIONER LICENSE' : 'PERSONAL TIER',
-            style: AppFonts.caption.copyWith(color: isPro ? AppColors.gold : AppColors.accent1, fontWeight: FontWeight.bold, fontSize: 11),
-          ),
+        SizedBox(
+          height: 380,
+          child: _buildPhone(test, themeColor),
         ),
         const SizedBox(height: 40),
-        // Number & Title
-        Stack(
-          children: [
-            Opacity(
-              opacity: 0.15,
-              child: Text(
-                test.number,
-                style: AppFonts.displayNumber.copyWith(
-                  color: isPro ? AppColors.gold : AppColors.accent1,
-                  fontSize: 120,
-                  height: 0.8,
+        Text(
+          test.desc,
+          style: AppFonts.bodySmall.copyWith(color: AppColors.muted),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBadge(bool isPro, Color themeColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: themeColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: themeColor.withValues(alpha: 0.3)),
+      ),
+      child: Text(
+        isPro ? 'PRACTITIONER LICENSE REQUIRED' : 'PERSONAL VISION TIER',
+        style: AppFonts.caption.copyWith(
+          color: themeColor, 
+          fontWeight: FontWeight.w900, 
+          fontSize: 10,
+          letterSpacing: 2,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhone(TestData test, Color themeColor) {
+    return Container(
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: themeColor.withValues(alpha: 0.2),
+            blurRadius: 100,
+            spreadRadius: -20,
+          )
+        ],
+      ),
+      child: PhoneMockup(
+        width: 260,
+        height: 520,
+        screen: _TestScreen(test: test),
+      ),
+    );
+  }
+
+  Widget _buildDiagnosticStatus(int currentIndex, Color themeColor) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(12, (i) {
+        final active = i == currentIndex;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 400),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: active ? 40 : 8,
+          height: 8,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4),
+            color: active ? themeColor : themeColor.withValues(alpha: 0.2),
+          ),
+        );
+      }),
+    );
+  }
+}
+
+class _TestScreen extends StatefulWidget {
+  final TestData test;
+  const _TestScreen({required this.test});
+  @override
+  State<_TestScreen> createState() => _TestScreenState();
+}
+
+class _TestScreenState extends State<_TestScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat();
+  }
+  @override
+  void dispose() { _ctrl.dispose(); super.dispose(); }
+
+  @override
+  Widget build(BuildContext context) {
+    final isPro = widget.test.isPro;
+    final themeColor = isPro ? const Color(0xFFFFD700) : AppColors.accent2;
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F1218),
+        borderRadius: BorderRadius.circular(32),
+      ),
+      child: Stack(
+        children: [
+          // A. Scanning Grid
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.1,
+              child: CustomPaint(painter: _DiagnosticGridPainter(color: themeColor)),
+            ),
+          ),
+          
+          // B. Scanning Laser Line
+          AnimatedBuilder(
+            animation: _ctrl,
+            builder: (context, _) => Positioned(
+              top: _ctrl.value * 500,
+              left: 0, right: 0,
+              child: Container(
+                height: 2,
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(color: themeColor.withValues(alpha: 0.8), blurRadius: 10, spreadRadius: 1),
+                  ],
+                  gradient: LinearGradient(
+                    colors: [Colors.transparent, themeColor, Colors.transparent],
+                  ),
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 40),
-              child: Text(
-                test.name, 
-                style: AppFonts.h2.copyWith(color: AppColors.white, height: 1.1),
-              ),
+          ),
+          
+          // C. Diagnostic Content
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: 1),
+                  duration: const Duration(seconds: 1),
+                  builder: (context, v, child) => Transform.scale(
+                    scale: 0.8 + (v * 0.2),
+                    child: Opacity(opacity: v, child: child),
+                  ),
+                  child: Container(
+                    width: 100, height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: themeColor.withValues(alpha: 0.2), width: 1.5),
+                    ),
+                    child: Center(
+                      child: Icon(widget.test.icon, size: 48, color: themeColor),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Text(
+                  isPro ? 'CLINICAL ANALYSIS' : 'VISUAL SCREENING',
+                  style: AppFonts.caption.copyWith(color: themeColor, fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 10),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'SCANNING...',
+                  style: AppFonts.caption.copyWith(color: themeColor.withValues(alpha: 0.4), fontSize: 9),
+                ),
+              ],
             ),
-          ],
-        ),
-        const SizedBox(height: 32),
-        Text(
-          test.desc, 
-          style: AppFonts.bodyLarge.copyWith(color: AppColors.muted, height: 1.8),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPhone(TestData test) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.8, end: 1.0),
-      duration: const Duration(milliseconds: 800),
-      key: ValueKey(currentIndex),
-      curve: Curves.easeOutQuart,
-      builder: (_, v, child) => Transform.scale(
-        scale: v,
-        child: Opacity(opacity: v.clamp(0.0, 1.0), child: child),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: (test.isPro ? AppColors.gold : AppColors.accent2).withValues(alpha: 0.2),
-              blurRadius: 100,
-              spreadRadius: -20,
-            )
-          ],
-        ),
-        child: PhoneMockup(
-          width: 260,
-          height: 520,
-          screen: _TestScreen(test: test),
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _TestScreen extends StatelessWidget {
-  final TestData test;
-  const _TestScreen({required this.test});
-
+class _DiagnosticGridPainter extends CustomPainter {
+  final Color color;
+  _DiagnosticGridPainter({required this.color});
   @override
-  Widget build(BuildContext context) {
-    final isPro = test.isPro;
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            isPro ? const Color(0xFF1E1428) : const Color(0xFF111830),
-            AppColors.background,
-          ],
-        ),
-      ),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 80, height: 80,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: (isPro ? AppColors.gold : AppColors.accent2).withValues(alpha: 0.1),
-            ),
-            child: Icon(test.icon, size: 40, color: isPro ? AppColors.gold : AppColors.accent2),
-          ),
-          const SizedBox(height: 32),
-          Text(test.name, style: AppFonts.h5.copyWith(color: AppColors.white, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          Text(
-            isPro ? 'Clinical Analysis' : 'Visual Screening', 
-            style: AppFonts.bodySmall.copyWith(color: AppColors.muted),
-          ),
-          const SizedBox(height: 48),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              gradient: isPro ? AppColors.goldGradient : AppColors.blueGradient,
-            ),
-            child: Center(
-              child: Text(
-                'START TEST', 
-                style: AppFonts.bodySmall.copyWith(color: AppColors.background, fontWeight: FontWeight.bold, letterSpacing: 1),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color..strokeWidth = 0.5;
+    const step = 30.0;
+    for (double i = 0; i < size.width; i += step) canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
+    for (double i = 0; i < size.height; i += step) canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
   }
+  @override
+  bool shouldRepaint(_DiagnosticGridPainter old) => old.color != color;
 }
