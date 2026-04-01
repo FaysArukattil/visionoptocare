@@ -1,3 +1,6 @@
+import 'dart:ui_web' as ui_web;
+// ignore: deprecated_member_use, avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
@@ -15,29 +18,30 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
   late AnimationController _fadeCtrl;
   late AnimationController _bounceCtrl;
   late AnimationController _particleCtrl;
-  late AnimationController _videoCrossFadeCtrl;
+  final String _heroViewId = 'hero_video_bg';
 
   @override
   void initState() {
     super.initState();
+    _registerHeroVideo();
     _fadeCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500))..forward();
     _bounceCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))..repeat(reverse: true);
     _particleCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 30))..repeat();
-    
-    // Cross-fade between clinic and couch every 8 seconds
-    _videoCrossFadeCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 2));
-    _startVideoLoop();
   }
 
-  void _startVideoLoop() async {
-    while (mounted) {
-      await Future.delayed(const Duration(seconds: 8));
-      if (!mounted) break;
-      await _videoCrossFadeCtrl.forward();
-      await Future.delayed(const Duration(seconds: 8));
-      if (!mounted) break;
-      await _videoCrossFadeCtrl.reverse();
-    }
+  void _registerHeroVideo() {
+    // ignore: undefined_prefixed_name
+    ui_web.platformViewRegistry.registerViewFactory(_heroViewId, (int viewId) {
+      return html.VideoElement()
+        ..src = 'assets/videos/hero.mp4'
+        ..autoplay = true
+        ..muted = true
+        ..loop = true
+        ..style.width = '100%'
+        ..style.height = '100%'
+        ..style.objectFit = 'cover'
+        ..style.pointerEvents = 'none';
+    });
   }
 
   @override
@@ -45,36 +49,27 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
     _fadeCtrl.dispose();
     _bounceCtrl.dispose();
     _particleCtrl.dispose();
-    _videoCrossFadeCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final isMob = Responsive.isMobile(context);
     return SizedBox(
       height: size.height,
       width: size.width,
       child: Stack(
         children: [
-          // Background Video 1: Clinic
-          const Positioned.fill(
-            child: HtmlElementView(viewType: 'clinic_video'),
+          Positioned.fill(
+            child: HtmlElementView(viewType: _heroViewId),
           ),
           
-          // Background Video 2: Couch (Layered on top with opacity for cross-fade)
-          Positioned.fill(
-            child: FadeTransition(
-              opacity: _videoCrossFadeCtrl,
-              child: const HtmlElementView(viewType: 'couch_video'),
-            ),
-          ),
-
           // Particle overlay
           Positioned.fill(
             child: AnimatedBuilder(
               animation: _particleCtrl,
-              builder: (_, __) => CustomPaint(
+              builder: (context, _) => CustomPaint(
                 painter: ParticlePainter(
                   animValue: _particleCtrl.value,
                   color: AppColors.accent2,
@@ -83,82 +78,179 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
               ),
             ),
           ),
-          // Dark bottom gradient
+          // Dark bottom gradient overlay
           Positioned.fill(
             child: Container(
-              decoration: const BoxDecoration(gradient: AppColors.heroOverlay),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    AppColors.background.withValues(alpha: 0.0),
+                    AppColors.background.withValues(alpha: 0.4),
+                    AppColors.background,
+                  ],
+                  stops: const [0.0, 0.4, 0.7, 1.0],
+                ),
+              ),
             ),
           ),
           // Content
           Positioned.fill(
             child: FadeTransition(
               opacity: CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut),
-              child: Center(
+              child: SingleChildScrollView(
                 child: Padding(
                   padding: Responsive.padding(context),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      SizedBox(height: size.height * 0.15), // Initial spacing
                       // Badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: AppColors.accent2.withOpacity(0.4)),
-                          color: AppColors.accent2.withOpacity(0.1),
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: 1),
+                        duration: const Duration(milliseconds: 1000),
+                        builder: (_, v, child) => Transform.translate(
+                          offset: Offset(0, 20 * (1 - v)),
+                          child: Opacity(opacity: v.clamp(0.0, 1.0), child: child),
                         ),
-                        child: Text('DIGITAL EYE CARE PLATFORM', style: AppFonts.caption.copyWith(color: AppColors.accent2)),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: AppColors.accent2.withValues(alpha: 0.3)),
+                            gradient: LinearGradient(
+                              colors: [AppColors.accent2.withValues(alpha: 0.1), Colors.transparent],
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.verified_user, color: AppColors.accent2, size: 14),
+                              const SizedBox(width: 8),
+                              Text(
+                                'VISION CARE. REIMAGINED.',
+                                style: AppFonts.caption.copyWith(
+                                  color: AppColors.accent2,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 32),
-                      Text(
-                        'Vision Care.\nReimagined.',
-                        style: Responsive.value(
-                          context: context,
-                          desktop: AppFonts.h1.copyWith(fontSize: 80),
-                          tablet: AppFonts.h1,
-                          mobile: AppFonts.h2,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 24),
-                      SizedBox(
-                        width: 500,
-                        child: Text(
-                          '12 clinical-grade eye tests. From your couch.',
-                          style: AppFonts.bodyLarge.copyWith(color: AppColors.muted),
-                          textAlign: TextAlign.center,
+                      // Redefined Centerpiece: minimalist and large brand statement
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: 1),
+                        duration: const Duration(milliseconds: 1500),
+                        builder: (_, v, child) => Transform.scale(
+                          scale: 0.9 + (0.1 * v),
+                          child: Opacity(
+                            opacity: v,
+                            child: Text(
+                              'VISIAXX',
+                              style: AppFonts.heading(
+                                fontSize: isMob ? 56 : 120,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 10 + (10 * v),
+                                color: AppColors.white,
+                              ).copyWith(
+                                shadows: [
+                                  Shadow(
+                                    color: AppColors.accent2.withValues(alpha: 0.6 * v),
+                                    blurRadius: 50 * v,
+                                  ),
+                                  Shadow(
+                                    color: AppColors.accent1.withValues(alpha: 0.3 * v),
+                                    blurRadius: 100 * v,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 48),
-                      Wrap(
-                        spacing: 16,
-                        runSpacing: 12,
-                        alignment: WrapAlignment.center,
-                        children: [
-                          GradientButton(text: 'Take a Free Test', gradient: AppColors.tealGradient, icon: Icons.visibility, onTap: () {}),
-                          GradientButton(text: 'Watch How It Works', isOutline: true, icon: Icons.play_arrow, onTap: () {}),
-                        ],
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: 1),
+                        duration: const Duration(milliseconds: 1200),
+                        curve: Curves.easeOut,
+                        builder: (_, v, child) => Transform.translate(
+                          offset: Offset(0, 10 * (1 - v)),
+                          child: Opacity(opacity: v.clamp(0.0, 1.0), child: child),
+                        ),
+                        child: SizedBox(
+                          width: 800,
+                          child: Text(
+                            '12 clinical-grade eye tests. Accessible anywhere, anytime.\nExperience the future of digital ophthalmology.',
+                            style: AppFonts.bodyLarge.copyWith(
+                              color: AppColors.muted,
+                              height: 1.8,
+                              fontSize: isMob ? 17 : 20,
+                              letterSpacing: 0.5,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                       ),
+                      const SizedBox(height: 56),
+                      // Floating CTA Buttons
+                      _buildHeroActions(context),
+                      SizedBox(height: 100), // Space for scroll indicator
                     ],
                   ),
                 ),
               ),
             ),
           ),
-          // Bounce arrow
+          // Scroll indicator
           Positioned(
-            bottom: 40, left: 0, right: 0,
+            bottom: 40,
+            left: 0,
+            right: 0,
             child: AnimatedBuilder(
               animation: _bounceCtrl,
               builder: (_, child) => Transform.translate(
-                offset: Offset(0, _bounceCtrl.value * 12),
+                offset: Offset(0, _bounceCtrl.value * 10),
                 child: child,
               ),
-              child: const Icon(Icons.keyboard_double_arrow_down, color: AppColors.muted, size: 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('SCROLL TO EXPLORE', style: AppFonts.caption.copyWith(fontSize: 10)),
+                  const SizedBox(height: 8),
+                  const Icon(Icons.keyboard_double_arrow_down, color: AppColors.accent2, size: 28),
+                ],
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildHeroActions(BuildContext context) {
+    return Wrap(
+      spacing: 16,
+      runSpacing: 12,
+      alignment: WrapAlignment.center,
+      children: [
+        GradientButton(
+          text: 'Take a Free Test',
+          gradient: AppColors.tealGradient,
+          icon: Icons.bolt,
+          onTap: () {},
+        ),
+        GradientButton(
+          text: 'Watch How It Works',
+          isOutline: true,
+          icon: Icons.play_arrow,
+          onTap: () {},
+        ),
+      ],
     );
   }
 }

@@ -17,27 +17,27 @@ class GlobePainter extends CustomPainter {
     final glowPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          gridColor.withOpacity(0.15),
-          gridColor.withOpacity(0.0),
+          gridColor.withValues(alpha: 0.15),
+          gridColor.withValues(alpha: 0.0),
         ],
       ).createShader(Rect.fromCircle(center: center, radius: radius * 1.5));
     canvas.drawCircle(center, radius * 1.5, glowPaint);
 
     // Globe circle
     final circlePaint = Paint()
-      ..color = gridColor.withOpacity(0.1)
+      ..color = gridColor.withValues(alpha: 0.1)
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, radius, circlePaint);
 
     final borderPaint = Paint()
-      ..color = gridColor.withOpacity(0.3)
+      ..color = gridColor.withValues(alpha: 0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
     canvas.drawCircle(center, radius, borderPaint);
 
     // Latitude lines
     final dotPaint = Paint()
-      ..color = gridColor.withOpacity(0.2)
+      ..color = gridColor.withValues(alpha: 0.2)
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
     for (int i = 1; i < 6; i++) {

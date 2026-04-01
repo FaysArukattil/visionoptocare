@@ -55,7 +55,7 @@ class _LanguageSectionState extends State<LanguageSection>
                   // Globe
                   AnimatedBuilder(
                     animation: _globeCtrl,
-                    builder: (_, __) => CustomPaint(
+                    builder: (context, _) => CustomPaint(
                       size: Size(globeSize, globeSize),
                       painter: GlobePainter(rotation: _globeCtrl.value * 2 * pi),
                     ),
@@ -79,15 +79,19 @@ class _LanguageSectionState extends State<LanguageSection>
         builder: (_, child) {
           final a = angle + _globeCtrl.value * 2 * pi * 0.3;
           final x = cos(a) * radius;
-          final y = sin(a) * radius * 0.5; // Elliptical for 3D feel
+          final y = sin(a) * radius * 0.4; // Elliptical for 3D feel
           final z = sin(a); // depth
-          final scale = 0.7 + 0.3 * ((z + 1) / 2);
-          final opacity = 0.4 + 0.6 * ((z + 1) / 2);
+          final scale = 0.8 + 0.2 * ((z + 1) / 2);
+          final opacity = (0.3 + 0.7 * ((z + 1) / 2)).clamp(0.0, 1.0);
+          
           return Transform.translate(
             offset: Offset(x, y),
             child: Transform.scale(
-              scale: scale,
-              child: Opacity(opacity: opacity, child: child),
+              scale: _selectedLang == i ? 1.2 : scale,
+              child: Opacity(
+                opacity: opacity,
+                child: child,
+              ),
             ),
           );
         },
@@ -97,30 +101,31 @@ class _LanguageSectionState extends State<LanguageSection>
             cursor: SystemMouseCursors.click,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 color: _selectedLang == i
-                    ? AppColors.accent2.withOpacity(0.3)
-                    : AppColors.surface.withOpacity(0.8),
+                    ? AppColors.gold.withValues(alpha: 0.2)
+                    : AppColors.surface.withValues(alpha: 0.9),
                 border: Border.all(
-                  color: _selectedLang == i ? AppColors.accent2 : AppColors.surfaceLight,
+                  color: _selectedLang == i ? AppColors.gold : AppColors.white.withValues(alpha: 0.1),
+                  width: _selectedLang == i ? 2 : 1,
                 ),
                 boxShadow: [
-                  BoxShadow(
-                    color: _selectedLang == i
-                        ? AppColors.accent2.withOpacity(0.3)
-                        : Colors.transparent,
-                    blurRadius: 12,
-                  ),
+                  if (_selectedLang == i)
+                    BoxShadow(
+                      color: AppColors.gold.withValues(alpha: 0.4),
+                      blurRadius: 20,
+                      spreadRadius: 2,
+                    ),
                 ],
               ),
               child: Text(
                 _languages[i],
                 style: AppFonts.bodySmall.copyWith(
-                  color: _selectedLang == i ? AppColors.accent2 : AppColors.white,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 12,
+                  color: _selectedLang == i ? AppColors.gold : AppColors.white.withValues(alpha: 0.8),
+                  fontWeight: _selectedLang == i ? FontWeight.bold : FontWeight.w500,
+                  fontSize: 13,
                 ),
               ),
             ),

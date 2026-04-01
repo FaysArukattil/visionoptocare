@@ -13,20 +13,31 @@ class StatsSection extends StatelessWidget {
     return ScrollRevealWidget(
       child: Container(
         width: double.infinity,
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          border: Border(top: BorderSide(color: AppColors.accent2, width: 2)),
+        decoration: BoxDecoration(
+          color: AppColors.background.withValues(alpha: 0.8),
+          border: const Border.symmetric(
+            horizontal: BorderSide(color: AppColors.surfaceLight, width: 0.5),
+          ),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppColors.background,
+              AppColors.surface.withValues(alpha: 0.1),
+              AppColors.background,
+            ],
+          ),
         ),
-        padding: EdgeInsets.symmetric(vertical: isMob ? 40 : 48, horizontal: 20),
+        padding: EdgeInsets.symmetric(vertical: isMob ? 60 : 100, horizontal: 20),
         child: Wrap(
-          alignment: WrapAlignment.spaceEvenly,
-          spacing: 40,
-          runSpacing: 30,
+          alignment: WrapAlignment.center,
+          spacing: isMob ? 40 : 120,
+          runSpacing: 40,
           children: const [
-            AnimatedCounter(target: 12, suffix: '+', label: 'Eye Tests'),
-            AnimatedCounter(target: 13, label: 'Languages'),
-            AnimatedCounter(target: 37, label: 'Music Tracks'),
-            AnimatedCounter(target: 2, label: 'Care Tiers'),
+            AnimatedCounter(target: 12, suffix: '+', label: 'CLINICAL TESTS'),
+            AnimatedCounter(target: 13, label: 'LOCAL LANGUAGES'),
+            AnimatedCounter(target: 37, suffix: '+', label: 'THERAPY TRACKS'),
+            AnimatedCounter(target: 2, label: 'CARE TIERS'),
           ],
         ),
       ),

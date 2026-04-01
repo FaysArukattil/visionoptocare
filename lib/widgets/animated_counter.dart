@@ -56,19 +56,49 @@ class _AnimatedCounterState extends State<AnimatedCounter>
       child: AnimatedBuilder(
         animation: _countAnim,
         builder: (context, _) {
+          final val = _countAnim.value / widget.target;
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                '${widget.prefix}${_countAnim.value.toInt()}${widget.suffix}',
-                style: AppFonts.h2.copyWith(color: AppColors.accent2),
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                   // Subtle glow behind number
+                  Opacity(
+                    opacity: (0.3 * val).clamp(0.0, 1.0),
+                    child: Container(
+                      width: 60, height: 60,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                        BoxShadow(color: AppColors.accent2, blurRadius: 40, spreadRadius: 10),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '${widget.prefix}${_countAnim.value.toInt()}${widget.suffix}',
+                    style: AppFonts.h2.copyWith(
+                      color: AppColors.white,
+                      fontSize: 48,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
+              Container(
+                height: 2, width: 30 * val,
+                color: AppColors.accent2,
+              ),
+              const SizedBox(height: 12),
               Text(
                 widget.label,
                 style: AppFonts.bodySmall.copyWith(
                   color: AppColors.muted,
-                  letterSpacing: 1.5,
+                  letterSpacing: 2.0,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
                 ),
                 textAlign: TextAlign.center,
               ),

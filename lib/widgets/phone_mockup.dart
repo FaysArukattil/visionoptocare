@@ -24,12 +24,12 @@ class PhoneMockup extends StatelessWidget {
         color: AppColors.background,
         boxShadow: [
           BoxShadow(
-            color: AppColors.accent2.withOpacity(0.15),
+            color: AppColors.accent2.withValues(alpha: 0.15),
             blurRadius: 40,
             offset: const Offset(0, 20),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             blurRadius: 30,
             offset: const Offset(0, 15),
           ),

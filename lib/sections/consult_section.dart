@@ -79,32 +79,62 @@ class _ConsultCardState extends State<_ConsultCard> {
       onEnter: (_) => setState(() => _hov = true),
       onExit: (_) => setState(() => _hov = false),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        transform: Matrix4.identity()..scale(_hov ? 1.02 : 1.0),
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOutCubic,
+        transform: Matrix4.identity()
+          ..translateByDouble(0.0, _hov ? -10.0 : 0.0, 0.0, 1.0)
+          ..scaleByDouble(_hov ? 1.02 : 1.0, _hov ? 1.02 : 1.0, 1.0, 1.0),
         transformAlignment: Alignment.center,
-        padding: const EdgeInsets.all(36),
+        padding: const EdgeInsets.all(40),
         decoration: BoxDecoration(
           gradient: widget.gradient,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.surfaceLight),
-          boxShadow: _hov
-              ? [BoxShadow(color: widget.ctaGradient.colors.first.withOpacity(0.2), blurRadius: 30, offset: const Offset(0, 10))]
-              : [],
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(
+            color: _hov ? widget.ctaGradient.colors.first : AppColors.white.withValues(alpha: 0.1),
+            width: _hov ? 2 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.4),
+              blurRadius: 30,
+              offset: const Offset(0, 15),
+            ),
+            if (_hov)
+              BoxShadow(
+                color: widget.ctaGradient.colors.first.withValues(alpha: 0.2),
+                blurRadius: 40,
+                spreadRadius: 5,
+              ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 56, height: 56,
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), gradient: widget.ctaGradient),
-              child: Icon(widget.icon, color: AppColors.background, size: 28),
+              width: 64, height: 64,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: widget.ctaGradient,
+                boxShadow: [
+                  BoxShadow(
+                    color: widget.ctaGradient.colors.first.withValues(alpha: 0.3),
+                    blurRadius: 20,
+                  )
+                ],
+              ),
+              child: Icon(widget.icon, color: AppColors.background, size: 32),
             ),
-            const SizedBox(height: 24),
-            Text(widget.title, style: AppFonts.h4.copyWith(color: AppColors.white)),
-            const SizedBox(height: 12),
-            Text(widget.subtitle, style: AppFonts.bodyMedium.copyWith(color: AppColors.muted, height: 1.6)),
-            const SizedBox(height: 28),
-            GradientButton(text: widget.cta, gradient: widget.ctaGradient, height: 46, onTap: () {}),
+            const SizedBox(height: 32),
+            Text(widget.title, style: AppFonts.h3.copyWith(color: AppColors.white, fontSize: 26, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            Text(widget.subtitle, style: AppFonts.bodyMedium.copyWith(color: AppColors.muted, height: 1.8)),
+            const SizedBox(height: 48),
+            GradientButton(
+              text: widget.cta,
+              gradient: widget.ctaGradient,
+              height: 52,
+              onTap: () {},
+            ),
           ],
         ),
       ),

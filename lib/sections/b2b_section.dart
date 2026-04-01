@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
@@ -15,17 +14,27 @@ class B2BSection extends StatelessWidget {
     return ScrollRevealWidget(
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          image: DecorationImage(
-            image: MemoryImage(_gridPattern()),
-            repeat: ImageRepeat.repeat,
-            opacity: 0.03,
-          ),
+          color: AppColors.backgroundWarm.withValues(alpha: 0.1),
         ),
-        padding: EdgeInsets.symmetric(vertical: isMob ? 60 : 100),
-        child: Padding(
-          padding: Responsive.padding(context),
-          child: isMob ? _buildMobile() : _buildDesktop(),
+        child: Stack(
+          children: [
+            // Grid Pattern Background (3D Perspective feel)
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.5,
+                child: CustomPaint(
+                  painter: _GridPainter(color: AppColors.gold.withValues(alpha: 0.05)),
+                ),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(vertical: isMob ? 80 : 140),
+              child: Padding(
+                padding: Responsive.padding(context),
+                child: isMob ? _buildMobile() : _buildDesktop(),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -36,8 +45,20 @@ class B2BSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(flex: 5, child: _buildInfo()),
-        const SizedBox(width: 60),
-        Expanded(flex: 4, child: _buildClinicIllustration()),
+        const SizedBox(width: 80),
+        Expanded(
+          flex: 4,
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: 1),
+            duration: const Duration(seconds: 2),
+            curve: Curves.easeOutQuart,
+            builder: (_, v, child) => Transform.translate(
+              offset: Offset(0, 30 * (1 - v)),
+              child: Opacity(opacity: v.clamp(0.0, 1.0), child: child),
+            ),
+            child: _buildClinicIllustration(),
+          ),
+        ),
       ],
     );
   }
@@ -46,8 +67,8 @@ class B2BSection extends StatelessWidget {
     return Column(
       children: [
         _buildInfo(),
-        const SizedBox(height: 40),
-        SizedBox(height: 280, child: _buildClinicIllustration()),
+        const SizedBox(height: 60),
+        SizedBox(height: 300, child: _buildClinicIllustration()),
       ],
     );
   }
@@ -56,15 +77,36 @@ class B2BSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Power Your Clinic\nwith Visiaxx Pro', style: AppFonts.h2.copyWith(color: AppColors.white)),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: AppColors.gold.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.gold.withValues(alpha: 0.3)),
+          ),
+          child: Text(
+            'FOR PRACTITIONERS',
+            style: AppFonts.caption.copyWith(color: AppColors.gold, fontWeight: FontWeight.bold, letterSpacing: 2),
+          ),
+        ),
         const SizedBox(height: 32),
+        Text(
+          'Power Your Clinic\nwith Visiaxx Pro',
+          style: AppFonts.h2.copyWith(color: AppColors.white, height: 1.1),
+        ),
+        const SizedBox(height: 48),
         _featurePoint(Icons.devices, '12 clinical-grade tests on any device'),
-        const SizedBox(height: 16),
+        const SizedBox(height: 24),
         _featurePoint(Icons.folder_shared, 'Digital patient records and history'),
-        const SizedBox(height: 16),
+        const SizedBox(height: 24),
         _featurePoint(Icons.campaign, 'Run mobile eye camps with B2B license'),
-        const SizedBox(height: 40),
-        GradientButton(text: 'Get Practitioner License', gradient: AppColors.goldGradient, icon: Icons.workspace_premium, onTap: () {}),
+        const SizedBox(height: 56),
+        GradientButton(
+          text: 'Get Practitioner License',
+          gradient: AppColors.goldGradient,
+          icon: Icons.workspace_premium,
+          onTap: () {},
+        ),
       ],
     );
   }
@@ -73,23 +115,31 @@ class B2BSection extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 40, height: 40,
+          width: 44, height: 44,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: AppColors.gold.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(14),
+            color: AppColors.gold.withValues(alpha: 0.1),
+            border: Border.all(color: AppColors.gold.withValues(alpha: 0.2)),
           ),
-          child: Icon(icon, color: AppColors.gold, size: 20),
+          child: Icon(icon, color: AppColors.gold, size: 22),
         ),
-        const SizedBox(width: 16),
-        Expanded(child: Text(text, style: AppFonts.bodyMedium.copyWith(color: AppColors.white))),
+        const SizedBox(width: 20),
+        Expanded(
+          child: Text(
+            text,
+            style: AppFonts.bodyLarge.copyWith(color: AppColors.white.withValues(alpha: 0.9), fontSize: 18),
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildClinicIllustration() {
-    return CustomPaint(
-      size: const Size(350, 280),
-      painter: _ClinicPainter(),
+    return Center(
+      child: CustomPaint(
+        size: const Size(400, 320),
+        painter: _ClinicPainter(),
+      ),
     );
   }
 }
@@ -100,82 +150,84 @@ class _ClinicPainter extends CustomPainter {
     final cx = size.width / 2;
     final cy = size.height / 2;
 
-    // Isometric floor
-    final floorPaint = Paint()..color = AppColors.surfaceLight.withOpacity(0.5);
+    // Isometric floor (Refined)
+    final floorPaint = Paint()..color = AppColors.surfaceLight.withValues(alpha: 0.4);
     final floorPath = Path()
-      ..moveTo(cx, cy + 60)
-      ..lineTo(cx + 120, cy + 30)
+      ..moveTo(cx, cy + 80)
+      ..lineTo(cx + 160, cy + 40)
       ..lineTo(cx, cy)
-      ..lineTo(cx - 120, cy + 30)
+      ..lineTo(cx - 160, cy + 40)
       ..close();
     canvas.drawPath(floorPath, floorPaint);
 
-    // Desk
-    final deskPaint = Paint()..color = AppColors.accent1.withOpacity(0.3);
+    // Desk (LIT style)
+    final deskPaint = Paint()..color = AppColors.accent1.withValues(alpha: 0.25);
     final desk = Path()
-      ..moveTo(cx - 40, cy - 10)
-      ..lineTo(cx + 40, cy - 30)
-      ..lineTo(cx + 40, cy - 10)
-      ..lineTo(cx - 40, cy + 10)
+      ..moveTo(cx - 50, cy)
+      ..lineTo(cx + 50, cy - 25)
+      ..lineTo(cx + 50, cy)
+      ..lineTo(cx - 50, cy + 25)
       ..close();
     canvas.drawPath(desk, deskPaint);
 
-    // Tablet screen
+    // Monitor / Tablet (Floating effect)
     final tabletRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: Offset(cx, cy - 50), width: 60, height: 80),
-      const Radius.circular(6),
+      Rect.fromCenter(center: Offset(cx, cy - 60), width: 70, height: 90),
+      const Radius.circular(8),
     );
-    canvas.drawRRect(tabletRect, Paint()..color = AppColors.backgroundLight);
-    canvas.drawRRect(tabletRect, Paint()..color = AppColors.accent2.withOpacity(0.6)..style = PaintingStyle.stroke..strokeWidth = 2);
-
-    // Visiaxx eye icon on tablet
-    canvas.drawCircle(Offset(cx, cy - 50), 12, Paint()..color = AppColors.accent2.withOpacity(0.3));
-    canvas.drawCircle(Offset(cx, cy - 50), 5, Paint()..color = AppColors.accent2);
-
-    // Chart on wall
-    canvas.drawRect(
-      Rect.fromCenter(center: Offset(cx + 60, cy - 90), width: 40, height: 50),
-      Paint()..color = AppColors.surfaceLight,
+    // Outer glow
+    canvas.drawRRect(
+      tabletRect,
+      Paint()..color = AppColors.accent2.withValues(alpha: 0.1)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20),
     );
-    for (int i = 0; i < 4; i++) {
+    canvas.drawRRect(tabletRect, Paint()..color = const Color(0xFF000000));
+    canvas.drawRRect(tabletRect, Paint()..color = AppColors.accent2.withValues(alpha: 0.5)..style = PaintingStyle.stroke..strokeWidth = 2);
+
+    // Screen Content
+    canvas.drawCircle(Offset(cx, cy - 60), 15, Paint()..color = AppColors.accent2.withValues(alpha: 0.2));
+    canvas.drawCircle(Offset(cx, cy - 60), 6, Paint()..color = AppColors.accent2);
+
+    // Wall Chart (Glowing)
+    final chartRect = Rect.fromCenter(center: Offset(cx + 80, cy - 100), width: 50, height: 60);
+    canvas.drawRect(chartRect, Paint()..color = AppColors.surfaceLight.withValues(alpha: 0.8));
+    for (int i = 0; i < 5; i++) {
       canvas.drawLine(
-        Offset(cx + 45, cy - 105 + i * 12.0),
-        Offset(cx + 75, cy - 105 + i * 12.0),
-        Paint()..color = AppColors.muted.withOpacity(0.3)..strokeWidth = 2,
+        Offset(cx + 65, cy - 118 + i * 10.0),
+        Offset(cx + 95, cy - 118 + i * 10.0),
+        Paint()..color = AppColors.accent2.withValues(alpha: 0.2)..strokeWidth = 3,
       );
     }
 
-    // Glow effect
-    canvas.drawCircle(
-      Offset(cx, cy - 50),
-      80,
-      Paint()..shader = RadialGradient(
-        colors: [AppColors.gold.withOpacity(0.1), Colors.transparent],
-      ).createShader(Rect.fromCircle(center: Offset(cx, cy - 50), radius: 80)),
-    );
+    // Atmospheric Glow
+    final glowPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [AppColors.gold.withValues(alpha: 0.15), Colors.transparent],
+      ).createShader(Rect.fromCircle(center: Offset(cx, cy - 60), radius: 120));
+    canvas.drawCircle(Offset(cx, cy - 60), 120, glowPaint);
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// Helper to generate a small grid pattern image
-Uint8List _gridPattern() {
-  // 8x8 pixel grid pattern as raw RGBA bytes, then encode as BMP
-  // Using a simple approach: return a minimal transparent PNG-like pattern
-  // For simplicity, return empty bytes and rely on the opacity being very low
-  final size = 16;
-  final bytes = Uint8List(size * size * 4);
-  for (int y = 0; y < size; y++) {
-    for (int x = 0; x < size; x++) {
-      final idx = (y * size + x) * 4;
-      if (x == 0 || y == 0) {
-        bytes[idx] = 255;
-        bytes[idx + 1] = 255;
-        bytes[idx + 2] = 255;
-        bytes[idx + 3] = 20;
-      }
+class _GridPainter extends CustomPainter {
+  final Color color;
+  _GridPainter({required this.color});
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.0;
+
+    const spacing = 40.0;
+    for (double x = 0; x < size.width; x += spacing) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+    for (double y = 0; y < size.height; y += spacing) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
   }
-  return bytes;
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

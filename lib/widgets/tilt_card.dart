@@ -56,7 +56,7 @@ class _TiltCardState extends State<TiltCard> {
               ..setEntry(3, 2, 0.001)
               ..rotateX(_rotX)
               ..rotateY(_rotY)
-              ..scale(_hovering ? 1.03 : 1.0),
+              ..scaleByDouble(_hovering ? 1.03 : 1.0, _hovering ? 1.03 : 1.0, 1.0, 1.0),
             transformAlignment: Alignment.center,
             decoration: BoxDecoration(
               borderRadius: br,
@@ -64,7 +64,7 @@ class _TiltCardState extends State<TiltCard> {
                   ? [
                       BoxShadow(
                         color: (widget.glowColor ?? AppColors.accent2)
-                            .withOpacity(0.25),
+                            .withValues(alpha: 0.25),
                         blurRadius: 30,
                         offset: const Offset(0, 10),
                       )

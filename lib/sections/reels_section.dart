@@ -38,21 +38,52 @@ class ReelsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final isMob = Responsive.isMobile(context);
     return ScrollRevealWidget(
-      child: Padding(
-        padding: Responsive.padding(context).copyWith(top: isMob ? 60 : 100, bottom: isMob ? 60 : 100),
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: isMob ? 80 : 120),
+        decoration: BoxDecoration(
+          color: AppColors.background,
+        ),
         child: Column(
           children: [
-            Text('Learn. Practice. See Better.', style: AppFonts.h2.copyWith(color: AppColors.white), textAlign: TextAlign.center),
-            const SizedBox(height: 60),
+            Padding(
+              padding: Responsive.padding(context),
+              child: Column(
+                children: [
+                   Text(
+                    'PRACTICE & EDUCATION',
+                    style: AppFonts.caption.copyWith(color: AppColors.accent1, letterSpacing: 4, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Learn. Practice.\nSee Better.',
+                    style: AppFonts.h2.copyWith(color: AppColors.white, height: 1.1),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 80),
             isMob
-                ? Column(children: [_reelsGrid(isMob), const SizedBox(height: 40), _articlesList()])
-                : Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                ? Column(
                     children: [
-                      Expanded(flex: 3, child: _reelsGrid(isMob)),
-                      const SizedBox(width: 40),
-                      Expanded(flex: 2, child: _articlesList()),
+                      _reelsGrid(isMob, context),
+                      const SizedBox(height: 60),
+                      Padding(
+                        padding: Responsive.padding(context),
+                        child: _articlesList(),
+                      ),
                     ],
+                  )
+                : Padding(
+                    padding: Responsive.padding(context),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(flex: 3, child: _reelsGrid(isMob, context)),
+                        const SizedBox(width: 60),
+                        Expanded(flex: 2, child: _articlesList()),
+                      ],
+                    ),
                   ),
           ],
         ),
@@ -60,20 +91,24 @@ class ReelsSection extends StatelessWidget {
     );
   }
 
-  Widget _reelsGrid(bool isMob) {
+  Widget _reelsGrid(bool isMob, BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Eye Care Reels', style: AppFonts.h4.copyWith(color: AppColors.white)),
-        const SizedBox(height: 20),
+        Padding(
+          padding: isMob ? Responsive.padding(context) : EdgeInsets.zero,
+          child: Text('EYE CARE REELS', style: AppFonts.h4.copyWith(color: AppColors.white, letterSpacing: 1.2, fontWeight: FontWeight.bold)),
+        ),
+        const SizedBox(height: 32),
         GridView.builder(
           shrinkWrap: true,
+          padding: isMob ? Responsive.padding(context) : EdgeInsets.zero,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: isMob ? 2 : 3,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 0.7,
+            crossAxisSpacing: 20,
+            mainAxisSpacing: 20,
+            childAspectRatio: 0.65,
           ),
           itemCount: _reels.length,
           itemBuilder: (_, i) => _ReelCard(reel: _reels[i]),
@@ -86,10 +121,10 @@ class ReelsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Expert Articles', style: AppFonts.h4.copyWith(color: AppColors.white)),
-        const SizedBox(height: 20),
+        Text('EXPERT ARTICLES', style: AppFonts.h4.copyWith(color: AppColors.white, letterSpacing: 1.2, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 32),
         ..._articles.map((a) => Padding(
-              padding: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.only(bottom: 20),
               child: _ArticleCard(article: a),
             )),
       ],
@@ -114,39 +149,87 @@ class _ReelCardState extends State<_ReelCard> {
       onExit: (_) => setState(() => _hov = false),
       cursor: SystemMouseCursors.click,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        transform: Matrix4.identity()..scale(_hov ? 1.05 : 1.0),
-        transformAlignment: Alignment.center,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOutCubic,
+        transform: Matrix4.identity()..translateByDouble(0.0, _hov ? -8.0 : 0.0, 0.0, 1.0),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [widget.reel.color.withOpacity(0.2), AppColors.surface],
+          borderRadius: BorderRadius.circular(24),
+          color: AppColors.surface,
+          border: Border.all(
+            color: _hov ? widget.reel.color.withValues(alpha: 0.5) : AppColors.white.withValues(alpha: 0.05),
+            width: _hov ? 2 : 1,
           ),
-          border: Border.all(color: AppColors.surfaceLight),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+            if (_hov)
+              BoxShadow(
+                color: widget.reel.color.withValues(alpha: 0.2),
+                blurRadius: 30,
+              ),
+          ],
         ),
+        clipBehavior: Clip.antiAlias,
         child: Stack(
           children: [
+            // Backdrop pattern
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.05,
+                child: Icon(widget.reel.icon, size: 200, color: widget.reel.color),
+              ),
+            ),
             Positioned.fill(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(widget.reel.icon, size: 36, color: widget.reel.color),
-                  const SizedBox(height: 12),
-                  Text(widget.reel.title, style: AppFonts.bodySmall.copyWith(color: AppColors.white), textAlign: TextAlign.center),
+                  Container(
+                    width: 72, height: 72,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: widget.reel.color.withValues(alpha: 0.1),
+                      border: Border.all(color: widget.reel.color.withValues(alpha: 0.2)),
+                    ),
+                    child: Icon(widget.reel.icon, size: 32, color: widget.reel.color),
+                  ),
+                  const SizedBox(height: 24),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      widget.reel.title, 
+                      style: AppFonts.bodyMedium.copyWith(color: AppColors.white, fontWeight: FontWeight.bold), 
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 ],
               ),
             ),
+            // Play overlay bottom
             Positioned(
-              top: 8, right: 8,
+              bottom: 0, left: 0, right: 0,
               child: Container(
-                width: 32, height: 32,
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.black.withOpacity(0.5),
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.4),
+                      Colors.transparent,
+                    ],
+                  ),
                 ),
-                child: const Icon(Icons.play_arrow, color: Colors.white, size: 18),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.play_circle_fill, color: Colors.white, size: 20),
+                    const SizedBox(width: 8),
+                    Text('Watch Now', style: AppFonts.bodySmall.copyWith(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
+                  ],
+                ),
               ),
             ),
           ],
@@ -173,28 +256,61 @@ class _ArticleCardState extends State<_ArticleCard> {
       onExit: (_) => setState(() => _hov = false),
       cursor: SystemMouseCursors.click,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        padding: const EdgeInsets.all(20),
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: _hov ? AppColors.surfaceLight : AppColors.surface,
-          border: Border.all(color: AppColors.surfaceLight),
+          borderRadius: BorderRadius.circular(24),
+          color: _hov ? AppColors.surfaceLight : AppColors.surface.withValues(alpha: 0.5),
+          border: Border.all(
+            color: _hov ? AppColors.accent1.withValues(alpha: 0.3) : AppColors.white.withValues(alpha: 0.05),
+          ),
+          boxShadow: [
+             if (_hov)
+              BoxShadow(
+                color: AppColors.accent1.withValues(alpha: 0.1),
+                blurRadius: 40,
+              ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: AppColors.accent1.withOpacity(0.15),
-              ),
-              child: Text(widget.article.category, style: AppFonts.caption.copyWith(color: AppColors.accent1, fontSize: 10)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: AppColors.accent2.withValues(alpha: 0.1),
+                  ),
+                  child: Text(
+                    widget.article.category.toUpperCase(), 
+                    style: AppFonts.caption.copyWith(color: AppColors.accent2, fontSize: 10, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Text(
+                  widget.article.readTime, 
+                  style: AppFonts.bodySmall.copyWith(color: AppColors.muted, fontSize: 12),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
-            Text(widget.article.title, style: AppFonts.bodyMedium.copyWith(color: AppColors.white, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            Text('${widget.article.readTime} read', style: AppFonts.bodySmall.copyWith(color: AppColors.muted)),
+            const SizedBox(height: 20),
+            Text(
+              widget.article.title, 
+              style: AppFonts.h5.copyWith(color: AppColors.white, fontWeight: FontWeight.bold, height: 1.4),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Text(
+                  'Read Article', 
+                  style: AppFonts.bodySmall.copyWith(color: AppColors.accent1, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(width: 8),
+                const Icon(Icons.arrow_right_alt, color: AppColors.accent1, size: 20),
+              ],
+            ),
           ],
         ),
       ),

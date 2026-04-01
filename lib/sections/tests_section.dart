@@ -41,7 +41,7 @@ class TestsSectionDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    final progress = shrinkOffset / (maxExtent - minExtent);
+    final progress = (shrinkOffset / (maxExtent - minExtent)).clamp(0.0, 1.0);
     final idx = (progress * 12).floor().clamp(0, 11);
     final testProgress = ((progress * 12) - idx).clamp(0.0, 1.0);
     return _TestsContent(currentIndex: idx, progress: testProgress, screenWidth: screenWidth);
@@ -59,20 +59,38 @@ class _TestsContent extends StatelessWidget {
     final test = _tests[currentIndex];
     final isPro = test.isPro;
     final isMob = screenWidth <= 768;
-    final bgColor = isPro ? AppColors.backgroundWarm : AppColors.background;
+    final bgColor = isPro ? const Color(0xFF150F1E) : AppColors.background;
 
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeInOutQuart,
       color: bgColor,
       child: Stack(
         children: [
+          // Background Glow
+          Center(
+            child: Container(
+              width: isMob ? 300 : 600,
+              height: isMob ? 300 : 600,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: (isPro ? AppColors.gold : AppColors.accent2).withValues(alpha: 0.08),
+                    blurRadius: 120,
+                    spreadRadius: 20,
+                  )
+                ],
+              ),
+            ),
+          ),
           // Particle bg
           Positioned.fill(
             child: CustomPaint(
               painter: ParticlePainter(
                 animValue: (currentIndex * 0.08 + progress * 0.08),
-                color: isPro ? AppColors.gold.withOpacity(0.6) : AppColors.accent2.withOpacity(0.5),
-                count: 30,
+                color: isPro ? AppColors.gold : AppColors.accent2,
+                count: 35,
               ),
             ),
           ),
@@ -94,7 +112,7 @@ class _TestsContent extends StatelessWidget {
           flex: 5,
           child: _buildInfo(test),
         ),
-        const SizedBox(width: 60),
+        const SizedBox(width: 80),
         // Right phone
         Expanded(
           flex: 4,
@@ -109,8 +127,8 @@ class _TestsContent extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _buildInfo(test),
-        const SizedBox(height: 30),
-        SizedBox(height: 350, child: _buildPhone(test)),
+        const SizedBox(height: 48),
+        SizedBox(height: 380, child: _buildPhone(test)),
       ],
     );
   }
@@ -123,45 +141,75 @@ class _TestsContent extends StatelessWidget {
       children: [
         // Badge
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color: isPro ? AppColors.gold.withOpacity(0.15) : AppColors.accent1.withOpacity(0.15),
-            border: Border.all(color: isPro ? AppColors.gold.withOpacity(0.4) : AppColors.accent1.withOpacity(0.4)),
+            borderRadius: BorderRadius.circular(12),
+            color: (isPro ? AppColors.gold : AppColors.accent1).withValues(alpha: 0.1),
+            border: Border.all(color: (isPro ? AppColors.gold : AppColors.accent1).withValues(alpha: 0.3)),
           ),
           child: Text(
-            isPro ? 'PRACTITIONER TIER' : 'PERSONAL TIER',
-            style: AppFonts.caption.copyWith(color: isPro ? AppColors.gold : AppColors.accent1, fontSize: 10),
+            isPro ? 'PRACTITIONER LICENSE' : 'PERSONAL TIER',
+            style: AppFonts.caption.copyWith(color: isPro ? AppColors.gold : AppColors.accent1, fontWeight: FontWeight.bold, fontSize: 11),
           ),
         ),
-        const SizedBox(height: 24),
-        // Number
+        const SizedBox(height: 40),
+        // Number & Title
+        Stack(
+          children: [
+            Opacity(
+              opacity: 0.15,
+              child: Text(
+                test.number,
+                style: AppFonts.displayNumber.copyWith(
+                  color: isPro ? AppColors.gold : AppColors.accent1,
+                  fontSize: 120,
+                  height: 0.8,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 40),
+              child: Text(
+                test.name, 
+                style: AppFonts.h2.copyWith(color: AppColors.white, height: 1.1),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 32),
         Text(
-          test.number,
-          style: AppFonts.displayNumber.copyWith(
-            color: isPro ? AppColors.gold.withOpacity(0.2) : AppColors.accent1.withOpacity(0.2),
-            fontSize: 100,
-          ),
+          test.desc, 
+          style: AppFonts.bodyLarge.copyWith(color: AppColors.muted, height: 1.8),
         ),
-        const SizedBox(height: 8),
-        Text(test.name, style: AppFonts.h2.copyWith(color: AppColors.white)),
-        const SizedBox(height: 16),
-        Text(test.desc, style: AppFonts.bodyLarge.copyWith(color: AppColors.muted, height: 1.8)),
       ],
     );
   }
 
   Widget _buildPhone(TestData test) {
     return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.95, end: 1.0),
-      duration: const Duration(milliseconds: 600),
+      tween: Tween(begin: 0.8, end: 1.0),
+      duration: const Duration(milliseconds: 800),
       key: ValueKey(currentIndex),
-      curve: Curves.easeOutBack,
-      builder: (_, scale, child) => Transform.scale(scale: scale, child: child),
-      child: PhoneMockup(
-        width: 240,
-        height: 480,
-        screen: _TestScreen(test: test),
+      curve: Curves.easeOutQuart,
+      builder: (_, v, child) => Transform.scale(
+        scale: v,
+        child: Opacity(opacity: v.clamp(0.0, 1.0), child: child),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: (test.isPro ? AppColors.gold : AppColors.accent2).withValues(alpha: 0.2),
+              blurRadius: 100,
+              spreadRadius: -20,
+            )
+          ],
+        ),
+        child: PhoneMockup(
+          width: 260,
+          height: 520,
+          screen: _TestScreen(test: test),
+        ),
       ),
     );
   }
@@ -180,26 +228,44 @@ class _TestScreen extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            isPro ? const Color(0xFF1A1425) : AppColors.backgroundLight,
+            isPro ? const Color(0xFF1E1428) : const Color(0xFF111830),
             AppColors.background,
           ],
         ),
       ),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(test.icon, size: 64, color: isPro ? AppColors.gold : AppColors.accent2),
-          const SizedBox(height: 20),
-          Text(test.name, style: AppFonts.h5.copyWith(color: AppColors.white, fontSize: 16), textAlign: TextAlign.center),
-          const SizedBox(height: 12),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            width: 80, height: 80,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              gradient: isPro ? AppColors.goldGradient : AppColors.tealGradient,
+              shape: BoxShape.circle,
+              color: (isPro ? AppColors.gold : AppColors.accent2).withValues(alpha: 0.1),
             ),
-            child: Text('Start Test', style: AppFonts.bodySmall.copyWith(color: AppColors.background, fontWeight: FontWeight.w600)),
+            child: Icon(test.icon, size: 40, color: isPro ? AppColors.gold : AppColors.accent2),
+          ),
+          const SizedBox(height: 32),
+          Text(test.name, style: AppFonts.h5.copyWith(color: AppColors.white, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+          const SizedBox(height: 16),
+          Text(
+            isPro ? 'Clinical Analysis' : 'Visual Screening', 
+            style: AppFonts.bodySmall.copyWith(color: AppColors.muted),
+          ),
+          const SizedBox(height: 48),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: isPro ? AppColors.goldGradient : AppColors.blueGradient,
+            ),
+            child: Center(
+              child: Text(
+                'START TEST', 
+                style: AppFonts.bodySmall.copyWith(color: AppColors.background, fontWeight: FontWeight.bold, letterSpacing: 1),
+              ),
+            ),
           ),
         ],
       ),

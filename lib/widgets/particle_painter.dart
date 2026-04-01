@@ -95,7 +95,7 @@ class _ParticleBackgroundState extends State<ParticleBackground>
         Positioned.fill(
           child: AnimatedBuilder(
             animation: _ctrl,
-            builder: (_, __) => CustomPaint(
+            builder: (context, _) => CustomPaint(
               painter: ParticlePainter(
                 animValue: _ctrl.value,
                 color: widget.color,

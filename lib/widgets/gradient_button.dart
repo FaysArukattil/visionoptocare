@@ -41,18 +41,19 @@ class _GradientButtonState extends State<GradientButton> {
           curve: Curves.easeOut,
           height: widget.height,
           padding: const EdgeInsets.symmetric(horizontal: 32),
-          transform: Matrix4.identity()..scale(_hovering ? 1.05 : 1.0),
+          transform: Matrix4.identity()
+            ..scaleByDouble(_hovering ? 1.05 : 1.0, _hovering ? 1.05 : 1.0, 1.0, 1.0),
           transformAlignment: Alignment.center,
           decoration: BoxDecoration(
             gradient: widget.isOutline ? null : grad,
             borderRadius: BorderRadius.circular(30),
             border: widget.isOutline
-                ? Border.all(color: AppColors.muted.withOpacity(0.5), width: 1.5)
+                ? Border.all(color: AppColors.muted.withValues(alpha: 0.5), width: 1.5)
                 : null,
             boxShadow: _hovering && !widget.isOutline
                 ? [
                     BoxShadow(
-                      color: grad.colors.first.withOpacity(0.4),
+                      color: grad.colors.first.withValues(alpha: 0.4),
                       blurRadius: 20,
                       offset: const Offset(0, 6),
                     )

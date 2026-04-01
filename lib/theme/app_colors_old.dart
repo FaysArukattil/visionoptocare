@@ -9,8 +9,8 @@ class AppColors {
   static const Color surface = Color(0xFF141B2E);
   static const Color surfaceLight = Color(0xFF1C2540);
 
-  static const Color accent1 = Color(0xFF4F6AFF); // Electric Blue
-  static const Color accent2 = Color(0xFF00D4C8); // Teal
+  static const Color accent1 = Color(0xFF4F6AFF);
+  static const Color accent2 = Color(0xFF00D4C8);
   static const Color gold = Color(0xFFF5C842);
 
   static const Color white = Color(0xFFF0F4FF);
