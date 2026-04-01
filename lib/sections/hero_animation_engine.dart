@@ -326,9 +326,9 @@ class _SmartphoneScanner extends StatelessWidget {
     return Transform(
       transform: Matrix4.identity()
         ..setEntry(3, 2, 0.001)
-        ..setTranslationRaw(0.0, 200 * (1 - entryP), 0.0)
-        ..rotateX(0.4 * (1 - entryP))
-        ..rotateY(-0.25 * (1 - entryP)),
+        ..setTranslationRaw(0.0, 300 * (1 - entryP), 0.0) // Deeper entry
+        ..rotateX(0.2 + 0.2 * (1 - entryP)) // Subtle final X tilt
+        ..rotateY(-0.08 - 0.25 * (1 - entryP)), // Subtle final Y tilt for 3D feel
       alignment: Alignment.center,
       child: Stack(
         alignment: Alignment.center,
