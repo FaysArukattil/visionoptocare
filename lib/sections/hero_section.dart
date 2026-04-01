@@ -91,7 +91,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
                     // 5. Cinematic 3D Hero Animation Stage (Traveling Downward)
                     RepaintBoundary(
                       child: Transform.translate(
-                        offset: Offset(0, p * size.height * 0.45), // Substantial sink effect
+                        offset: Offset(0, p * size.height * 0.55), // Deeper sink factor
                         child: _build3DAnimation(p, isMob),
                       ),
                     ),

@@ -313,7 +313,7 @@ class _IrisPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
-/// ── THE FUTURE: Smartphone Scanner with Glassmorphism ──
+/// ── THE FUTURE: Smartphone with Official Splash UI ──
 class _SmartphoneScanner extends StatelessWidget {
   final double p;
   final bool isMob;
@@ -335,10 +335,10 @@ class _SmartphoneScanner extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           // Background Glass Cards
-          _buildGlassCard(entryP, -140, -80, "Acuity: 20/20", 0.7),
-          _buildGlassCard(entryP, 140, 100, "Scan Ready ✓", 0.8),
+          _buildGlassCard(entryP, -140 * (isMob ? 0.7 : 1.0), -80, "Acuity: 20/20", 0.7),
+          _buildGlassCard(entryP, 140 * (isMob ? 0.7 : 1.0), 100, "Scan Ready ✓", 0.8),
           
-          // The Phone
+          // The Phone (Smartphone Mockup)
           Container(
             width: isMob ? 280 : 320,
             height: isMob ? 550 : 600,
@@ -348,7 +348,7 @@ class _SmartphoneScanner extends StatelessWidget {
               border: Border.all(color: AppColors.accent2.withValues(alpha: 0.3), width: 3),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.accent2.withValues(alpha: 0.4 * entryP),
+                  color: AppColors.accent2.withValues(alpha: 0.4 * (entryP > 0 ? entryP : 0)),
                   blurRadius: 100,
                   spreadRadius: 10,
                 ),
@@ -356,24 +356,67 @@ class _SmartphoneScanner extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(47),
-              child: Stack(
-                children: [
-                  Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const EyeLogo(size: 100),
-                        const SizedBox(height: 40),
-                        RepaintBoundary(
-                            child: CustomPaint(
-                                size: const Size(200, 200),
-                                painter: _ScanUIPainter(p: entryP),
-                            ),
-                        ),
-                      ],
-                    ),
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFF020617), Color(0xFF0F172A)],
                   ),
-                ],
+                ),
+                child: Stack(
+                  children: [
+                    // Official Splash Layout
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const EyeLogo(size: 100),
+                          const SizedBox(height: 32),
+                          Text(
+                            'VISIAXX',
+                            style: AppFonts.heading(
+                              fontSize: 32, 
+                              letterSpacing: 8,
+                              color: AppColors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Transforming Eye Care through Innovation',
+                            style: AppFonts.caption.copyWith(
+                              color: AppColors.white.withValues(alpha: 0.7),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          Text(
+                            'PREMIUM DIAGNOSTIC SUITE',
+                            style: AppFonts.caption.copyWith(
+                              color: AppColors.accent2.withValues(alpha: 0.6),
+                              fontSize: 10,
+                              letterSpacing: 1.5,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Official EyeLoader Footer
+                    Positioned(
+                      bottom: 40,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: RepaintBoundary(
+                          child: _SplashEyeLoader(entryP: entryP),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -411,43 +454,96 @@ class _SmartphoneScanner extends StatelessWidget {
   }
 }
 
-class _ScanUIPainter extends CustomPainter {
-  final double p;
-  _ScanUIPainter({required this.p});
+/// ── High-Fidelity EyeLoader Painter (Mimics Official Splash) ──
+class _SplashEyeLoader extends StatefulWidget {
+  final double entryP;
+  const _SplashEyeLoader({required this.entryP});
+
+  @override
+  State<_SplashEyeLoader> createState() => _SplashEyeLoaderState();
+}
+
+class _SplashEyeLoaderState extends State<_SplashEyeLoader> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 4000),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) => CustomPaint(
+        size: const Size(60, 60),
+        painter: _EyeLoaderPainter(
+            progress: _controller.value,
+            mainP: widget.entryP,
+        ),
+      ),
+    );
+  }
+}
+
+class _EyeLoaderPainter extends CustomPainter {
+  final double progress;
+  final double mainP;
+  _EyeLoaderPainter({required this.progress, required this.mainP});
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = size.center(Offset.zero);
-    final paint = Paint()
-      ..color = AppColors.accent2
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
+    final paint = Paint()..style = PaintingStyle.fill;
+    final eyeWidth = size.width * 0.95;
+    
+    // Smooth blink calculation (exactly from provided code)
+    double blinkFactor = 1.0;
+    const blinkMarkers = [0.2, 0.5, 0.8];
+    const blinkHalfWindow = 0.07;
+    for (final marker in blinkMarkers) {
+      if (progress > marker - blinkHalfWindow && progress < marker + blinkHalfWindow) {
+        final t = (progress - (marker - blinkHalfWindow)) / (blinkHalfWindow * 2);
+        blinkFactor = 1.0 - math.sin(t * math.pi);
+        break;
+      }
+    }
 
-    // Outer Progress Ring
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: 80),
-      -math.pi / 2,
-      math.pi * 2 * p,
-      false,
-      paint..color = AppColors.accent2.withValues(alpha: 0.5),
-    );
+    final currentHeight = (size.height * 0.52) * blinkFactor;
+    
+    // Draw Sclera Path
+    final eyePath = Path();
+    eyePath.moveTo(center.dx - eyeWidth / 2, center.dy);
+    eyePath.quadraticBezierTo(center.dx, center.dy - currentHeight, center.dx + eyeWidth / 2, center.dy);
+    eyePath.quadraticBezierTo(center.dx, center.dy + currentHeight, center.dx - eyeWidth / 2, center.dy);
+    eyePath.close();
 
-    // Crosshair
-    final crossSize = 20.0 * (1 + math.sin(p * 20) * 0.2);
-    canvas.drawLine(center - Offset(crossSize, 0), center + Offset(crossSize, 0), paint);
-    canvas.drawLine(center - Offset(0, crossSize), center + Offset(0, crossSize), paint);
-
-    // Acuity Score counting up
-    final score = (20 * p).toInt().toString();
-    final tp = TextPainter(
-      text: TextSpan(
-        text: "20/$score",
-        style: TextStyle(color: AppColors.white, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 2),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    tp.layout();
-    tp.paint(canvas, center + const Offset(-25, 40));
+    canvas.drawPath(eyePath, paint..color = Colors.white.withValues(alpha: 0.95 * mainP));
+    
+    // Draw Iris/Pupil if visible
+    if (blinkFactor > 0.1) {
+        canvas.save();
+        canvas.clipPath(eyePath);
+        
+        final irisRadius = (size.width / 2) * 0.5;
+        canvas.drawCircle(center, irisRadius, paint..color = AppColors.accent2.withValues(alpha: mainP));
+        
+        // Pupil pulse
+        final pulseScale = 1.0 + 0.15 * math.sin(progress * math.pi * 2);
+        canvas.drawCircle(center, irisRadius * 0.48 * pulseScale, paint..color = Colors.black.withValues(alpha: mainP));
+        
+        canvas.restore();
+    }
   }
 
   @override
