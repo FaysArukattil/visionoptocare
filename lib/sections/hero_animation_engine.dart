@@ -102,7 +102,7 @@ class _TraditionalShatterStageState extends State<_TraditionalShatterStage> with
             ..setEntry(3, 2, 0.001)
             ..rotateY(0.05 * math.sin(_bobCtrl.value * math.pi * 2))
             ..rotateX(-0.1)
-            ..translate(0.0, 10 * math.sin(_bobCtrl.value * math.pi * 2)),
+            ..setTranslationRaw(0.0, 10 * math.sin(_bobCtrl.value * math.pi * 2), 0.0),
           alignment: Alignment.center,
           child: Stack(
             alignment: Alignment.center,
@@ -326,7 +326,7 @@ class _SmartphoneScanner extends StatelessWidget {
     return Transform(
       transform: Matrix4.identity()
         ..setEntry(3, 2, 0.001)
-        ..translate(0.0, 200 * (1 - entryP))
+        ..setTranslationRaw(0.0, 200 * (1 - entryP), 0.0)
         ..rotateX(0.4 * (1 - entryP))
         ..rotateY(-0.25 * (1 - entryP)),
       alignment: Alignment.center,

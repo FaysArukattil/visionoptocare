@@ -41,13 +41,13 @@ class _HomePageState extends State<HomePage> {
     
     final screenH = MediaQuery.of(context).size.height;
     
-    // 1. Hero Progress (0 -> 1.0 within the first screen)
-    final hProgress = (_scrollController.offset / screenH).clamp(0.0, 1.0);
+    // 1. Hero Progress (0 -> 1.0 within 1.3 screens)
+    final hProgress = (_scrollController.offset / (screenH * 1.3)).clamp(0.0, 1.0);
     if (mounted) setState(() => _heroProgress = hProgress);
 
     // 2. Eye Progress (Section 2 - Scroll driven video)
-    final eyeStart = screenH * 0.2;
-    final eyeEnd = screenH * 1.5;
+    final eyeStart = screenH * 1.3;
+    final eyeEnd = screenH * 2.5;
     final progress = (_scrollController.offset - eyeStart) / (eyeEnd - eyeStart);
     if (progress >= -1.0 && progress <= 2.0) {
       if (mounted) {

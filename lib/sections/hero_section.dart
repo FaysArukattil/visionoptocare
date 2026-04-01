@@ -36,7 +36,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
 
     return Container(
       width: size.width,
-      height: size.height, // Explicit height for Stack bounds
+      height: size.height * 1.3, // Extended stage for parallax travel
       color: AppColors.background,
       child: Stack(
         children: [
@@ -86,11 +86,14 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
                     // 4. Centered Description text
                     _buildDescription(p, isMob),
                     
-                    const SizedBox(height: 64),
+                    const SizedBox(height: 80), // Expanded spacing for travel
                     
-                    // 5. Cinematic 3D Hero Animation Stage
+                    // 5. Cinematic 3D Hero Animation Stage (Traveling Downward)
                     RepaintBoundary(
-                      child: _build3DAnimation(p, isMob),
+                      child: Transform.translate(
+                        offset: Offset(0, p * size.height * 0.45), // Substantial sink effect
+                        child: _build3DAnimation(p, isMob),
+                      ),
                     ),
                     
                     const SizedBox(height: 60), // Bottom padding
