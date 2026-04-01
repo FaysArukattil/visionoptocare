@@ -210,23 +210,6 @@ class _OnlineConsultStatState extends State<_OnlineConsultStat> with SingleTicke
             letterSpacing: 1,
           ),
         ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: AppColors.accent2.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            'ACTIVE NOW',
-            style: AppFonts.caption.copyWith(
-              color: AppColors.accent2,
-              letterSpacing: 2,
-              fontSize: 10,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ),
       ],
     );
   }
