@@ -17,18 +17,18 @@ class TestData {
 }
 
 const _tests = [
-  TestData('01', 'Visual Acuity', 'Measures how clearly you can see at a distance. It reveals the sharpness of your far vision for each eye individually, rated on a standard scale (like 6/6 being perfect sight).', TestTier.quick, Icons.visibility),
-  TestData('02', 'Reading Test', 'Assesses how well you can read and see up close. It reveals your near vision clarity, reading accuracy, and whether you struggle with text at arm\'s length.', TestTier.quick, Icons.menu_book),
-  TestData('03', 'Color Vision', 'Checks whether you can correctly distinguish colors. It reveals if you have any color deficiency (such as red-green issues) in each eye, and how severe it is.', TestTier.quick, Icons.palette),
-  TestData('04', 'Amsler Grid', 'Tests the central portion of your vision. It reveals whether you perceive any distortions, missing spots, or blurry patches in your central visual field.', TestTier.quick, Icons.grid_on),
-  TestData('05', 'Contrast Sensitivity', 'Evaluates how well you can distinguish objects from their background. It reveals whether your vision degrades in low-contrast or foggy conditions.', TestTier.full, Icons.contrast),
-  TestData('06', 'Mobile Refractometry', 'Estimates your eye\'s refractive error. It reveals whether you are nearsighted, farsighted, or have astigmatism, providing estimated lens prescription values.', TestTier.full, Icons.camera_alt),
-  TestData('07', 'Eye Hydration', 'Monitors your blink rate over a timed period. It reveals whether your eyes show signs of dryness or insufficient lubrication based on natural blink frequency.', TestTier.personal, Icons.water_drop),
-  TestData('08', 'Shadow Test', 'Examines internal structures using light reflection. It reveals the health of eye structures and assesses indicators like glaucoma-related changes.', TestTier.pro, Icons.dark_mode),
-  TestData('09', 'Stereopsis', 'Tests depth perception and 3D vision. It reveals how well both eyes work together to merge images into a single 3D view.', TestTier.pro, Icons.view_in_ar),
-  TestData('10', 'Visual Field', 'Maps what you can see without moving your eyes. It reveals blind spots or peripheral vision loss, broken down by quadrant.', TestTier.pro, Icons.radar),
-  TestData('11', 'Cover Test', 'Checks for eye alignment and muscle balance. It reveals whether eyes deviate inward, outward, up, or down, indicating muscle imbalance.', TestTier.pro, Icons.flip),
-  TestData('12', 'Torchlight Exam', 'A clinical examination using a light source. It reveals pupil reflexes and muscle movement, helping detect nerve or muscle abnormalities.', TestTier.pro, Icons.flashlight_on),
+  TestData('01', 'Visual Acuity', 'Measures how clearly you can see at a distance. It reveals the sharpness of your far vision for each eye individually.', TestTier.quick, Icons.visibility),
+  TestData('02', 'Reading Test', 'Assesses how well you can read and see up close. It reveals your near vision clarity and reading accuracy.', TestTier.quick, Icons.menu_book),
+  TestData('03', 'Color Vision', 'Checks whether you can correctly distinguish colors. It reveals if you have any color deficiency.', TestTier.quick, Icons.palette),
+  TestData('04', 'Amsler Grid', 'Tests the central portion of your vision. It reveals whether you perceive any distortions or blurry patches.', TestTier.quick, Icons.grid_on),
+  TestData('05', 'Contrast Sensitivity', 'Evaluates how well you can distinguish objects from their background. It reveals whether your vision degrades in low-contrast conditions.', TestTier.full, Icons.contrast),
+  TestData('06', 'Mobile Refractometry', 'Estimates your eye\'s refractive error. It reveals whether you are nearsighted, farsighted, or have astigmatism.', TestTier.full, Icons.camera_alt),
+  TestData('07', 'Eye Hydration', 'Monitors your blink rate. It reveals whether your eyes show signs of dryness or insufficient lubrication.', TestTier.personal, Icons.water_drop),
+  TestData('08', 'Shadow Test', 'Examines internal structures using light reflection. It reveals the health of eye structures like the lens and retina.', TestTier.pro, Icons.dark_mode),
+  TestData('09', 'Stereopsis', 'Tests depth perception and 3D vision. It reveals how well both eyes work together to merge images.', TestTier.pro, Icons.view_in_ar),
+  TestData('10', 'Visual Field', 'Maps what you can see without moving your eyes. It reveals blind spots or peripheral vision loss.', TestTier.pro, Icons.radar),
+  TestData('11', 'Cover Test', 'Checks for eye alignment and muscle balance. It reveals whether eyes deviate inward, outward, up, or down.', TestTier.pro, Icons.flip),
+  TestData('12', 'Torchlight Exam', 'A clinical examination using light. It reveals pupil reflexes and muscle movement, helping detect nerve abnormalities.', TestTier.pro, Icons.flashlight_on),
 ];
 
 class TestsSection extends StatefulWidget {
@@ -44,23 +44,16 @@ class _TestsSectionState extends State<TestsSection> {
 
   void _onKey(KeyEvent event) {
     if (event is KeyDownEvent) {
-      if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-        setState(() {
-          _selectedIndex = (_selectedIndex + 1) % _tests.length;
-        });
-      } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-        setState(() {
-          _selectedIndex = (_selectedIndex - 1 + _tests.length) % _tests.length;
-        });
+      if (event.logicalKey == LogicalKeyboardKey.arrowDown || event.logicalKey == LogicalKeyboardKey.arrowRight) {
+        setState(() => _selectedIndex = (_selectedIndex + 1) % _tests.length);
+      } else if (event.logicalKey == LogicalKeyboardKey.arrowUp || event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+        setState(() => _selectedIndex = (_selectedIndex - 1 + _tests.length) % _tests.length);
       }
     }
   }
 
   @override
-  void dispose() {
-    _focusNode.dispose();
-    super.dispose();
-  }
+  void dispose() { _focusNode.dispose(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +81,6 @@ class _TestsSectionState extends State<TestsSection> {
               ),
             ),
 
-            // Dashboard Content
             Center(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: isMob ? 16 : 60, vertical: 40),
@@ -107,38 +99,36 @@ class _TestsSectionState extends State<TestsSection> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // SIDEBAR: Categorized List
+        // LEFT: The Grid Selection
         Expanded(
-          flex: 4,
-          child: _buildSidebar(themeColor),
+          flex: 5,
+          child: _buildTestsGrid(themeColor),
         ),
 
-        const SizedBox(width: 80),
+        const SizedBox(width: 60),
 
-        // CENTER/RIGHT: The Phone Hero
+        // RIGHT: Phone + Details
         Expanded(
-          flex: 6,
+          flex: 5,
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Perspective Phone
               Transform(
                 transform: Matrix4.identity()
                   ..setEntry(3, 2, 0.001)
-                  ..rotateY(-0.15)
+                  ..rotateY(-0.1)
                   ..rotateX(0.05),
                 alignment: Alignment.center,
                 child: PhoneMockup(
-                  width: 280, // Better aspect ratio
-                  height: 580,
+                  width: 250,
+                  height: 540,
                   screen: _TestScreenContent(test: test, themeColor: themeColor),
                 ),
               ),
 
-              // Floating Detailed Card
               Positioned(
                 right: 0,
-                bottom: 60,
+                bottom: 40,
                 child: _buildDetailCard(test, themeColor),
               ),
             ],
@@ -151,44 +141,24 @@ class _TestsSectionState extends State<TestsSection> {
   Widget _buildMobileLayout(TestData test, Color themeColor) {
     return Column(
       children: [
-        // Compact List Header
-        SizedBox(
-          height: 120,
-          child: _buildSidebar(themeColor, isMob: true),
-        ),
+        Expanded(flex: 3, child: _buildTestsGrid(themeColor, isMob: true)),
         const SizedBox(height: 20),
-        // Phone
         Expanded(
+          flex: 5,
           child: Center(
             child: PhoneMockup(
-              width: 220,
-              height: 480,
+              width: 200, height: 420,
               screen: _TestScreenContent(test: test, themeColor: themeColor),
             ),
           ),
         ),
         const SizedBox(height: 20),
-        // Detail
         _buildDetailCard(test, themeColor, isMob: true),
       ],
     );
   }
 
-  Widget _buildSidebar(Color themeColor, {bool isMob = false}) {
-    // Grouping by Tier
-    final Map<TestTier, List<int>> groups = {};
-    for (int i = 0; i < _tests.length; i++) {
-      groups.putIfAbsent(_tests[i].tier, () => []).add(i);
-    }
-
-    if (isMob) {
-      return ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: _tests.length,
-        itemBuilder: (context, i) => _buildSidebarItem(i, themeColor, isMob: true),
-      );
-    }
-
+  Widget _buildTestsGrid(Color themeColor, {bool isMob = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -196,72 +166,72 @@ class _TestsSectionState extends State<TestsSection> {
           'DIAGNOSTIC HUB',
           style: AppFonts.heading(fontSize: 14, color: AppColors.accent2, letterSpacing: 4),
         ),
-        const SizedBox(height: 40),
+        const SizedBox(height: 32),
         Expanded(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: groups.entries.map((entry) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: Text(
-                      entry.key.name.toUpperCase() + ' TESTS',
-                      style: AppFonts.caption.copyWith(color: Colors.white24, fontWeight: FontWeight.bold, letterSpacing: 2),
-                    ),
-                  ),
-                  ...entry.value.map((idx) => _buildSidebarItem(idx, themeColor)),
-                  const SizedBox(height: 20),
-                ],
-              );
-            }).toList(),
+          child: GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: isMob ? 3 : 3,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 1.1,
+            ),
+            itemCount: _tests.length,
+            itemBuilder: (context, i) => _buildTestGridItem(i, themeColor, isMob: isMob),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSidebarItem(int idx, Color themeColor, {bool isMob = false}) {
+  Widget _buildTestGridItem(int idx, Color themeColor, {bool isMob = false}) {
     final isSelected = _selectedIndex == idx;
+    final test = _tests[idx];
+    final activeColor = test.tier == TestTier.pro ? const Color(0xFFFFCC00) : AppColors.accent2;
+
     return GestureDetector(
       onTap: () => setState(() => _selectedIndex = idx),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        margin: EdgeInsets.only(bottom: isMob ? 0 : 12, right: isMob ? 16 : 0),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? themeColor.withValues(alpha: 0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? themeColor.withValues(alpha: 0.3) : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isSelected 
+                ? [activeColor.withValues(alpha: 0.15), activeColor.withValues(alpha: 0.05)]
+                : [Colors.white.withValues(alpha: 0.05), Colors.white.withValues(alpha: 0.02)],
           ),
+          border: Border.all(
+            color: isSelected ? activeColor.withValues(alpha: 0.4) : Colors.white.withValues(alpha: 0.1),
+            width: isSelected ? 2 : 1,
+          ),
+          boxShadow: isSelected ? [
+            BoxShadow(color: activeColor.withValues(alpha: 0.1), blurRadius: 15, spreadRadius: 2)
+          ] : null,
         ),
-        child: Row(
-          mainAxisSize: isMob ? MainAxisSize.min : MainAxisSize.max,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (!isMob) ...[
-              Text(
-                _tests[idx].number,
-                style: AppFonts.caption.copyWith(
-                  color: isSelected ? themeColor : Colors.white24,
-                  fontWeight: FontWeight.bold,
+            Icon(
+              test.icon, 
+              size: isMob ? 24 : 32, 
+              color: isSelected ? activeColor : Colors.white38
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text(
+                test.name.toUpperCase(),
+                textAlign: TextAlign.center,
+                style: AppFonts.heading(
+                  fontSize: isMob ? 9 : 11,
+                  color: isSelected ? Colors.white : Colors.white24,
+                  letterSpacing: 1,
                 ),
-              ),
-              const SizedBox(width: 16),
-            ],
-            Text(
-              _tests[idx].name.toUpperCase(),
-              style: AppFonts.heading(
-                fontSize: isMob ? 14 : 18,
-                color: isSelected ? Colors.white : Colors.white38,
-                letterSpacing: 2,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            if (isSelected && !isMob) ...[
-              const Spacer(),
-              Icon(Icons.arrow_forward_ios, size: 12, color: themeColor),
-            ],
           ],
         ),
       ),
@@ -274,8 +244,8 @@ class _TestsSectionState extends State<TestsSection> {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
         child: Container(
-          width: isMob ? double.infinity : 350,
-          padding: const EdgeInsets.all(32),
+          width: isMob ? double.infinity : 320,
+          padding: const EdgeInsets.all(28),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(24),
@@ -287,35 +257,47 @@ class _TestsSectionState extends State<TestsSection> {
             children: [
               Text(
                 test.name.toUpperCase(),
-                style: AppFonts.heading(fontSize: 22, color: Colors.white),
+                style: AppFonts.heading(fontSize: 20, color: Colors.white),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               Text(
                 test.desc,
-                style: AppFonts.bodyLarge.copyWith(color: AppColors.muted, height: 1.6, fontSize: 14),
+                style: AppFonts.bodyLarge.copyWith(
+                  color: AppColors.muted, 
+                  height: 1.5, 
+                  fontSize: 13,
+                ),
               ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  _buildStatBadge('ACCURACY', '99.8%', themeColor),
-                  const SizedBox(width: 20),
-                  _buildStatBadge('DURATION', '2m', themeColor),
-                ],
+              const SizedBox(height: 20),
+              // Replaced stats with a simple Action/Status button
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: themeColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: themeColor.withValues(alpha: 0.2)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(test.icon, size: 14, color: themeColor),
+                    const SizedBox(width: 8),
+                    Text(
+                      'READY TO SCAN',
+                      style: AppFonts.caption.copyWith(
+                        color: themeColor, 
+                        fontWeight: FontWeight.bold, 
+                        letterSpacing: 1,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildStatBadge(String label, String value, Color themeColor) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: AppFonts.caption.copyWith(color: Colors.white38, fontSize: 10, letterSpacing: 1)),
-        Text(value, style: AppFonts.heading(fontSize: 16, color: themeColor)),
-      ],
     );
   }
 }
@@ -342,12 +324,9 @@ class _TestScreenContentState extends State<_TestScreenContent> with SingleTicke
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF0F1218),
-      ),
+      color: const Color(0xFF0F1218),
       child: Stack(
         children: [
-          // Grid & Laser
           Positioned.fill(child: Opacity(opacity: 0.1, child: CustomPaint(painter: _DiagnosticGridPainter(color: widget.themeColor)))),
           AnimatedBuilder(
             animation: _ctrl,
@@ -363,16 +342,13 @@ class _TestScreenContentState extends State<_TestScreenContent> with SingleTicke
               ),
             ),
           ),
-          
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(widget.test.icon, size: 80, color: widget.themeColor),
-                const SizedBox(height: 32),
+                Icon(widget.test.icon, size: 70, color: widget.themeColor),
+                const SizedBox(height: 24),
                 Text('SYSTEM READY', style: AppFonts.caption.copyWith(color: widget.themeColor, fontWeight: FontWeight.w900, letterSpacing: 3)),
-                const SizedBox(height: 8),
-                Text('TAP TO START SCAN', style: AppFonts.caption.copyWith(color: Colors.white24, fontSize: 10)),
               ],
             ),
           ),
