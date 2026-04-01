@@ -202,16 +202,19 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
           child: Stack(
             alignment: Alignment.center,
             children: [
-              Transform(
-                transform: Matrix4.identity()
-                  ..setEntry(3, 2, 0.001)
-                  ..rotateY(-0.1)
-                  ..rotateX(0.02),
-                alignment: Alignment.center,
-                child: PhoneMockup(
-                  width: 250,
-                  height: 540,
-                  screen: _TestScreenContent(test: test, themeColor: themeColor),
+              Positioned(
+                left: 120,
+                child: Transform(
+                  transform: Matrix4.identity()
+                    ..setEntry(3, 2, 0.001)
+                    ..rotateY(-0.1)
+                    ..rotateX(0.02),
+                  alignment: Alignment.center,
+                  child: PhoneMockup(
+                    width: 250,
+                    height: 540,
+                    screen: _TestScreenContent(test: test, themeColor: themeColor),
+                  ),
                 ),
               ),
               Positioned(
@@ -438,21 +441,25 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
 
   Widget _buildDetailCard(TestData test, Color themeColor, {bool isMob = false}) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(28),
+      borderRadius: BorderRadius.circular(32),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
-          width: isMob ? double.infinity : 320,
-          padding: const EdgeInsets.all(28),
+          width: isMob ? double.infinity : 400,
+          padding: const EdgeInsets.all(32),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(color: themeColor.withValues(alpha: 0.2), width: 1.5),
+            boxShadow: [
+              BoxShadow(color: themeColor.withValues(alpha: 0.05), blurRadius: 40, spreadRadius: -10),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              // 1. TIER TAG
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
@@ -465,10 +472,37 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
                   style: AppFonts.caption.copyWith(color: themeColor, fontWeight: FontWeight.bold, fontSize: 9, letterSpacing: 1.5),
                 ),
               ),
-              const SizedBox(height: 16),
-              Text(test.name.toUpperCase(), style: AppFonts.heading(fontSize: 20, color: Colors.white, height: 1.1)),
-              const SizedBox(height: 12),
-              Text(test.desc, style: AppFonts.bodyLarge.copyWith(color: AppColors.muted, height: 1.6, fontSize: 13)),
+              const SizedBox(height: 24),
+              
+              // 2. NAME & ACCENT
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 4, height: 40,
+                    decoration: BoxDecoration(color: themeColor, borderRadius: BorderRadius.circular(2)),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      test.name.toUpperCase(), 
+                      style: AppFonts.heading(fontSize: 26, color: Colors.white, height: 1.1),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              
+              // 3. DESCRIPTION (Bigger Readability)
+              Text(
+                test.desc, 
+                style: AppFonts.bodyLarge.copyWith(
+                  color: AppColors.muted, 
+                  height: 1.7, 
+                  fontSize: 16, 
+                  letterSpacing: 0.5,
+                ),
+              ),
             ],
           ),
         ),
