@@ -19,33 +19,33 @@ class PhoneMockup extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(54), // More rounded premium look
+        borderRadius: BorderRadius.circular(44), // Slightly less rounded for a taller look
         color: const Color(0xFF020617),
         boxShadow: [
           // Outer Glow
           BoxShadow(
-            color: AppColors.accent2.withValues(alpha: 0.1),
+            color: AppColors.accent2.withValues(alpha: 0.08),
             blurRadius: 60,
-            spreadRadius: 20,
+            spreadRadius: 10,
           ),
           // Sharp Shadow
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.6),
-            blurRadius: 30,
-            offset: const Offset(0, 20),
+            blurRadius: 40,
+            offset: const Offset(0, 25),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(8.0), // The Bezel
+        padding: const EdgeInsets.all(7.0), // Consistent thin bezel
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(46),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1.5),
+            borderRadius: BorderRadius.circular(37),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 1.5),
             color: Colors.black,
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(44),
+            borderRadius: BorderRadius.circular(36),
             child: Stack(
               children: [
                 // Screen content
@@ -56,59 +56,21 @@ class PhoneMockup extends StatelessWidget {
                   ),
                 ),
 
-                // Premium Dynamic Island
-                Positioned(
-                  top: 12,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      width: 90,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.white.withValues(alpha: 0.05),
-                            blurRadius: 5,
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Small Lens circle
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF1E293B),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 40),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Glass Reflection Sweep
+                // Glass Reflection Sweep (Refined)
                 Positioned.fill(
                   child: IgnorePointer(
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                          begin: Alignment.topRight,
+                          end: Alignment.bottomLeft,
                           colors: [
-                            Colors.white.withValues(alpha: 0.05),
+                            Colors.white.withValues(alpha: 0.03),
                             Colors.transparent,
-                            Colors.white.withValues(alpha: 0.02),
+                            Colors.white.withValues(alpha: 0.01),
                             Colors.transparent,
                           ],
-                          stops: const [0.0, 0.4, 0.5, 1.0],
+                          stops: const [0.0, 0.45, 0.55, 1.0],
                         ),
                       ),
                     ),
@@ -117,15 +79,15 @@ class PhoneMockup extends StatelessWidget {
 
                 // Bottom Indicator Bar
                 Positioned(
-                  bottom: 10,
+                  bottom: 8,
                   left: 0,
                   right: 0,
                   child: Center(
                     child: Container(
-                      width: 100,
+                      width: 80,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: Colors.white.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),

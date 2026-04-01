@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../widgets/phone_mockup.dart';
@@ -30,79 +31,73 @@ const _tests = [
   TestData('12', 'Torchlight Exam', 'A clinical examination using a light source. It reveals pupil reflexes and muscle movement, helping detect nerve or muscle abnormalities.', TestTier.pro, Icons.flashlight_on),
 ];
 
-class TestsSectionDelegate extends SliverPersistentHeaderDelegate {
-  final double screenHeight;
-  final double screenWidth;
-  TestsSectionDelegate({required this.screenHeight, required this.screenWidth});
+class TestsSection extends StatefulWidget {
+  const TestsSection({super.key});
 
   @override
-  double get maxExtent => screenHeight * 13;
-  @override
-  double get minExtent => screenHeight;
-  @override
-  bool shouldRebuild(covariant TestsSectionDelegate old) =>
-      old.screenHeight != screenHeight || old.screenWidth != screenWidth;
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    final progress = (shrinkOffset / (maxExtent - minExtent)).clamp(0.0, 1.0);
-    // 12 items -> 11 intervals
-    final wheelPos = progress * 11;
-    final idx = wheelPos.round().clamp(0, 11);
-    
-    return Stack(
-      children: [
-        Positioned(
-          top: 0, left: 0, right: 0,
-          height: screenHeight,
-          child: _TestsContent(currentIndex: idx, wheelPos: wheelPos, screenWidth: screenWidth),
-        ),
-      ],
-    );
-  }
+  State<TestsSection> createState() => _TestsSectionState();
 }
 
-class _TestsContent extends StatelessWidget {
-  final int currentIndex;
-  final double wheelPos; // 0.0 to 11.0
-  final double screenWidth;
-  const _TestsContent({required this.currentIndex, required this.wheelPos, required this.screenWidth});
+class _TestsSectionState extends State<TestsSection> {
+  int _selectedIndex = 0;
+  final FocusNode _focusNode = FocusNode();
+
+  void _onKey(KeyEvent event) {
+    if (event is KeyDownEvent) {
+      if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+        setState(() {
+          _selectedIndex = (_selectedIndex + 1) % _tests.length;
+        });
+      } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+        setState(() {
+          _selectedIndex = (_selectedIndex - 1 + _tests.length) % _tests.length;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final test = _tests[currentIndex];
+    final test = _tests[_selectedIndex];
     final isMob = Responsive.isMobile(context);
     final themeColor = test.tier == TestTier.pro ? const Color(0xFFFFCC00) : AppColors.accent2;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 500),
-      color: test.tier == TestTier.pro ? const Color(0xFF0A0A0F) : AppColors.background,
-      child: Stack(
-        children: [
-          // 1. Particle Background
-          _buildBackground(themeColor),
-
-          // 2. Main Diagnostic Wheel Stage
-          Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: isMob ? 16 : 60),
-              child: isMob 
-                  ? _buildMobileLayout(test, themeColor) 
-                  : _buildDesktopLayout(test, themeColor),
+    return KeyboardListener(
+      focusNode: _focusNode,
+      autofocus: true,
+      onKeyEvent: _onKey,
+      child: Container(
+        height: MediaQuery.of(context).size.height,
+        color: AppColors.background,
+        child: Stack(
+          children: [
+            // Background Particles
+            Positioned.fill(
+              child: CustomPaint(
+                painter: ParticlePainter(
+                  animValue: _selectedIndex * 0.1,
+                  color: themeColor.withValues(alpha: 0.1),
+                  count: 15,
+                ),
+              ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildBackground(Color themeColor) {
-    return Positioned.fill(
-      child: CustomPaint(
-        painter: ParticlePainter(
-          animValue: wheelPos * 0.05,
-          color: themeColor.withValues(alpha: 0.2),
-          count: 20,
+            // Dashboard Content
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: isMob ? 16 : 60, vertical: 40),
+                child: isMob 
+                    ? _buildMobileLayout(test, themeColor) 
+                    : _buildDesktopLayout(test, themeColor),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -112,30 +107,39 @@ class _TestsContent extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // LEFT: The Heading Wheel (The Selector)
+        // SIDEBAR: Categorized List
         Expanded(
           flex: 4,
-          child: _buildHeadingWheel(themeColor),
+          child: _buildSidebar(themeColor),
         ),
 
-        const SizedBox(width: 40),
+        const SizedBox(width: 80),
 
-        // RIGHT: Holographic Phone & Description Card
+        // CENTER/RIGHT: The Phone Hero
         Expanded(
           flex: 6,
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Phone Mockup (Center-Right)
-              Padding(
-                padding: const EdgeInsets.only(left: 100),
-                child: _buildPhoneHologram(test, themeColor),
+              // Perspective Phone
+              Transform(
+                transform: Matrix4.identity()
+                  ..setEntry(3, 2, 0.001)
+                  ..rotateY(-0.15)
+                  ..rotateX(0.05),
+                alignment: Alignment.center,
+                child: PhoneMockup(
+                  width: 280, // Better aspect ratio
+                  height: 580,
+                  screen: _TestScreenContent(test: test, themeColor: themeColor),
+                ),
               ),
 
-              // Floating Description Card (Glassmorphic)
+              // Floating Detailed Card
               Positioned(
-                left: 0,
-                child: _buildDescriptionPanel(test, themeColor),
+                right: 0,
+                bottom: 60,
+                child: _buildDetailCard(test, themeColor),
               ),
             ],
           ),
@@ -146,157 +150,157 @@ class _TestsContent extends StatelessWidget {
 
   Widget _buildMobileLayout(TestData test, Color themeColor) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Selection wheel at top (compact)
-        SizedBox(height: 180, child: _buildHeadingWheel(themeColor, isMob: true)),
-        
+        // Compact List Header
+        SizedBox(
+          height: 120,
+          child: _buildSidebar(themeColor, isMob: true),
+        ),
         const SizedBox(height: 20),
-
-        // Phone in middle
+        // Phone
         Expanded(
           child: Center(
-            child: _buildPhoneHologram(test, themeColor, isMob: true),
-          ),
-        ),
-
-        // Description at bottom
-        _buildDescriptionPanel(test, themeColor),
-      ],
-    );
-  }
-
-  Widget _buildHeadingWheel(Color themeColor, {bool isMob = false}) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        // Selection Box (Curved Edges) - Wider
-        Container(
-          width: isMob ? 320 : 500,
-          height: isMob ? 50 : 80,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.03),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: themeColor.withValues(alpha: 0.2)),
-            boxShadow: [
-              BoxShadow(
-                color: themeColor.withValues(alpha: 0.05),
-                blurRadius: 30,
-              ),
-            ],
-          ),
-        ),
-
-        // The Wheel Items
-        ClipRect(
-          child: SizedBox(
-            height: isMob ? 250 : 550,
-            child: Stack(
-              alignment: Alignment.center,
-              children: List.generate(_tests.length, (i) {
-                final dist = (i - wheelPos).abs();
-                final isActive = dist < 0.5;
-                final opacity = (1.0 - (dist * 0.35)).clamp(0.0, 1.0);
-                final scale = (isActive ? 1.0 : 0.8);
-                final offset = (i - wheelPos) * (isMob ? 60 : 100);
-
-                return Transform.translate(
-                  offset: Offset(0, offset),
-                  child: AnimatedScale(
-                    scale: scale,
-                    duration: const Duration(milliseconds: 300),
-                    child: Opacity(
-                      opacity: opacity,
-                      child: isActive 
-                        ? Text(
-                            _tests[i].name.toUpperCase(),
-                            style: AppFonts.heading(
-                              fontSize: isMob ? 14 : 22,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 3,
-                            ),
-                            textAlign: TextAlign.center,
-                          )
-                        : Container(
-                            width: 10,
-                            height: 10,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: themeColor.withValues(alpha: 0.4),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: themeColor.withValues(alpha: 0.3),
-                                  blurRadius: 10,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                            ),
-                          ),
-                    ),
-                  ),
-                );
-              }),
+            child: PhoneMockup(
+              width: 220,
+              height: 480,
+              screen: _TestScreenContent(test: test, themeColor: themeColor),
             ),
           ),
         ),
+        const SizedBox(height: 20),
+        // Detail
+        _buildDetailCard(test, themeColor, isMob: true),
       ],
     );
   }
 
-  Widget _buildDescriptionPanel(TestData test, Color themeColor) {
+  Widget _buildSidebar(Color themeColor, {bool isMob = false}) {
+    // Grouping by Tier
+    final Map<TestTier, List<int>> groups = {};
+    for (int i = 0; i < _tests.length; i++) {
+      groups.putIfAbsent(_tests[i].tier, () => []).add(i);
+    }
+
+    if (isMob) {
+      return ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _tests.length,
+        itemBuilder: (context, i) => _buildSidebarItem(i, themeColor, isMob: true),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'DIAGNOSTIC HUB',
+          style: AppFonts.heading(fontSize: 14, color: AppColors.accent2, letterSpacing: 4),
+        ),
+        const SizedBox(height: 40),
+        Expanded(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: groups.entries.map((entry) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Text(
+                      entry.key.name.toUpperCase() + ' TESTS',
+                      style: AppFonts.caption.copyWith(color: Colors.white24, fontWeight: FontWeight.bold, letterSpacing: 2),
+                    ),
+                  ),
+                  ...entry.value.map((idx) => _buildSidebarItem(idx, themeColor)),
+                  const SizedBox(height: 20),
+                ],
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSidebarItem(int idx, Color themeColor, {bool isMob = false}) {
+    final isSelected = _selectedIndex == idx;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedIndex = idx),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        margin: EdgeInsets.only(bottom: isMob ? 0 : 12, right: isMob ? 16 : 0),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? themeColor.withValues(alpha: 0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? themeColor.withValues(alpha: 0.3) : Colors.transparent,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: isMob ? MainAxisSize.min : MainAxisSize.max,
+          children: [
+            if (!isMob) ...[
+              Text(
+                _tests[idx].number,
+                style: AppFonts.caption.copyWith(
+                  color: isSelected ? themeColor : Colors.white24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(width: 16),
+            ],
+            Text(
+              _tests[idx].name.toUpperCase(),
+              style: AppFonts.heading(
+                fontSize: isMob ? 14 : 18,
+                color: isSelected ? Colors.white : Colors.white38,
+                letterSpacing: 2,
+              ),
+            ),
+            if (isSelected && !isMob) ...[
+              const Spacer(),
+              Icon(Icons.arrow_forward_ios, size: 12, color: themeColor),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailCard(TestData test, Color themeColor, {bool isMob = false}) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
         child: Container(
-          width: 320,
-          padding: const EdgeInsets.all(24),
+          width: isMob ? double.infinity : 350,
+          padding: const EdgeInsets.all(32),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 20,
-              ),
-            ],
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: themeColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: themeColor.withValues(alpha: 0.2)),
-                ),
-                child: Text(
-                  test.tier.name.toUpperCase(),
-                  style: AppFonts.caption.copyWith(
-                    color: themeColor, 
-                    fontWeight: FontWeight.bold, 
-                    letterSpacing: 2,
-                    fontSize: 10,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
               Text(
                 test.name.toUpperCase(),
-                style: AppFonts.heading(fontSize: 18, color: Colors.white, letterSpacing: 1),
+                style: AppFonts.heading(fontSize: 22, color: Colors.white),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Text(
                 test.desc,
-                style: AppFonts.bodyLarge.copyWith(
-                  color: AppColors.muted, 
-                  height: 1.5, 
-                  fontSize: 13,
-                ),
+                style: AppFonts.bodyLarge.copyWith(color: AppColors.muted, height: 1.6, fontSize: 14),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  _buildStatBadge('ACCURACY', '99.8%', themeColor),
+                  const SizedBox(width: 20),
+                  _buildStatBadge('DURATION', '2m', themeColor),
+                ],
               ),
             ],
           ),
@@ -305,18 +309,13 @@ class _TestsContent extends StatelessWidget {
     );
   }
 
-  Widget _buildPhoneHologram(TestData test, Color themeColor, {bool isMob = false}) {
-    return Transform(
-      transform: Matrix4.identity()
-        ..setEntry(3, 2, 0.001)
-        ..rotateY(isMob ? 0 : -0.2)
-        ..rotateX(0.1),
-      alignment: Alignment.center,
-      child: PhoneMockup(
-        width: isMob ? 220 : 260,
-        height: isMob ? 440 : 540,
-        screen: _TestScreenContent(test: test, themeColor: themeColor),
-      ),
+  Widget _buildStatBadge(String label, String value, Color themeColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: AppFonts.caption.copyWith(color: Colors.white38, fontSize: 10, letterSpacing: 1)),
+        Text(value, style: AppFonts.heading(fontSize: 16, color: themeColor)),
+      ],
     );
   }
 }
@@ -343,9 +342,8 @@ class _TestScreenContentState extends State<_TestScreenContent> with SingleTicke
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F1218),
-        borderRadius: BorderRadius.circular(32),
+      decoration: const BoxDecoration(
+        color: Color(0xFF0F1218),
       ),
       child: Stack(
         children: [
@@ -354,12 +352,12 @@ class _TestScreenContentState extends State<_TestScreenContent> with SingleTicke
           AnimatedBuilder(
             animation: _ctrl,
             builder: (context, _) => Positioned(
-              top: _ctrl.value * 500,
+              top: _ctrl.value * 600,
               left: 0, right: 0,
               child: Container(
                 height: 2,
                 decoration: BoxDecoration(
-                  boxShadow: [BoxShadow(color: widget.themeColor.withValues(alpha: 0.6), blurRadius: 10)],
+                  boxShadow: [BoxShadow(color: widget.themeColor.withValues(alpha: 0.6), blurRadius: 15)],
                   gradient: LinearGradient(colors: [Colors.transparent, widget.themeColor, Colors.transparent]),
                 ),
               ),
@@ -370,9 +368,11 @@ class _TestScreenContentState extends State<_TestScreenContent> with SingleTicke
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(widget.test.icon, size: 60, color: widget.themeColor),
-                const SizedBox(height: 24),
-                Text('ANALYZING...', style: AppFonts.caption.copyWith(color: widget.themeColor, fontWeight: FontWeight.w900, letterSpacing: 2)),
+                Icon(widget.test.icon, size: 80, color: widget.themeColor),
+                const SizedBox(height: 32),
+                Text('SYSTEM READY', style: AppFonts.caption.copyWith(color: widget.themeColor, fontWeight: FontWeight.w900, letterSpacing: 3)),
+                const SizedBox(height: 8),
+                Text('TAP TO START SCAN', style: AppFonts.caption.copyWith(color: Colors.white24, fontSize: 10)),
               ],
             ),
           ),
@@ -388,10 +388,10 @@ class _DiagnosticGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..color = color..strokeWidth = 0.5;
-    for (double i = 0; i < size.width; i += 25) {
+    for (double i = 0; i < size.width; i += 30) {
       canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
     }
-    for (double i = 0; i < size.height; i += 25) {
+    for (double i = 0; i < size.height; i += 30) {
       canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
     }
   }

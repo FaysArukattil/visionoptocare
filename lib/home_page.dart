@@ -43,9 +43,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
@@ -58,13 +55,9 @@ class _HomePageState extends State<HomePage> {
                 child: HeroSection(scrollProgress: _heroProgress),
               ),
 
-              // 2. 3D Diagnostic Hub (Heading Wheel & App Tests)
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: TestsSectionDelegate(
-                  screenHeight: screenHeight,
-                  screenWidth: screenWidth,
-                ),
+              // 2. Interactive Diagnostic Hub
+              const SliverToBoxAdapter(
+                child: TestsSection(),
               ),
             ],
           ),
