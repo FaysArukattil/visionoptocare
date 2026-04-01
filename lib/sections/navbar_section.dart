@@ -96,9 +96,9 @@ class _NavbarSectionState extends State<NavbarSection>
                   children: [
                     // Top Bar (Always visible)
                     Container(
-                      height: isMob ? 80 : 90,
+                      height: isMob ? 90 : 120,
                       padding: EdgeInsets.symmetric(
-                        horizontal: isMob ? 20 : 40,
+                        horizontal: isMob ? 24 : 48,
                       ),
                       child: Row(
                         children: [
@@ -159,8 +159,8 @@ class _NavbarSectionState extends State<NavbarSection>
 
   // ── Logo (icon already contains brand text) ──
   Widget _buildLogo(bool isMob) {
-    // Dramatically increased size for high impact
-    final size = isMob ? 52.0 : 64.0;
+    // Increased size for a more powerful branding impact
+    final size = isMob ? 90.0 : 120.0;
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: EyeLogo(size: size),

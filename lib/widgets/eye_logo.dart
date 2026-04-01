@@ -36,35 +36,21 @@ class _EyeLogoState extends State<EyeLogo> with SingleTickerProviderStateMixin {
       child: AnimatedBuilder(
         animation: _ctrl,
         builder: (context, _) {
-          return Container(
-            width: widget.size * 2.8, // Rectangular aspect ratio for logo + text
+          return SizedBox(
+            width: widget.size * 2.8, // Maintains the wide branding impact
             height: widget.size,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.accent2.withValues(alpha: 0.15 * _ctrl.value),
-                  blurRadius: 25,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
             child: Stack(
               children: [
                 // Logo Image
                 Center(
-                  child: Transform.scale(
-                    scale: 1.05 + (0.05 * _ctrl.value), // Subtle zoom baseline + hover zoom
-                    child: Image.asset(
-                      'lib/assets/images/app_logo.png',
-                      fit: BoxFit.contain,
-                      filterQuality: FilterQuality.high,
-                      isAntiAlias: true,
-                      errorBuilder: (context, error, stackTrace) => CustomPaint(
-                        size: Size(widget.size * 2.8, widget.size),
-                        painter: _EyePainter(pupilDilation: _ctrl.value),
-                      ),
+                  child: Image.asset(
+                    'lib/assets/images/app_logo.png',
+                    fit: BoxFit.fitHeight, // Fills height perfectly without distortion
+                    filterQuality: FilterQuality.high,
+                    isAntiAlias: true,
+                    errorBuilder: (context, error, stackTrace) => CustomPaint(
+                      size: Size(widget.size * 2.8, widget.size),
+                      painter: _EyePainter(pupilDilation: _ctrl.value),
                     ),
                   ),
                 ),
@@ -73,7 +59,7 @@ class _EyeLogoState extends State<EyeLogo> with SingleTickerProviderStateMixin {
                 if (_ctrl.value > 0.01)
                   Positioned.fill(
                     child: Opacity(
-                      opacity: 0.2 * _ctrl.value,
+                      opacity: 0.15 * _ctrl.value,
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
@@ -82,7 +68,7 @@ class _EyeLogoState extends State<EyeLogo> with SingleTickerProviderStateMixin {
                             end: Alignment.bottomRight,
                             colors: [
                               Colors.transparent,
-                              Colors.white.withValues(alpha: 0.8),
+                              Colors.white.withValues(alpha: 0.5),
                               Colors.transparent,
                             ],
                             stops: const [0.0, 0.5, 1.0],
@@ -114,10 +100,7 @@ class _EyePainter extends CustomPainter {
     // Outer glow
     final glowPaint = Paint()
       ..shader = RadialGradient(
-        colors: [
-          AppColors.accent2.withValues(alpha: 0.3),
-          Colors.transparent,
-        ],
+        colors: [AppColors.accent2.withValues(alpha: 0.3), Colors.transparent],
       ).createShader(Rect.fromCircle(center: center, radius: width / 2))
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
     canvas.drawCircle(center, width / 2, glowPaint);
@@ -125,17 +108,24 @@ class _EyePainter extends CustomPainter {
     // Eye outline path (almond shape)
     final path = Path();
     path.moveTo(center.dx - width * 0.48, center.dy);
-    path.quadraticBezierTo(center.dx, center.dy - height * 0.45, center.dx + width * 0.48, center.dy);
-    path.quadraticBezierTo(center.dx, center.dy + height * 0.45, center.dx - width * 0.48, center.dy);
+    path.quadraticBezierTo(
+      center.dx,
+      center.dy - height * 0.45,
+      center.dx + width * 0.48,
+      center.dy,
+    );
+    path.quadraticBezierTo(
+      center.dx,
+      center.dy + height * 0.45,
+      center.dx - width * 0.48,
+      center.dy,
+    );
     path.close();
 
     // Sclera (White part) with a subtle gradient
     final scleraPaint = Paint()
       ..shader = RadialGradient(
-        colors: [
-          AppColors.white,
-          const Color(0xFFE0E0E0),
-        ],
+        colors: [AppColors.white, const Color(0xFFE0E0E0)],
       ).createShader(Rect.fromLTWH(0, 0, width, height));
     canvas.drawPath(path, scleraPaint);
 
@@ -144,24 +134,29 @@ class _EyePainter extends CustomPainter {
     final irisPaint = Paint()
       ..shader = RadialGradient(
         center: const Alignment(-0.2, -0.2),
-        colors: [
-          AppColors.accent2,
-          AppColors.accent1,
-          const Color(0xFF0D1425),
-        ],
+        colors: [AppColors.accent2, AppColors.accent1, const Color(0xFF0D1425)],
         stops: const [0.2, 0.7, 1.0],
       ).createShader(Rect.fromCircle(center: center, radius: irisRadius));
     canvas.drawCircle(center, irisRadius, irisPaint);
 
     // Pupil (Responsive dilation)
     final pupilRadius = irisRadius * (0.35 + 0.15 * pupilDilation);
-    canvas.drawCircle(center, pupilRadius, Paint()..color = const Color(0xFF000510));
+    canvas.drawCircle(
+      center,
+      pupilRadius,
+      Paint()..color = const Color(0xFF000510),
+    );
 
     // Futuristic lens reflection (Glass effect)
     final reflectionPath = Path();
     reflectionPath.moveTo(center.dx - width * 0.25, center.dy - height * 0.15);
-    reflectionPath.quadraticBezierTo(center.dx - width * 0.1, center.dy - height * 0.25, center.dx + width * 0.05, center.dy - height * 0.1);
-    
+    reflectionPath.quadraticBezierTo(
+      center.dx - width * 0.1,
+      center.dy - height * 0.25,
+      center.dx + width * 0.05,
+      center.dy - height * 0.1,
+    );
+
     final reflectionPaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.15)
       ..style = PaintingStyle.stroke
@@ -170,8 +165,15 @@ class _EyePainter extends CustomPainter {
     canvas.drawPath(reflectionPath, reflectionPaint);
 
     // Bright glint
-    final glintOffset = Offset(center.dx - irisRadius * 0.3, center.dy - irisRadius * 0.3);
-    canvas.drawCircle(glintOffset, irisRadius * 0.1, Paint()..color = Colors.white.withValues(alpha: 0.9));
+    final glintOffset = Offset(
+      center.dx - irisRadius * 0.3,
+      center.dy - irisRadius * 0.3,
+    );
+    canvas.drawCircle(
+      glintOffset,
+      irisRadius * 0.1,
+      Paint()..color = Colors.white.withValues(alpha: 0.9),
+    );
 
     // Outer lens shine (Top arc)
     final topArcPath = Path();
@@ -181,11 +183,11 @@ class _EyePainter extends CustomPainter {
       pi * 0.6,
     );
     canvas.drawPath(
-      topArcPath, 
+      topArcPath,
       Paint()
         ..color = Colors.white.withValues(alpha: 0.2)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2
+        ..strokeWidth = 1.2,
     );
   }
 
