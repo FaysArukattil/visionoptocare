@@ -96,13 +96,16 @@ class _NavbarSectionState extends State<NavbarSection>
                   children: [
                     // Top Bar (Always visible)
                     Container(
-                      height: isMob ? 90 : 120,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isMob ? 24 : 48,
+                      padding: EdgeInsets.only(
+                        left: isMob ? 4 : 12, // Shifted even more to the left
+                        right: isMob ? 16 : 32,
+                        top: 2, // Minimal padding to keep navbar slim
+                        bottom: 2,
                       ),
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center, // Keep items balanced
                         children: [
-                          // ── Logo (Left) ──
+                          // ── Logo (Left - Oversized) ──
                           _buildLogo(isMob),
                           const Spacer(),
                           // ── Nav Links (Desktop) ──
@@ -159,8 +162,8 @@ class _NavbarSectionState extends State<NavbarSection>
 
   // ── Logo (icon already contains brand text) ──
   Widget _buildLogo(bool isMob) {
-    // Increased size for a more powerful branding impact
-    final size = isMob ? 90.0 : 120.0;
+    // Further increased size for maximum high-impact overhang on the slim bar
+    final size = isMob ? 120.0 : 160.0;
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: EyeLogo(size: size),
