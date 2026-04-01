@@ -24,6 +24,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final ScrollController _scrollController = ScrollController();
   bool _isScrolled = false;
+  double _heroProgress = 0.0;
   double _eyeProgress = 0.0;
 
   @override
@@ -35,13 +36,18 @@ class _HomePageState extends State<HomePage> {
   void _onScroll() {
     final scrolled = _scrollController.offset > 50;
     if (scrolled != _isScrolled) {
-      setState(() => _isScrolled = scrolled);
+      if (mounted) setState(() => _isScrolled = scrolled);
     }
     
-    // Calculate eye progress for the scroll-driven video (Section 2)
     final screenH = MediaQuery.of(context).size.height;
-    final eyeStart = screenH * 0.2; // Start earlier
-    final eyeEnd = screenH * 1.2;
+    
+    // 1. Hero Progress (0 -> 1.0 within the first screen)
+    final hProgress = (_scrollController.offset / screenH).clamp(0.0, 1.0);
+    if (mounted) setState(() => _heroProgress = hProgress);
+
+    // 2. Eye Progress (Section 2 - Scroll driven video)
+    final eyeStart = screenH * 0.2;
+    final eyeEnd = screenH * 1.5;
     final progress = (_scrollController.offset - eyeStart) / (eyeEnd - eyeStart);
     if (progress >= -1.0 && progress <= 2.0) {
       if (mounted) {
@@ -68,8 +74,10 @@ class _HomePageState extends State<HomePage> {
           CustomScrollView(
             controller: _scrollController,
             slivers: [
-              // 1. Hero
-              const SliverToBoxAdapter(child: HeroSection()),
+              // 1. Hero (3D Scroll Animation)
+              SliverToBoxAdapter(
+                child: HeroSection(scrollProgress: _heroProgress),
+              ),
               
               // New: Eye Scroll Section (controlled playback)
               SliverToBoxAdapter(child: EyeScrollSection(scrollProgress: _eyeProgress)),
