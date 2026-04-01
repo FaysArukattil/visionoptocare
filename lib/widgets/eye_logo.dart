@@ -36,7 +36,7 @@ class _EyeLogoState extends State<EyeLogo> with SingleTickerProviderStateMixin {
       child: AnimatedBuilder(
         animation: _ctrl,
         builder: (context, _) {
-          final scale = 1.0 + (0.5 * _ctrl.value); // 1.5x dramatic hover burst
+          final scale = 1.0 + (0.1 * _ctrl.value); // Subtle 1.1x hover on top of the new large base
           return SizedBox(
             height: widget.size,
             child: Stack(

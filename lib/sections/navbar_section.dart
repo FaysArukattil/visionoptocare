@@ -155,7 +155,8 @@ class _NavbarSectionState extends State<NavbarSection>
 
   // ── Logo ──
   Widget _buildLogo(bool isMob) {
-    final size = isMob ? 64.0 : 72.0;
+    // Standardizing the "zoomed" size as the default as requested
+    final size = isMob ? 96.0 : 108.0;
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: EyeLogo(size: size),
