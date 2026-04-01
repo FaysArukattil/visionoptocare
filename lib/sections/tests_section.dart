@@ -60,12 +60,10 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   void _onPanUpdate(DragUpdateDetails d) {
     setState(() {
       _scrollPos -= d.delta.dy / 100; // Sensitivity
-      // Loop or clamp? Let's loop for a wheel feel.
     });
   }
 
   void _onPanEnd(DragEndDetails d) {
-    // Magnetic Snap
     final target = _scrollPos.roundToDouble();
     _scrollCtrl.value = _scrollPos;
     _scrollCtrl.animateTo(target, curve: Curves.easeOutCubic);
@@ -88,9 +86,27 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     super.dispose(); 
   }
 
+  double _getIndicatorHeight(String text, bool isMob) {
+    final textStyle = AppFonts.heading(
+      fontSize: 22,
+      letterSpacing: 2,
+    );
+    
+    // Width available: Total(380) - Icons(48) - Spacer(24) - Horizontal padding(48)
+    final layoutWidth = (isMob ? 160.0 : 220.0);
+
+    final textPainter = TextPainter(
+      text: TextSpan(text: text.toUpperCase(), style: textStyle),
+      textDirection: TextDirection.ltr,
+      maxLines: 2,
+    )..layout(maxWidth: layoutWidth);
+
+    // If 1 line: ~85px, If 2 lines: ~120px
+    return (textPainter.height + 60).clamp(85.0, 150.0);
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Map scrollPos to index (with loop support)
     int selectedIndex = (_scrollPos.round() % _tests.length);
     if (selectedIndex < 0) {
       selectedIndex += _tests.length;
@@ -109,7 +125,6 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
         color: AppColors.background,
         child: Stack(
           children: [
-            // Background Particles
             Positioned.fill(
               child: CustomPaint(
                 painter: ParticlePainter(
@@ -147,21 +162,16 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // FIXED CENTER INDICATOR AREA (WHEEL)
         Expanded(
           flex: 4,
-          child: _buildCircularWheel(isMob: false),
+          child: _buildCircularWheel(isMob: false, selectedIndex: selectedIndex),
         ),
-
         const SizedBox(width: 40),
-
-        // PHONE & DESCRIPTION
         Expanded(
           flex: 6,
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Perspective Phone
               Transform(
                 transform: Matrix4.identity()
                   ..setEntry(3, 2, 0.001)
@@ -174,8 +184,6 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
                   screen: _TestScreenContent(test: test, themeColor: themeColor),
                 ),
               ),
-
-              // floating Description
               Positioned(
                 right: 0,
                 bottom: 40,
@@ -191,7 +199,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   Widget _buildMobileLayout(TestData test, Color themeColor, int selectedIndex) {
     return Column(
       children: [
-        Expanded(flex: 3, child: _buildCircularWheel(isMob: true)),
+        Expanded(flex: 3, child: _buildCircularWheel(isMob: true, selectedIndex: selectedIndex)),
         const SizedBox(height: 20),
         Expanded(
           flex: 4,
@@ -208,77 +216,109 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     );
   }
 
-  Widget _buildCircularWheel({required bool isMob}) {
+  Widget _buildCircularWheel({required bool isMob, required int selectedIndex}) {
+    final dynHeight = _getIndicatorHeight(_tests[selectedIndex].name, isMob);
+
+    // Actual Scroll Indicator Calculation
+    final normPos = ((_scrollPos % _tests.length) + _tests.length) % _tests.length / _tests.length;
+    final railMargin = 20.0;
+    final railHeight = dynHeight - (railMargin * 2);
+    final thumbHeight = 16.0;
+    final thumbTop = normPos * (railHeight - thumbHeight);
+
     return GestureDetector(
       onVerticalDragUpdate: _onPanUpdate,
       onVerticalDragEnd: _onPanEnd,
       behavior: HitTestBehavior.translucent,
       child: Stack(
         children: [
-          // Selection Frame Indicator (The "thingy")
+          // Selection Frame Indicator (Dynamic Area with SCROLL INDICATOR)
           Center(
-            child: Container(
-              width: isMob ? 200 : 380,
-              height: 110, // Increased height to fit "MOBILE REFRACTOMETRY"
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              width: isMob ? 200.0 : 380.0,
+              height: dynHeight,
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.03),
-                borderRadius: BorderRadius.circular(30),
+                borderRadius: BorderRadius.circular(100),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.accent2.withValues(alpha: 0.05),
-                    blurRadius: 30,
+                    color: AppColors.accent2.withValues(alpha: 0.04),
+                    blurRadius: 35,
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  // ACTUAL SCROLL INDICATOR (Vertical Rail & Moving Thumb)
+                  Positioned(
+                    right: 8, top: railMargin, bottom: railMargin,
+                    child: Container(
+                      width: 2,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(1),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    right: 7, 
+                    top: railMargin + thumbTop,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      width: 4, height: thumbHeight,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2),
+                        boxShadow: [BoxShadow(color: Colors.white.withValues(alpha: 0.2), blurRadius: 4)],
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
           ),
 
-          // The Curved List
           ClipRect(
             child: Center(
               child: SizedBox(
                 height: 500,
-                width: isMob ? 300 : 450,
+                width: 600,
                 child: Stack(
                   children: List.generate(_tests.length, (i) {
-                    // Calculate distance from scrollPos
                     double diff = i - _scrollPos;
-                    
-                    // Wrap diff for looping feel (assuming 12 items)
-                    while (diff > 6) {
-                      diff -= 12;
-                    }
-                    while (diff < -6) {
-                      diff += 12;
-                    }
+                    while (diff > 6) { diff -= 12; }
+                    while (diff < -6) { diff += 12; }
 
                     if (diff.abs() > 3) {
-                      return const SizedBox.shrink(); // Hide far items
+                      return const SizedBox.shrink();
                     }
 
                     final absDiff = diff.abs();
-                    final opacity = (1.0 - (absDiff / 3.0)).clamp(0.0, 1.0);
+                    final opacity = (1.0 - (absDiff / 2.5)).clamp(0.0, 1.0);
                     final scale = (1.0 - (absDiff * 0.12)).clamp(0.5, 1.0);
-                    final translateY = diff * 120; // Increased spacing for the larger frame
-                    final translateX = absDiff * 40; // The "Curve" factor
+                    final translateY = diff * 125;
+                    final translateX = absDiff * 45;
                     
                     final isSelected = absDiff < 0.5;
                     final themeColor = _getTierColor(_tests[i].tier);
+                    final itemHeight = _getIndicatorHeight(_tests[i].name, isMob);
 
                     return Positioned(
-                      top: 250 - 55 + translateY, // Center point - half height of the larger area
-                      left: 20 + translateX,
-                      right: 20 + translateX,
+                      top: 250 - (itemHeight / 2) + translateY,
+                      left: translateX,
+                      right: translateX,
                       child: Opacity(
                         opacity: opacity,
                         child: Transform.scale(
                           scale: scale,
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
+                          child: Container(
+                            alignment: Alignment.center,
                             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                             child: Row(
-                              mainAxisAlignment: isMob ? MainAxisAlignment.center : MainAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Container(
                                   width: 48, height: 48,
@@ -291,30 +331,30 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
                                   ),
                                   child: Icon(_tests[i].icon, size: 22, color: isSelected ? Colors.black : Colors.white24),
                                 ),
-                                const SizedBox(width: 24),
-                                Expanded(
+                                const SizedBox(width: 20),
+                                SizedBox(
+                                  width: isMob ? 160.0 : 220.0,
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(
                                         _tests[i].name.toUpperCase(),
+                                        textAlign: TextAlign.center,
                                         style: AppFonts.heading(
                                           fontSize: isSelected ? 22 : 16,
                                           color: isSelected ? Colors.white : Colors.white24,
                                           letterSpacing: 2,
                                         ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.visible,
                                       ),
                                       if (isSelected && !isMob)
                                         Text(
                                           '${_tests[i].tier.name.toUpperCase()} TEST',
                                           style: AppFonts.caption.copyWith(
                                             color: themeColor, 
-                                            fontSize: 11, 
-                                            letterSpacing: 2,
-                                            fontWeight: FontWeight.bold,
+                                            fontSize: 10, 
+                                            letterSpacing: 3,
+                                            fontWeight: FontWeight.w900,
                                           ),
                                         ),
                                     ],
@@ -353,7 +393,6 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Category Badge (Replaced Status)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
