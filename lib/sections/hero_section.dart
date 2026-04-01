@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../widgets/particle_painter.dart';
-import '../widgets/eye_logo.dart';
 import '../utils/responsive.dart';
+import 'hero_animation_engine.dart'; // Import the cinematic engine
 
 class HeroSection extends StatefulWidget {
   final double scrollProgress;
@@ -56,8 +56,6 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
             ),
           ),
           
-          _buildAmbientGlows(),
-
           // ── Main Centered Content (Scale Down to Fit) ──
           Center(
             child: Container(
@@ -90,7 +88,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
                     
                     const SizedBox(height: 64),
                     
-                    // 5. Scroll-Synced 3D Animation (Snellen to Mobile)
+                    // 5. Cinematic 3D Hero Animation Stage
                     RepaintBoundary(
                       child: _build3DAnimation(p, isMob),
                     ),
@@ -190,206 +188,12 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
   }
 
   Widget _build3DAnimation(double p, bool isMob) {
-    return Transform.translate(
-      offset: Offset(0, 80 * p), // Moves down slightly as you scroll
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // ── Stage 1: Traditional Snellen Chart (Fades out) ──
-          Opacity(
-            opacity: (1 - p * 3).clamp(0.0, 1.0), // Fades out by 0.33 progress
-            child: Transform(
-              transform: Matrix4.identity()
-                ..setEntry(3, 2, 0.001)
-                ..rotateX(-0.1 * p)
-                ..multiply(Matrix4.diagonal3Values(
-                  1.0 - 0.2 * p, 
-                  1.0 - 0.2 * p, 
-                  1.0,
-                )),
-              alignment: Alignment.center,
-              child: CustomPaint(
-                size: const Size(300, 420),
-                painter: _SnellenChartPainter(),
-              ),
-            ),
-          ),
-
-          // ── Stage 2: Mobile Transformation (Fades in) ──
-          Opacity(
-            opacity: (p * 2.5 - 0.4).clamp(0.0, 1.0), // Starts appearing after 0.16 progress
-            child: Transform(
-              transform: Matrix4.identity()
-                ..setEntry(3, 2, 0.001) // Perspective
-                ..rotateY(-0.25 * (1 - p)) 
-                ..rotateX(0.12 * p) 
-                ..multiply(Matrix4.diagonal3Values(
-                  0.75 + 0.3 * p, 
-                  0.75 + 0.3 * p, 
-                  1.0,
-                )), // Correct non-deprecated scale
-              alignment: Alignment.center,
-              child: _SmartphoneWidget(progress: p),
-            ),
-          ),
-        ],
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxWidth: isMob ? 320 : 500,
+        maxHeight: isMob ? 550 : 750,
       ),
-    );
-  }
-
-  Widget _buildAmbientGlows() {
-    return Positioned.fill(
-      child: Stack(
-        children: [
-          Positioned(
-            top: 100,
-            left: 200,
-            child: _AmbientGlow(color: AppColors.accent2.withValues(alpha: 0.1)),
-          ),
-          Positioned(
-            bottom: 200,
-            right: 150,
-            child: _AmbientGlow(color: AppColors.accent1.withValues(alpha: 0.08)),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// ── Smartphone Mockup for Stage 2 ──
-class _SmartphoneWidget extends StatelessWidget {
-  final double progress;
-  const _SmartphoneWidget({required this.progress});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 250,
-      height: 500,
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: const Color(0xFF030712),
-        borderRadius: BorderRadius.circular(44),
-        border: Border.all(color: AppColors.white.withValues(alpha: 0.15), width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.accent2.withValues(alpha: 0.4 * progress.clamp(0.0, 1.0)),
-            blurRadius: 70,
-            spreadRadius: 5,
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(34),
-        child: Container(
-          color: Colors.black,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Visiaxx Logo Visibility
-              const EyeLogo(size: 85),
-              const SizedBox(height: 32),
-              Text(
-                'VISIAXX',
-                style: AppFonts.heading(
-                  fontSize: 28, 
-                  letterSpacing: 6,
-                  color: AppColors.white,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Digital Diagnostic',
-                style: AppFonts.caption.copyWith(
-                  color: AppColors.accent2,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 56),
-              // Progress Bar
-              Container(
-                width: 120,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-                child: FractionallySizedBox(
-                  alignment: Alignment.centerLeft,
-                  widthFactor: progress.clamp(0.0, 1.0),
-                  child: Container(color: AppColors.accent2),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// ── Traditional Snellen E-Chart Painter for Stage 1 ──
-class _SnellenChartPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
-    
-    // Paper/Chart Material
-    final paperPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.9)
-      ..style = PaintingStyle.fill;
-    canvas.drawRRect(RRect.fromRectAndRadius(rect, const Radius.circular(8)), paperPaint);
-
-    final textPainter = TextPainter(
-      textDirection: TextDirection.ltr,
-      textAlign: TextAlign.center,
-    );
-
-    void drawRow(String text, double fontSize, double yOffset) {
-      textPainter.text = TextSpan(
-        text: text,
-        style: TextStyle(
-          color: Colors.black.withValues(alpha: 0.95),
-          fontSize: fontSize,
-          fontWeight: FontWeight.w900,
-          fontFamily: 'monospace', // Classic chart look
-          letterSpacing: fontSize * 0.4,
-        ),
-      );
-      textPainter.layout(maxWidth: size.width);
-      textPainter.paint(canvas, Offset(0, yOffset));
-    }
-
-    // Traditional Rows
-    drawRow('E', 80, 40);
-    drawRow('F P', 45, 130);
-    drawRow('T O Z', 30, 190);
-    drawRow('L P E D', 22, 240);
-    drawRow('P E C F D', 16, 280);
-    drawRow('E D F C Z P', 12, 315);
-    drawRow('F E L O P Z D', 10, 345);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class _AmbientGlow extends StatelessWidget {
-  final Color color;
-  const _AmbientGlow({required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 450,
-      height: 450,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [color, Colors.transparent],
-        ),
-      ),
+      child: HeroAnimationEngine(p: p, isMob: isMob),
     );
   }
 }
