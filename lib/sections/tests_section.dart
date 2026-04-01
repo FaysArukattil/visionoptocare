@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
@@ -109,24 +110,34 @@ class _TestsContent extends StatelessWidget {
 
   Widget _buildDesktopLayout(TestData test, Color themeColor) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // LEFT: Descriptions (Fading)
-        Expanded(
-          flex: 3,
-          child: _buildDescriptionPanel(test, themeColor),
-        ),
-
-        // CENTER: The Heading Wheel
+        // LEFT: The Heading Wheel (The Selector)
         Expanded(
           flex: 4,
           child: _buildHeadingWheel(themeColor),
         ),
 
-        // RIGHT: Holographic Phone
+        const SizedBox(width: 40),
+
+        // RIGHT: Holographic Phone & Description Card
         Expanded(
-          flex: 3,
-          child: Center(
-            child: _buildPhoneHologram(test, themeColor),
+          flex: 6,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Phone Mockup (Center-Right)
+              Padding(
+                padding: const EdgeInsets.only(left: 100),
+                child: _buildPhoneHologram(test, themeColor),
+              ),
+
+              // Floating Description Card (Glassmorphic)
+              Positioned(
+                left: 0,
+                child: _buildDescriptionPanel(test, themeColor),
+              ),
+            ],
           ),
         ),
       ],
@@ -137,9 +148,20 @@ class _TestsContent extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Expanded(flex: 3, child: _buildHeadingWheel(themeColor, isMob: true)),
+        // Selection wheel at top (compact)
+        SizedBox(height: 180, child: _buildHeadingWheel(themeColor, isMob: true)),
+        
         const SizedBox(height: 20),
-        Expanded(flex: 7, child: _buildPhoneHologram(test, themeColor, isMob: true)),
+
+        // Phone in middle
+        Expanded(
+          child: Center(
+            child: _buildPhoneHologram(test, themeColor, isMob: true),
+          ),
+        ),
+
+        // Description at bottom
+        _buildDescriptionPanel(test, themeColor),
       ],
     );
   }
@@ -148,16 +170,19 @@ class _TestsContent extends StatelessWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
-        // Selection Box (Curved Edges)
+        // Selection Box (Curved Edges) - Wider
         Container(
-          width: isMob ? 280 : 400,
-          height: isMob ? 60 : 100,
+          width: isMob ? 320 : 500,
+          height: isMob ? 50 : 80,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: themeColor.withValues(alpha: 0.3)),
+            color: Colors.white.withValues(alpha: 0.03),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: themeColor.withValues(alpha: 0.2)),
             boxShadow: [
-              BoxShadow(color: themeColor.withValues(alpha: 0.1), blurRadius: 40, spreadRadius: -10),
+              BoxShadow(
+                color: themeColor.withValues(alpha: 0.05),
+                blurRadius: 30,
+              ),
             ],
           ),
         ),
@@ -165,31 +190,49 @@ class _TestsContent extends StatelessWidget {
         // The Wheel Items
         ClipRect(
           child: SizedBox(
-            height: isMob ? 300 : 600,
+            height: isMob ? 250 : 550,
             child: Stack(
               alignment: Alignment.center,
               children: List.generate(_tests.length, (i) {
                 final dist = (i - wheelPos).abs();
-                final opacity = (1.0 - (dist * 0.4)).clamp(0.0, 1.0);
-                final scale = (1.2 - (dist * 0.25)).clamp(0.5, 1.2);
-                final offset = (i - wheelPos) * (isMob ? 70 : 120);
+                final isActive = dist < 0.5;
+                final opacity = (1.0 - (dist * 0.35)).clamp(0.0, 1.0);
+                final scale = (isActive ? 1.0 : 0.8);
+                final offset = (i - wheelPos) * (isMob ? 60 : 100);
 
                 return Transform.translate(
                   offset: Offset(0, offset),
-                  child: Transform.scale(
+                  child: AnimatedScale(
                     scale: scale,
+                    duration: const Duration(milliseconds: 300),
                     child: Opacity(
                       opacity: opacity,
-                      child: Text(
-                        _tests[i].name.toUpperCase(),
-                        style: AppFonts.heading(
-                          fontSize: isMob ? 20 : 36,
-                          color: (i - wheelPos).abs() < 0.5 ? Colors.white : Colors.white24,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 2,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+                      child: isActive 
+                        ? Text(
+                            _tests[i].name.toUpperCase(),
+                            style: AppFonts.heading(
+                              fontSize: isMob ? 14 : 22,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 3,
+                            ),
+                            textAlign: TextAlign.center,
+                          )
+                        : Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: themeColor.withValues(alpha: 0.4),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: themeColor.withValues(alpha: 0.3),
+                                  blurRadius: 10,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                          ),
                     ),
                   ),
                 );
@@ -202,27 +245,63 @@ class _TestsContent extends StatelessWidget {
   }
 
   Widget _buildDescriptionPanel(TestData test, Color themeColor) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          width: 320,
+          padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: themeColor.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 20,
+              ),
+            ],
           ),
-          child: Text(
-            test.tier.name.toUpperCase(),
-            style: AppFonts.caption.copyWith(color: themeColor, fontWeight: FontWeight.bold, letterSpacing: 2),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: themeColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: themeColor.withValues(alpha: 0.2)),
+                ),
+                child: Text(
+                  test.tier.name.toUpperCase(),
+                  style: AppFonts.caption.copyWith(
+                    color: themeColor, 
+                    fontWeight: FontWeight.bold, 
+                    letterSpacing: 2,
+                    fontSize: 10,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                test.name.toUpperCase(),
+                style: AppFonts.heading(fontSize: 18, color: Colors.white, letterSpacing: 1),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                test.desc,
+                style: AppFonts.bodyLarge.copyWith(
+                  color: AppColors.muted, 
+                  height: 1.5, 
+                  fontSize: 13,
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 32),
-        Text(
-          test.desc,
-          style: AppFonts.bodyLarge.copyWith(color: AppColors.muted, height: 1.6, fontSize: 18),
-        ),
-      ],
+      ),
     );
   }
 
