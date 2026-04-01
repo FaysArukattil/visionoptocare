@@ -48,122 +48,114 @@ class _NavbarSectionState extends State<NavbarSection>
   @override
   Widget build(BuildContext context) {
     final isMob = Responsive.isMobile(context);
+    final bool isGlass = widget.isScrolled || _menuOpen;
     
-    return AnimatedBuilder(
-      animation: _animCtrl,
-      builder: (context, child) {
-        // Blending logic: floating glass if scrolled, transparent if at top
-        final bool isGlass = widget.isScrolled || _menuOpen;
-        
-        return AnimatedPadding(
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOutCubic, // Smooth transition curve
-          padding: EdgeInsets.symmetric(
-            horizontal: isMob ? 16 : (isGlass ? 48.0 : 0.0),
-            vertical: isMob ? 12 : (isGlass ? 16.0 : 0.0),
+    return AnimatedPadding(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeOutCubic,
+      padding: EdgeInsets.fromLTRB(
+        isMob ? (isGlass ? 12.0 : 0.0) : (isGlass ? 40.0 : 0.0),
+        isMob ? (isGlass ? 10.0 : 0.0) : (isGlass ? 16.0 : 0.0),
+        isMob ? (isGlass ? 12.0 : 0.0) : (isGlass ? 40.0 : 0.0),
+        0,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(isMob ? 24 : (isGlass ? 40 : 0)),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(
+            sigmaX: isGlass ? 32 : 0,
+            sigmaY: isGlass ? 32 : 0,
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(isGlass || isMob ? 28 : 0),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: isGlass ? 24 : 0,
-                sigmaY: isGlass ? 24 : 0,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeOutCubic,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: AppColors.background.withValues(
+                alpha: isGlass ? 0.65 : 0.0,
               ),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 500),
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppColors.background.withValues(
-                    alpha: isGlass ? 0.25 : 0.0,
-                  ),
-                  borderRadius: BorderRadius.circular(isGlass || isMob ? 28 : 0),
-                  border: Border.all(
-                    color: AppColors.white.withValues(
-                      alpha: isGlass ? 0.12 : 0.0,
-                    ),
-                    width: 1.0,
-                  ),
-                  boxShadow: isGlass ? [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
-                      blurRadius: 40,
-                      offset: const Offset(0, 12),
-                    ),
-                  ] : [],
+              borderRadius: BorderRadius.circular(isMob ? 24 : (isGlass ? 40 : 0)),
+              border: Border.all(
+                color: AppColors.white.withValues(
+                  alpha: isGlass ? 0.12 : 0.0,
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Top Bar (Always visible)
-                    Container(
-                      padding: EdgeInsets.only(
-                        left: isMob ? 4 : 12, // Shifted even more to the left
-                        right: isMob ? 16 : 32,
-                        top: 2, // Minimal padding to keep navbar slim
-                        bottom: 2,
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center, // Keep items balanced
+                width: 0.8,
+              ),
+              boxShadow: isGlass ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  blurRadius: 35,
+                  offset: const Offset(0, 15),
+                ),
+              ] : [],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Top Bar
+                Container(
+                  height: isMob ? 72 : 88,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isMob ? 16 : 32,
+                  ),
+                  child: Row(
+                    children: [
+                      // ── Logo (Left) ──
+                      _buildLogo(isMob),
+                      const Spacer(),
+                      // ── Nav Links (Desktop) ──
+                      if (!isMob) ...[
+                        for (final link in ['Home', 'Services', 'About Us'])
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: _NavLink(label: link),
+                          ),
+                        const SizedBox(width: 16),
+                        _buildExploreButton(),
+                      ],
+                      // ── Hamburger (Mobile) ──
+                      if (isMob) _buildMenuButton(),
+                    ],
+                  ),
+                ),
+                // ── Mobile Menu ──
+                if (isMob && _menuOpen)
+                  Container(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.55,
+                    ),
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+                      child: Column(
                         children: [
-                          // ── Logo (Left - Oversized) ──
-                          _buildLogo(isMob),
-                          const Spacer(),
-                          // ── Nav Links (Desktop) ──
-                          if (!isMob) ...[
-                            for (final link in ['Home', 'Services', 'About Us'])
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 24),
-                                child: _NavLink(label: link),
-                              ),
-                            const SizedBox(width: 20),
-                            _buildExploreButton(),
-                          ],
-                          // ── Hamburger (Mobile) ──
-                          if (isMob) _buildMenuButton(),
+                          Divider(
+                            color: AppColors.white.withValues(alpha: 0.1),
+                            thickness: 1,
+                          ),
+                          const SizedBox(height: 24),
+                          for (final link in ['Home', 'Services', 'About Us'])
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 24),
+                              child: _NavLink(label: link),
+                            ),
+                          const SizedBox(height: 12),
+                          _buildExploreButton(),
                         ],
                       ),
                     ),
-                    // ── Mobile Menu (Dynamic Height) ──
-                    if (isMob && _menuOpen)
-                      Container(
-                        constraints: BoxConstraints(
-                          maxHeight: MediaQuery.of(context).size.height * 0.6,
-                        ),
-                        child: SingleChildScrollView(
-                          physics: const BouncingScrollPhysics(),
-                          padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-                          child: Column(
-                            children: [
-                              Divider(
-                                color: AppColors.white.withValues(alpha: 0.1),
-                                thickness: 1,
-                              ),
-                              const SizedBox(height: 24),
-                              for (final link in ['Home', 'Services', 'About Us'])
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 24),
-                                  child: _NavLink(label: link),
-                                ),
-                              const SizedBox(height: 12),
-                              _buildExploreButton(),
-                            ],
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
+                  ),
+              ],
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
-  // ── Logo (icon already contains brand text) ──
+  // ── Logo ──
   Widget _buildLogo(bool isMob) {
-    // Further increased size for maximum high-impact overhang on the slim bar
-    final size = isMob ? 120.0 : 160.0;
+    final size = isMob ? 64.0 : 72.0;
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: EyeLogo(size: size),

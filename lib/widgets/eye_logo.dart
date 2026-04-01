@@ -36,21 +36,25 @@ class _EyeLogoState extends State<EyeLogo> with SingleTickerProviderStateMixin {
       child: AnimatedBuilder(
         animation: _ctrl,
         builder: (context, _) {
+          final scale = 1.0 + (0.15 * _ctrl.value); // 15% hover stretch
           return SizedBox(
-            width: widget.size * 2.8, // Maintains the wide branding impact
             height: widget.size,
             child: Stack(
+              clipBehavior: Clip.none, // Allow scale to "stretch" out slightly if needed
               children: [
                 // Logo Image
                 Center(
-                  child: Image.asset(
-                    'lib/assets/images/app_logo.png',
-                    fit: BoxFit.fitHeight, // Fills height perfectly without distortion
-                    filterQuality: FilterQuality.high,
-                    isAntiAlias: true,
-                    errorBuilder: (context, error, stackTrace) => CustomPaint(
-                      size: Size(widget.size * 2.8, widget.size),
-                      painter: _EyePainter(pupilDilation: _ctrl.value),
+                  child: Transform.scale(
+                    scale: scale,
+                    child: Image.asset(
+                      'lib/assets/images/app_logo.png',
+                      fit: BoxFit.contain, // Protects brand aspect ratio
+                      filterQuality: FilterQuality.high,
+                      isAntiAlias: true,
+                      errorBuilder: (context, error, stackTrace) => CustomPaint(
+                        size: Size(widget.size * 2.8, widget.size),
+                        painter: _EyePainter(pupilDilation: _ctrl.value),
+                      ),
                     ),
                   ),
                 ),
@@ -59,7 +63,7 @@ class _EyeLogoState extends State<EyeLogo> with SingleTickerProviderStateMixin {
                 if (_ctrl.value > 0.01)
                   Positioned.fill(
                     child: Opacity(
-                      opacity: 0.15 * _ctrl.value,
+                      opacity: 0.25 * _ctrl.value, // Intensified glow
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
@@ -68,7 +72,7 @@ class _EyeLogoState extends State<EyeLogo> with SingleTickerProviderStateMixin {
                             end: Alignment.bottomRight,
                             colors: [
                               Colors.transparent,
-                              Colors.white.withValues(alpha: 0.5),
+                              Colors.white.withValues(alpha: 0.5), // Brighter
                               Colors.transparent,
                             ],
                             stops: const [0.0, 0.5, 1.0],

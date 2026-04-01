@@ -4,7 +4,6 @@ import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
-import '../widgets/gradient_button.dart';
 import '../widgets/particle_painter.dart';
 import '../utils/responsive.dart';
 
@@ -127,16 +126,16 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.verified_user, color: AppColors.accent2, size: 14),
-                              const SizedBox(width: 8),
-                              Text(
-                                'VISION CARE. REIMAGINED.',
-                                style: AppFonts.caption.copyWith(
-                                  color: AppColors.accent2,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
+                               const Icon(Icons.verified_user, color: AppColors.accent2, size: 14),
+                               const SizedBox(width: 8),
+                               Text(
+                                 'VISION CARE. REIMAGINED.',
+                                 style: AppFonts.caption.copyWith(
+                                   color: AppColors.accent2,
+                                   fontWeight: FontWeight.w700,
+                                   letterSpacing: 1.2,
+                                 ),
+                               ),
                             ],
                           ),
                         ),
@@ -196,10 +195,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
                           ),
                         ),
                       ),
-                      const SizedBox(height: 56),
-                      // Floating CTA Buttons
-                      _buildHeroActions(context),
-                      SizedBox(height: 100), // Space for scroll indicator
+                      const SizedBox(height: 64),
                     ],
                   ),
                 ),
@@ -229,28 +225,6 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildHeroActions(BuildContext context) {
-    return Wrap(
-      spacing: 16,
-      runSpacing: 12,
-      alignment: WrapAlignment.center,
-      children: [
-        GradientButton(
-          text: 'Take a Free Test',
-          gradient: AppColors.tealGradient,
-          icon: Icons.bolt,
-          onTap: () {},
-        ),
-        GradientButton(
-          text: 'Watch How It Works',
-          isOutline: true,
-          icon: Icons.play_arrow,
-          onTap: () {},
-        ),
-      ],
     );
   }
 }
