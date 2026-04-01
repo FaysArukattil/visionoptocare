@@ -36,52 +36,78 @@ class _EyeLogoState extends State<EyeLogo> with SingleTickerProviderStateMixin {
       child: AnimatedBuilder(
         animation: _ctrl,
         builder: (context, _) {
-          final scale = 1.0 + (0.1 * _ctrl.value); // Subtle 1.1x hover on top of the new large base
+          final glowVal = _ctrl.value;
+          final scale = 1.0 + (0.2 * glowVal); // 1.2x Zoom on hover
+          
           return SizedBox(
             height: widget.size,
             child: Stack(
-              clipBehavior: Clip.none, // Allow scale to "stretch" out slightly if needed
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
               children: [
-                // Logo Image
+                // ── High-End Bloom Shadow (Explore Style) ──
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: widget.size * 1.5,
+                  height: widget.size * 0.8,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(widget.size),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.accent2.withValues(
+                          alpha: 0.25 * glowVal, // High-impact bloom
+                        ),
+                        blurRadius: 40 * glowVal,
+                        spreadRadius: 2 * glowVal,
+                      ),
+                      BoxShadow(
+                        color: AppColors.accent1.withValues(
+                          alpha: 0.15 * glowVal,
+                        ),
+                        blurRadius: 60 * glowVal,
+                        spreadRadius: -5 * glowVal,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ── Subtle Glass Border Glow (Explore Style) ──
+                if (glowVal > 0.01)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Color.lerp(
+                            Colors.transparent,
+                            AppColors.accent2.withValues(alpha: 0.2),
+                            glowVal,
+                          )!,
+                          width: 1.0,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                // ── Authoritative Logo Image with Zoom & Parallax ──
                 Center(
                   child: Transform.scale(
                     scale: scale,
                     child: Image.asset(
                       'lib/assets/images/app_logo.png',
-                      fit: BoxFit.contain, // Protects brand aspect ratio
+                      fit: BoxFit.contain,
                       filterQuality: FilterQuality.high,
                       isAntiAlias: true,
                       errorBuilder: (context, error, stackTrace) => CustomPaint(
                         size: Size(widget.size * 2.8, widget.size),
-                        painter: _EyePainter(pupilDilation: _ctrl.value),
-                      ),
-                    ),
-                  ),
-                ),
-                
-                // Subtle Shimmer overlay on hover
-                if (_ctrl.value > 0.01)
-                  Positioned.fill(
-                    child: Opacity(
-                      opacity: 0.25 * _ctrl.value, // Intensified glow
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Colors.transparent,
-                              Colors.white.withValues(alpha: 0.5), // Brighter
-                              Colors.transparent,
-                            ],
-                            stops: const [0.0, 0.5, 1.0],
-                            transform: GradientRotation(_ctrl.value * pi),
-                          ),
+                        painter: _EyePainter(
+                          pupilDilation: glowVal,
+                          parallaxOffset: 3.0 * glowVal, // Internal depth shift
                         ),
                       ),
                     ),
                   ),
+                ),
               ],
             ),
           );
@@ -93,13 +119,17 @@ class _EyeLogoState extends State<EyeLogo> with SingleTickerProviderStateMixin {
 
 class _EyePainter extends CustomPainter {
   final double pupilDilation;
-  _EyePainter({required this.pupilDilation});
+  final double parallaxOffset;
+  _EyePainter({required this.pupilDilation, required this.parallaxOffset});
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final width = size.width;
     final height = size.height;
+    
+    // Parallax Shift Offset
+    final shift = Offset(parallaxOffset, parallaxOffset * 0.5);
 
     // Outer glow
     final glowPaint = Paint()
@@ -133,20 +163,22 @@ class _EyePainter extends CustomPainter {
       ).createShader(Rect.fromLTWH(0, 0, width, height));
     canvas.drawPath(path, scleraPaint);
 
-    // Iris (Glowy, futuristic)
+    // Iris (Glowy, futuristic) - Affected by Parallax
+    final irisCenter = center + shift;
     final irisRadius = height * 0.32;
     final irisPaint = Paint()
       ..shader = RadialGradient(
         center: const Alignment(-0.2, -0.2),
         colors: [AppColors.accent2, AppColors.accent1, const Color(0xFF0D1425)],
         stops: const [0.2, 0.7, 1.0],
-      ).createShader(Rect.fromCircle(center: center, radius: irisRadius));
-    canvas.drawCircle(center, irisRadius, irisPaint);
+      ).createShader(Rect.fromCircle(center: irisCenter, radius: irisRadius));
+    canvas.drawCircle(irisCenter, irisRadius, irisPaint);
 
-    // Pupil (Responsive dilation)
+    // Pupil (Responsive dilation) - Affected by more Parallax
+    final pupilCenter = center + shift * 1.5;
     final pupilRadius = irisRadius * (0.35 + 0.15 * pupilDilation);
     canvas.drawCircle(
-      center,
+      pupilCenter,
       pupilRadius,
       Paint()..color = const Color(0xFF000510),
     );
@@ -196,5 +228,7 @@ class _EyePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_EyePainter old) => old.pupilDilation != pupilDilation;
+  bool shouldRepaint(_EyePainter old) => 
+    old.pupilDilation != pupilDilation || 
+    old.parallaxOffset != parallaxOffset;
 }
