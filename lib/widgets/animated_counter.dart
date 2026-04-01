@@ -72,18 +72,18 @@ class _AnimatedCounterState extends State<AnimatedCounter>
               Stack(
                 alignment: Alignment.center,
                 children: [
-                   // High-fidelity Glow
+                   // Glow
                   Opacity(
                     opacity: (0.5 * val).clamp(0.0, 1.0),
                     child: Container(
-                      width: 80, height: 80,
+                      width: 50, height: 50,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
                             color: AppColors.accent2.withValues(alpha: 0.8),
-                            blurRadius: 50,
-                            spreadRadius: 15 * val,
+                            blurRadius: 30,
+                            spreadRadius: 10 * val,
                           ),
                         ],
                       ),
@@ -92,7 +92,7 @@ class _AnimatedCounterState extends State<AnimatedCounter>
                   Text(
                     '${widget.prefix}${_countAnim.value.toInt()}${widget.showPlus ? '+' : widget.suffix}',
                     style: AppFonts.heading(
-                      fontSize: 56, // Bold, massive counters
+                      fontSize: 36,
                       fontWeight: FontWeight.w900,
                       color: AppColors.white,
                       letterSpacing: -1,
