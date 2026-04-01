@@ -327,8 +327,9 @@ class _SmartphoneScanner extends StatelessWidget {
       transform: Matrix4.identity()
         ..setEntry(3, 2, 0.001)
         ..setTranslationRaw(0.0, 300 * (1 - entryP), 0.0) // Deeper entry
-        ..rotateX(0.2 + 0.2 * (1 - entryP)) // Subtle final X tilt
-        ..rotateY(-0.08 - 0.25 * (1 - entryP)), // Subtle final Y tilt for 3D feel
+        // Levels out to perfectly 'normal' head-on view
+        ..rotateX(0.4 * (1 - entryP)) 
+        ..rotateY(-0.35 * (1 - entryP)),
       alignment: Alignment.center,
       child: Stack(
         alignment: Alignment.center,
@@ -366,37 +367,32 @@ class _SmartphoneScanner extends StatelessWidget {
                 ),
                 child: Stack(
                   children: [
-                    // Official Splash Layout
+                    // Official Splash Layout (Verified Content)
                     Center(
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          const EyeLogo(size: 100),
-                          const SizedBox(height: 32),
+                          SizedBox(height: isMob ? 90 : 120), // Top margin fix
+                          const EyeLogo(size: 110), // Logo only
+                          const SizedBox(height: 48),
                           Text(
-                            'VISIAXX',
-                            style: AppFonts.heading(
-                              fontSize: 32, 
-                              letterSpacing: 8,
-                              color: AppColors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Transforming Eye Care through Innovation',
-                            style: AppFonts.caption.copyWith(
-                              color: AppColors.white.withValues(alpha: 0.7),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
+                            'Your Vision, Our Priority',
+                            style: AppFonts.bodyLarge.copyWith(
+                              color: AppColors.white.withValues(alpha: 0.85),
+                              fontSize: isMob ? 16 : 20,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
                             ),
                             textAlign: TextAlign.center,
                           ),
+                          const SizedBox(height: 8),
                           Text(
-                            'PREMIUM DIAGNOSTIC SUITE',
+                            'Premium Digital eye care',
                             style: AppFonts.caption.copyWith(
-                              color: AppColors.accent2.withValues(alpha: 0.6),
-                              fontSize: 10,
-                              letterSpacing: 1.5,
+                              color: AppColors.accent2.withValues(alpha: 0.7),
+                              fontSize: isMob ? 11 : 13,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 1.2,
                             ),
                             textAlign: TextAlign.center,
                           ),
