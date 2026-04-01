@@ -36,7 +36,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
 
     return Container(
       width: size.width,
-      constraints: BoxConstraints(minHeight: size.height), // Ensure at least full screen
+      height: size.height, // Explicit height for Stack bounds
       color: AppColors.background,
       child: Stack(
         children: [
@@ -58,43 +58,47 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
           
           _buildAmbientGlows(),
 
-          // ── Main Centered Content (Stable Centering) ──
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(height: isMob ? 100 : 160), // Safe top margin for navbar
-                
-                // 1. Authoritative Branding (Massive centerpiece)
-                _buildBrandName(p, isMob),
-                
-                const SizedBox(height: 24),
-                
-                // 2. Catchy Sub-headline
-                _buildInnovationHeadline(p, isMob),
-                
-                const SizedBox(height: 32),
-                
-                // 3. Mission Quote
-                _buildMissionQuote(p, isMob),
-                
-                const SizedBox(height: 48),
-                
-                // 4. Centered Description text
-                _buildDescription(p, isMob),
-                
-                const SizedBox(height: 64),
-                
-                // 5. Scroll-Synced 3D Animation (Bottom)
-                RepaintBoundary(
-                  child: _build3DAnimation(p, isMob),
+          // ── Main Centered Content (Scale Down to Fit) ──
+          Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(height: isMob ? 80 : 120), // Adjusted top margin
+                    
+                    // 1. Authoritative Branding (Massive centerpiece)
+                    _buildBrandName(p, isMob),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // 2. Catchy Sub-headline
+                    _buildInnovationHeadline(p, isMob),
+                    
+                    const SizedBox(height: 32),
+                    
+                    // 3. Mission Quote
+                    _buildMissionQuote(p, isMob),
+                    
+                    const SizedBox(height: 48),
+                    
+                    // 4. Centered Description text
+                    _buildDescription(p, isMob),
+                    
+                    const SizedBox(height: 64),
+                    
+                    // 5. Scroll-Synced 3D Animation (Snellen to Mobile)
+                    RepaintBoundary(
+                      child: _build3DAnimation(p, isMob),
+                    ),
+                    
+                    const SizedBox(height: 60), // Bottom padding
+                  ],
                 ),
-                
-                const SizedBox(height: 120), // Bottom padding
-              ],
+              ),
             ),
           ),
         ],
@@ -187,30 +191,41 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
 
   Widget _build3DAnimation(double p, bool isMob) {
     return Transform.translate(
-      offset: Offset(0, 150 * p), // Moves down as you scroll
+      offset: Offset(0, 80 * p), // Moves down slightly as you scroll
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // ── Stage 1: Traditional Clinic (Fades out) ──
+          // ── Stage 1: Traditional Snellen Chart (Fades out) ──
           Opacity(
-            opacity: (1 - p * 3).clamp(0.0, 1.0), // Fades faster
-            child: CustomPaint(
-              size: const Size(400, 300),
-              painter: _TraditionalClinicPainter(),
+            opacity: (1 - p * 3).clamp(0.0, 1.0), // Fades out by 0.33 progress
+            child: Transform(
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, 0.001)
+                ..rotateX(-0.1 * p)
+                ..multiply(Matrix4.diagonal3Values(
+                  1.0 - 0.2 * p, 
+                  1.0 - 0.2 * p, 
+                  1.0,
+                )),
+              alignment: Alignment.center,
+              child: CustomPaint(
+                size: const Size(300, 420),
+                painter: _SnellenChartPainter(),
+              ),
             ),
           ),
 
           // ── Stage 2: Mobile Transformation (Fades in) ──
           Opacity(
-            opacity: (p * 2 - 0.2).clamp(0.0, 1.0),
+            opacity: (p * 2.5 - 0.4).clamp(0.0, 1.0), // Starts appearing after 0.16 progress
             child: Transform(
               transform: Matrix4.identity()
                 ..setEntry(3, 2, 0.001) // Perspective
-                ..rotateY(-0.3 * (1 - p)) 
-                ..rotateX(0.15 * p) 
+                ..rotateY(-0.25 * (1 - p)) 
+                ..rotateX(0.12 * p) 
                 ..multiply(Matrix4.diagonal3Values(
-                  0.8 + 0.3 * p, 
-                  0.8 + 0.3 * p, 
+                  0.75 + 0.3 * p, 
+                  0.75 + 0.3 * p, 
                   1.0,
                 )), // Correct non-deprecated scale
               alignment: Alignment.center,
@@ -242,6 +257,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
   }
 }
 
+/// ── Smartphone Mockup for Stage 2 ──
 class _SmartphoneWidget extends StatelessWidget {
   final double progress;
   const _SmartphoneWidget({required this.progress});
@@ -255,12 +271,12 @@ class _SmartphoneWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF030712),
         borderRadius: BorderRadius.circular(44),
-        border: Border.all(color: AppColors.white.withValues(alpha: 0.12), width: 2),
+        border: Border.all(color: AppColors.white.withValues(alpha: 0.15), width: 2),
         boxShadow: [
           BoxShadow(
-            color: AppColors.accent2.withValues(alpha: 0.4 * progress),
-            blurRadius: 60,
-            spreadRadius: 2,
+            color: AppColors.accent2.withValues(alpha: 0.4 * progress.clamp(0.0, 1.0)),
+            blurRadius: 70,
+            spreadRadius: 5,
           ),
         ],
       ),
@@ -271,21 +287,30 @@ class _SmartphoneWidget extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const EyeLogo(size: 80),
-              const SizedBox(height: 24),
+              // Visiaxx Logo Visibility
+              const EyeLogo(size: 85),
+              const SizedBox(height: 32),
               Text(
-                'VISION TEST',
-                style: AppFonts.caption.copyWith(
-                  color: AppColors.accent2,
-                  letterSpacing: 3,
-                  fontWeight: FontWeight.w700,
+                'VISIAXX',
+                style: AppFonts.heading(
+                  fontSize: 28, 
+                  letterSpacing: 6,
+                  color: AppColors.white,
                 ),
               ),
-              const SizedBox(height: 48),
-              // Dynamic Indicator
+              const SizedBox(height: 8),
+              Text(
+                'Digital Diagnostic',
+                style: AppFonts.caption.copyWith(
+                  color: AppColors.accent2,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 56),
+              // Progress Bar
               Container(
-                width: 100,
-                height: 3,
+                width: 120,
+                height: 4,
                 decoration: BoxDecoration(
                   color: AppColors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(2),
@@ -304,26 +329,46 @@ class _SmartphoneWidget extends StatelessWidget {
   }
 }
 
-class _TraditionalClinicPainter extends CustomPainter {
+/// ── Traditional Snellen E-Chart Painter for Stage 1 ──
+class _SnellenChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppColors.white.withValues(alpha: 0.2)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
+    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    
+    // Paper/Chart Material
+    final paperPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.9)
+      ..style = PaintingStyle.fill;
+    canvas.drawRRect(RRect.fromRectAndRadius(rect, const Radius.circular(8)), paperPaint);
 
-    final center = Offset(size.width / 2, size.height / 2);
-    
-    // Abstract silhouette of a medical phoropter
-    canvas.drawCircle(center - const Offset(55, 20), 45, paint);
-    canvas.drawCircle(center + const Offset(55, -20), 45, paint);
-    
-    final path = Path();
-    path.moveTo(center.dx - 10, center.dy - 80);
-    path.lineTo(center.dx + 10, center.dy - 80);
-    path.moveTo(center.dx, center.dy - 80);
-    path.lineTo(center.dx, center.dy + 80);
-    canvas.drawPath(path, paint);
+    final textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
+
+    void drawRow(String text, double fontSize, double yOffset) {
+      textPainter.text = TextSpan(
+        text: text,
+        style: TextStyle(
+          color: Colors.black.withValues(alpha: 0.95),
+          fontSize: fontSize,
+          fontWeight: FontWeight.w900,
+          fontFamily: 'monospace', // Classic chart look
+          letterSpacing: fontSize * 0.4,
+        ),
+      );
+      textPainter.layout(maxWidth: size.width);
+      textPainter.paint(canvas, Offset(0, yOffset));
+    }
+
+    // Traditional Rows
+    drawRow('E', 80, 40);
+    drawRow('F P', 45, 130);
+    drawRow('T O Z', 30, 190);
+    drawRow('L P E D', 22, 240);
+    drawRow('P E C F D', 16, 280);
+    drawRow('E D F C Z P', 12, 315);
+    drawRow('F E L O P Z D', 10, 345);
   }
 
   @override
@@ -346,5 +391,5 @@ class _AmbientGlow extends StatelessWidget {
         ),
       ),
     );
-    }
+  }
 }
