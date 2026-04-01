@@ -9,6 +9,8 @@ class AnimatedCounter extends StatefulWidget {
   final String suffix;
   final String label;
   final Duration duration;
+  final bool showPlus;
+  final bool forceStart;
 
   const AnimatedCounter({
     super.key,
@@ -16,7 +18,9 @@ class AnimatedCounter extends StatefulWidget {
     required this.target,
     this.suffix = '',
     required this.label,
-    this.duration = const Duration(milliseconds: 1800),
+    this.duration = const Duration(milliseconds: 2000),
+    this.showPlus = false,
+    this.forceStart = false,
   });
 
   @override
@@ -34,7 +38,7 @@ class _AnimatedCounterState extends State<AnimatedCounter>
     super.initState();
     _ctrl = AnimationController(vsync: this, duration: widget.duration);
     _countAnim = Tween<double>(begin: 0, end: widget.target.toDouble())
-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
+        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutQuart));
   }
 
   @override
@@ -45,10 +49,15 @@ class _AnimatedCounterState extends State<AnimatedCounter>
 
   @override
   Widget build(BuildContext context) {
+    if (!_started && widget.forceStart) {
+      _started = true;
+      _ctrl.forward();
+    }
+
     return VisibilityDetector(
       key: Key('counter_${widget.label}'),
       onVisibilityChanged: (info) {
-        if (!_started && info.visibleFraction > 0.3) {
+        if (!_started && info.visibleFraction > 0.45) { // Trigger slightly later for better effect
           _started = true;
           _ctrl.forward();
         }
@@ -63,42 +72,55 @@ class _AnimatedCounterState extends State<AnimatedCounter>
               Stack(
                 alignment: Alignment.center,
                 children: [
-                   // Subtle glow behind number
+                   // High-fidelity Glow
                   Opacity(
-                    opacity: (0.3 * val).clamp(0.0, 1.0),
+                    opacity: (0.5 * val).clamp(0.0, 1.0),
                     child: Container(
-                      width: 60, height: 60,
+                      width: 80, height: 80,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         boxShadow: [
-                        BoxShadow(color: AppColors.accent2, blurRadius: 40, spreadRadius: 10),
+                          BoxShadow(
+                            color: AppColors.accent2.withValues(alpha: 0.8),
+                            blurRadius: 50,
+                            spreadRadius: 15 * val,
+                          ),
                         ],
                       ),
                     ),
                   ),
                   Text(
-                    '${widget.prefix}${_countAnim.value.toInt()}${widget.suffix}',
-                    style: AppFonts.h2.copyWith(
-                      color: AppColors.white,
-                      fontSize: 48,
+                    '${widget.prefix}${_countAnim.value.toInt()}${widget.showPlus ? '+' : widget.suffix}',
+                    style: AppFonts.heading(
+                      fontSize: 56, // Bold, massive counters
                       fontWeight: FontWeight.w900,
+                      color: AppColors.white,
+                      letterSpacing: -1,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
+              // Dynamic Progress line
               Container(
-                height: 2, width: 30 * val,
-                color: AppColors.accent2,
+                height: 3, 
+                width: 40 * val,
+                decoration: BoxDecoration(
+                  color: AppColors.accent2,
+                  borderRadius: BorderRadius.circular(2),
+                  boxShadow: [
+                    BoxShadow(color: AppColors.accent2.withValues(alpha: 0.5), blurRadius: 10),
+                  ],
+                ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Text(
-                widget.label,
-                style: AppFonts.bodySmall.copyWith(
+                widget.label.toUpperCase(),
+                style: AppFonts.caption.copyWith(
                   color: AppColors.muted,
-                  letterSpacing: 2.0,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
+                  letterSpacing: 3.0,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
                 ),
                 textAlign: TextAlign.center,
               ),

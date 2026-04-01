@@ -4,6 +4,7 @@ import '../theme/app_fonts.dart';
 import '../widgets/particle_painter.dart';
 import '../utils/responsive.dart';
 import 'hero_animation_engine.dart'; // Import the cinematic engine
+import 'stats_section.dart';
 
 class HeroSection extends StatefulWidget {
   final double scrollProgress;
@@ -36,7 +37,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
 
     return Container(
       width: size.width,
-      height: size.height * 1.3, // Extended stage for parallax travel
+      height: size.height * 2.2, // Massive theatrical runway for sink + stats
       color: AppColors.background,
       child: Stack(
         children: [
@@ -56,20 +57,24 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
             ),
           ),
           
-          // ── Main Centered Content (Scale Down to Fit) ──
-          Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
+          // ── Main Content (Aligned Top) ──
+          Align(
+            alignment: Alignment.topCenter,
+            child: OverflowBox(
+              maxHeight: double.infinity, // Allow the 3D Stage to draw without overflow warnings
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start, 
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(height: isMob ? 80 : 120), // Adjusted top margin
+                    SizedBox(height: isMob ? 100 : 180), // Increased margin to clear the Navbar line
                     
-                    // 1. Authoritative Branding (Massive centerpiece)
-                    _buildBrandName(p, isMob),
+                    // 1. Authoritative Branding (Massive centerpiece) - Sinks with scroll for parallax
+                    Transform.translate(
+                      offset: Offset(0, p * 150), // Parallax 'hold' to keep below Navbar line
+                      child: _buildBrandName(p, isMob),
+                    ),
                     
                     const SizedBox(height: 24),
                     
@@ -86,17 +91,27 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
                     // 4. Centered Description text
                     _buildDescription(p, isMob),
                     
-                    const SizedBox(height: 80), // Expanded spacing for travel
+                    const SizedBox(height: 100), 
                     
-                    // 5. Cinematic 3D Hero Animation Stage (Traveling Downward)
-                    RepaintBoundary(
-                      child: Transform.translate(
-                        offset: Offset(0, p * size.height * 0.70), // Even deeper sink for visibility
-                        child: _build3DAnimation(p, isMob),
+                    // 5. THE 3D LANDING STAGE (Phone + Stats sink together)
+                    Transform.translate(
+                      offset: Offset(0, p * size.height * 0.90), // Very deep cinematic sink
+                      child: Column(
+                        children: [
+                          // A. The Smartphone Animation
+                          RepaintBoundary(
+                            child: _build3DAnimation(p, isMob),
+                          ),
+                          
+                          const SizedBox(height: 140), // Gap exactly where the phone lands
+                          
+                          // B. The Stats Dashboard (Reveals when phone reaches final depth)
+                          StatsSection(scrollProgress: p),
+                          
+                          const SizedBox(height: 200), // Grounded bottom padding within stage
+                        ],
                       ),
                     ),
-                    
-                    const SizedBox(height: 60), // Bottom padding
                   ],
                 ),
               ),

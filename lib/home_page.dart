@@ -3,7 +3,6 @@ import 'theme/app_colors.dart';
 import 'sections/navbar_section.dart';
 import 'sections/hero_section.dart';
 import 'sections/eye_scroll_section.dart';
-import 'sections/stats_section.dart';
 import 'sections/story_section.dart';
 import 'sections/tests_section.dart';
 import 'sections/therapy_section.dart';
@@ -81,9 +80,6 @@ class _HomePageState extends State<HomePage> {
               
               // New: Eye Scroll Section (controlled playback)
               SliverToBoxAdapter(child: EyeScrollSection(scrollProgress: _eyeProgress)),
-
-              // 2. Stats Bar
-              const SliverToBoxAdapter(child: StatsSection()),
 
               // 3. Story Transition
               const SliverToBoxAdapter(child: StorySection()),
