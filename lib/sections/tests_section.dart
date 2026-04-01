@@ -104,23 +104,35 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     super.dispose(); 
   }
 
-  double _getIndicatorHeight(String text, bool isMob, bool isSelected) {
+  Size _getIndicatorSize(String text, bool isMob, bool isSelected) {
+    final fontSize = isSelected ? (isMob ? 18.0 : 28.0) : (isMob ? 14.0 : 18.0);
+    
     final textStyle = AppFonts.heading(
-      fontSize: isSelected ? 26 : 18, 
+      fontSize: fontSize, 
       letterSpacing: 2,
     );
     
-    final layoutWidth = (isMob ? 180.0 : 260.0);
-
+    // Exact layout width matching the rendering container
+    final layoutWidth = isSelected ? (isMob ? 240.0 : 400.0) : (isMob ? 160.0 : 240.0);
+    
     final textPainter = TextPainter(
       text: TextSpan(text: text.toUpperCase(), style: textStyle),
       textDirection: TextDirection.ltr,
       maxLines: 2,
     )..layout(maxWidth: layoutWidth);
 
-    // Tighten padding for non-selected items to prevent overlaps
-    final padding = isSelected ? 80.0 : 40.0;
-    return (textPainter.height + padding).clamp(isSelected ? 100.0 : 80.0, 180.0);
+    final iconSize = isMob ? 32.0 : 44.0;
+    final spacing = isMob ? 10.0 : 15.0;
+    final horizontalPadding = isMob ? 40.0 : 60.0;
+    final verticalPadding = isSelected ? 60.0 : 20.0; 
+    final safetyBuffer = 20.0; // DEFINITIVE FIX FOR OVERFLOW
+
+    // Width is the max of the text and the icon
+    final width = (math.max(textPainter.width, iconSize) + horizontalPadding + safetyBuffer).clamp(isSelected ? 250.0 : 150.0, 600.0);
+    // Height is much smaller for non-selected to prevent overlap
+    final height = (textPainter.height + iconSize + spacing + verticalPadding + safetyBuffer).clamp(isSelected ? 160.0 : 80.0, 240.0);
+    
+    return Size(width, height);
   }
 
   @override
@@ -239,14 +251,16 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
         final double h = constraints.maxHeight;
         final double w = constraints.maxWidth;
         
-        final dynHeight = _getIndicatorHeight(_tests[selectedIndex].name, isMob, true);
+        final itemSize = _getIndicatorSize(_tests[selectedIndex].name, isMob, true);
+        final dynWidth = itemSize.width;
+        final dynHeight = itemSize.height;
         final normPos = ((_scrollPos % _tests.length) + _tests.length) % _tests.length / _tests.length;
         
-        // ARC GEOMETRY (Spread out to fit all 12 tests beautifully)
-        final radius = isMob ? h * 0.4 : h * 0.55; 
-        final centerX = isMob ? w * 0.5 : w * 0.35; 
+        // ARC GEOMETRY (Spread out massively to fit all 12 tests)
+        final radius = isMob ? h * 0.4 : h * 0.58; 
+        final centerX = w * 0.5; // Perfectly centered visually
         final centerY = h * 0.5;
-        final angleRange = math.pi * 1.2; // 216 degrees spread for all 12 tests
+        final angleRange = math.pi * 1.5; // 270 degrees spread for all 12 tests
         return GestureDetector(
           onVerticalDragUpdate: _onPanUpdate,
           onVerticalDragEnd: _onPanEnd,
@@ -254,16 +268,18 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              // 1. FIXED SELECTION PILLAR (The Apex of the C)
-              Center(
+              // 1. FIXED SELECTION PILLAR (Synchronized with the Wheel Apex)
+              Positioned(
+                left: centerX - (dynWidth / 2),
+                top: centerY - (dynHeight / 2),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeOutCubic,
-                  width: isMob ? 220.0 : 450.0, // Wider 'thingy' for large text
+                  width: dynWidth, 
                   height: dynHeight,
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.03),
-                    borderRadius: BorderRadius.circular(100),
+                    borderRadius: BorderRadius.circular(100), // FULLY ROUNDED 'PILL' LOOK
                     border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                     boxShadow: [
                       BoxShadow(color: AppColors.accent2.withValues(alpha: 0.05), blurRadius: 40),
@@ -289,13 +305,14 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
                   final double x = radius * (1 - math.cos(angle / 2.5)); 
                   final double y = radius * math.sin(angle / 2.5);
                   
-                  final opacity = (1.0 - (absDiff / 6.5)).clamp(0.01, 1.0);
-                  final scale = (1.0 - (absDiff * 0.15)).clamp(0.65, 1.0);
+                  final opacity = (1.0 - (absDiff / 5.5)).clamp(0.01, 1.0);
+                  final scale = (1.0 - (absDiff * 0.22)).clamp(0.4, 1.0); // Aggressive Focal Falloff
                   
                   final isSelected = absDiff < 0.5;
                   final themeColor = _getTierColor(_tests[i].tier);
-                  final itemWidth = isMob ? 220.0 : 450.0;
-                  final itemHeight = _getIndicatorHeight(_tests[i].name, isMob, isSelected);
+                  final itemSize = _getIndicatorSize(_tests[i].name, isMob, isSelected);
+                  final itemWidth = itemSize.width;
+                  final itemHeight = itemSize.height;
 
                   return Positioned(
                     top: centerY - (itemHeight / 2) + y,
@@ -309,59 +326,68 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
                           opacity: opacity,
                           child: Transform.scale(
                             scale: scale,
-                            child: Container(
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
                               width: itemWidth,
                               height: itemHeight,
                               alignment: Alignment.center,
                               color: Colors.transparent,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  // 1. THE ICON
-                                  Container(
-                                    width: isMob ? 32 : 44, 
-                                    height: isMob ? 32 : 44,
-                                    decoration: BoxDecoration(
-                                      color: isSelected ? themeColor : Colors.white.withValues(alpha: 0.05),
-                                      shape: BoxShape.circle,
-                                      boxShadow: isSelected ? [
-                                        BoxShadow(color: themeColor.withValues(alpha: 0.3), blurRadius: 15)
-                                      ] : null,
+                              child: SingleChildScrollView(
+                                physics: const NeverScrollableScrollPhysics(),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    // 1. THE ICON (On Top)
+                                    Container(
+                                      width: isMob ? 32 : 44, 
+                                      height: isMob ? 32 : 44,
+                                      margin: const EdgeInsets.only(top: 10),
+                                      decoration: BoxDecoration(
+                                        color: isSelected ? themeColor : Colors.white.withValues(alpha: 0.05),
+                                        shape: BoxShape.circle,
+                                        boxShadow: isSelected ? [
+                                          BoxShadow(color: themeColor.withValues(alpha: 0.3), blurRadius: 15)
+                                        ] : null,
+                                      ),
+                                      child: Icon(_tests[i].icon, size: isMob ? 16 : 22, color: isSelected ? Colors.black : Colors.white24),
                                     ),
-                                    child: Icon(_tests[i].icon, size: isMob ? 16 : 22, color: isSelected ? Colors.black : Colors.white24),
-                                  ),
-                                  const SizedBox(width: 20),
-                                  // 2. THE TEXT (Large Font Mode)
-                                  Flexible(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          _tests[i].name.toUpperCase(),
-                                          style: AppFonts.heading(
-                                            fontSize: isSelected ? (isMob ? 18 : 28) : (isMob ? 14 : 18),
-                                            color: isSelected ? Colors.white : Colors.white24,
-                                            letterSpacing: 2,
-                                          ),
-                                          maxLines: 2,
-                                        ),
-                                        if (isSelected && !isMob)
+                                    const SizedBox(height: 12),
+                                    // 2. THE TEXT (Centered & Width-Locked)
+                                    SizedBox(
+                                      width: itemWidth - 40, // Match the internal text constraints
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
                                           Text(
-                                            '${_tests[i].tier.name.toUpperCase()} TEST',
-                                            style: AppFonts.caption.copyWith(
-                                              color: themeColor, 
-                                              fontSize: 10, 
-                                              letterSpacing: 3,
-                                              fontWeight: FontWeight.w900,
+                                            _tests[i].name.toUpperCase(),
+                                            textAlign: TextAlign.center,
+                                            style: AppFonts.heading(
+                                              fontSize: isSelected ? (isMob ? 18 : 28) : (isMob ? 14 : 18),
+                                              color: isSelected ? Colors.white : Colors.white24,
+                                              letterSpacing: 2,
                                             ),
+                                            maxLines: 2,
                                           ),
-                                      ],
+                                          if (isSelected && !isMob)
+                                            Text(
+                                              '${_tests[i].tier.name.toUpperCase()} TEST',
+                                              textAlign: TextAlign.center,
+                                              style: AppFonts.caption.copyWith(
+                                                color: themeColor, 
+                                                fontSize: 10, 
+                                                letterSpacing: 3,
+                                                fontWeight: FontWeight.w900,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(height: 10), // Bottom buffer
+                                  ],
+                                ),
                               ),
                             ),
                           ),
