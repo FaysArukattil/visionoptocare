@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../widgets/eye_logo.dart';
+import '../widgets/eye_loader.dart';
+
 
 /// ── Cinematic 3D Hero Animation Engine ──
 /// Orchestrates the 3-phase transformation from Traditional to Digital.
@@ -19,45 +21,54 @@ class HeroAnimationEngine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Stage Transitions
+    // Stage Transitions (Internal Engine P: 0.0 to 1.0)
     // Phase 1: 0.0 -> 0.35 (Chart & Shatter)
-    // Phase 2: 0.35 -> 0.65 (Iris & trails)
-    // Phase 3: 0.65 -> 1.0 (Phone Scanner)
+    // Phase 2: 0.30 -> 0.70 (Iris Hologram)
+    // Phase 3: 0.60 -> 1.0 (Smartphone Scanner)
 
     return Stack(
       alignment: Alignment.center,
       children: [
-        // ── Phase 1 & 2: Traditional Shatter Stage ──
-        if (p < 0.6)
+        // ── Phase 1: Traditional Shatter Stage ──
+        if (p < 0.45) ...[
           Opacity(
-            opacity: _calculateOpacity(p, 0.0, 0.55),
+            opacity: _calculateOpacity(p, 0.0, 0.40),
             child: _TraditionalShatterStage(p: p),
           ),
+        ],
 
         // ── Phase 2: Pulsing Iris Hologram ──
-        if (p > 0.25 && p < 0.75)
+        if (p > 0.25 && p < 0.75) ...[
           Opacity(
-            opacity: _calculateOpacity(p, 0.3, 0.65, fadeInOut: true),
+            opacity: _calculateOpacity(p, 0.25, 0.70, fadeInOut: true),
             child: _IrisHologram(p: p),
           ),
+        ],
 
         // ── Phase 3: Smartphone Scanner ──
-        if (p > 0.5)
+        if (p > 0.55) ...[
           Opacity(
-            opacity: _calculateOpacity(p, 0.55, 1.0),
+            opacity: _calculateOpacity(p, 0.60, 1.0),
             child: _SmartphoneScanner(p: p, isMob: isMob),
           ),
+        ],
       ],
     );
   }
 
   double _calculateOpacity(double p, double start, double end, {bool fadeInOut = false}) {
-    if (p < start) return 0.0;
-    if (p > end) return fadeInOut ? 0.0 : 1.0;
+    if (p < start) {
+      return 0.0;
+    }
+    if (p > end) {
+      return fadeInOut ? 0.0 : 1.0;
+    }
     
     if (fadeInOut) {
       final mid = (start + end) / 2;
-      if (p < mid) return (p - start) / (mid - start);
+      if (p < mid) {
+        return (p - start) / (mid - start);
+      }
       return 1.0 - (p - mid) / (end - mid);
     }
     
@@ -402,12 +413,15 @@ class _SmartphoneScanner extends StatelessWidget {
 
                     // Official EyeLoader Footer
                     Positioned(
-                      bottom: 40,
+                      bottom: 45, // Slightly higher for better balance
                       left: 0,
                       right: 0,
                       child: Center(
                         child: RepaintBoundary(
-                          child: _SplashEyeLoader(entryP: entryP),
+                          child: Opacity(
+                            opacity: entryP.clamp(0.0, 1.0),
+                            child: const EyeLoader.adaptive(size: 50),
+                          ),
                         ),
                       ),
                     ),
@@ -450,98 +464,3 @@ class _SmartphoneScanner extends StatelessWidget {
   }
 }
 
-/// ── High-Fidelity EyeLoader Painter (Mimics Official Splash) ──
-class _SplashEyeLoader extends StatefulWidget {
-  final double entryP;
-  const _SplashEyeLoader({required this.entryP});
-
-  @override
-  State<_SplashEyeLoader> createState() => _SplashEyeLoaderState();
-}
-
-class _SplashEyeLoaderState extends State<_SplashEyeLoader> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 4000),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, _) => CustomPaint(
-        size: const Size(60, 60),
-        painter: _EyeLoaderPainter(
-            progress: _controller.value,
-            mainP: widget.entryP,
-        ),
-      ),
-    );
-  }
-}
-
-class _EyeLoaderPainter extends CustomPainter {
-  final double progress;
-  final double mainP;
-  _EyeLoaderPainter({required this.progress, required this.mainP});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = size.center(Offset.zero);
-    final paint = Paint()..style = PaintingStyle.fill;
-    final eyeWidth = size.width * 0.95;
-    
-    // Smooth blink calculation (exactly from provided code)
-    double blinkFactor = 1.0;
-    const blinkMarkers = [0.2, 0.5, 0.8];
-    const blinkHalfWindow = 0.07;
-    for (final marker in blinkMarkers) {
-      if (progress > marker - blinkHalfWindow && progress < marker + blinkHalfWindow) {
-        final t = (progress - (marker - blinkHalfWindow)) / (blinkHalfWindow * 2);
-        blinkFactor = 1.0 - math.sin(t * math.pi);
-        break;
-      }
-    }
-
-    final currentHeight = (size.height * 0.52) * blinkFactor;
-    
-    // Draw Sclera Path
-    final eyePath = Path();
-    eyePath.moveTo(center.dx - eyeWidth / 2, center.dy);
-    eyePath.quadraticBezierTo(center.dx, center.dy - currentHeight, center.dx + eyeWidth / 2, center.dy);
-    eyePath.quadraticBezierTo(center.dx, center.dy + currentHeight, center.dx - eyeWidth / 2, center.dy);
-    eyePath.close();
-
-    canvas.drawPath(eyePath, paint..color = Colors.white.withValues(alpha: 0.95 * mainP));
-    
-    // Draw Iris/Pupil if visible
-    if (blinkFactor > 0.1) {
-        canvas.save();
-        canvas.clipPath(eyePath);
-        
-        final irisRadius = (size.width / 2) * 0.5;
-        canvas.drawCircle(center, irisRadius, paint..color = AppColors.accent2.withValues(alpha: mainP));
-        
-        // Pupil pulse
-        final pulseScale = 1.0 + 0.15 * math.sin(progress * math.pi * 2);
-        canvas.drawCircle(center, irisRadius * 0.48 * pulseScale, paint..color = Colors.black.withValues(alpha: mainP));
-        
-        canvas.restore();
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-}

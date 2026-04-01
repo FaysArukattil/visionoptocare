@@ -22,8 +22,12 @@ class Responsive {
     required T mobile,
   }) {
     final width = MediaQuery.of(context).size.width;
-    if (width > desktopBreak) return desktop;
-    if (width > tabletBreak) return tablet;
+    if (width > desktopBreak) {
+      return desktop;
+    }
+    if (width > tabletBreak) {
+      return tablet;
+    }
     return mobile;
   }
 

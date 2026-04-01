@@ -35,14 +35,14 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
     final isMob = Responsive.isMobile(context);
     final p = widget.scrollProgress; // 0.0 to 1.0
 
-    // Remap p for the animation engine:
-    // Screen 2 becomes visible around p=0.4.
-    // The animation should play its full 0→1 range from p=0.4 to p=1.0.
-    final animP = ((p - 0.35) / 0.65).clamp(0.0, 1.0);
-
-    // Phase opacities
-    final brandOpacity = (1.0 - ((p - 0.3) / 0.3)).clamp(0.0, 1.0);
+    // High-precision thresholds for a seamless cross-fade
+    // Brand fades out between 0.25 and 0.55
+    final brandOpacity = (1.0 - ((p - 0.25) / 0.30)).clamp(0.0, 1.0);
+    // Dashboard (Phone/Stats) fades in between 0.35 and 0.60
     final dashOpacity  = ((p - 0.35) / 0.25).clamp(0.0, 1.0);
+
+    // animP maps the 'dashboard' portion of scroll to the full animation lifecycle
+    final animP = ((p - 0.35) / 0.65).clamp(0.0, 1.0);
 
     return Container(
       width: size.width,
@@ -71,7 +71,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
             top: 0, left: 0, right: 0,
             height: size.height,
             child: Opacity(
-              opacity: brandOpacity,
+              opacity: brandOpacity.clamp(0.0, 1.0),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
@@ -97,7 +97,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
             left: 0, right: 0,
             height: size.height,
             child: Opacity(
-              opacity: dashOpacity,
+              opacity: dashOpacity.clamp(0.0, 1.0),
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: isMob ? 16 : 60),
                 child: isMob 
