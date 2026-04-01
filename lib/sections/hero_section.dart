@@ -3,7 +3,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../widgets/particle_painter.dart';
 import '../utils/responsive.dart';
-import 'hero_animation_engine.dart'; // Import the cinematic engine
+import 'hero_animation_engine.dart';
 import 'stats_section.dart';
 
 class HeroSection extends StatefulWidget {
@@ -35,13 +35,20 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
     final isMob = Responsive.isMobile(context);
     final p = widget.scrollProgress; // 0.0 to 1.0
 
+    // Phase mapping:
+    // Phase 1 (Branding):  p = 0.0 → 0.45  (brand text visible)
+    // Crossfade:           p = 0.35 → 0.55 (brand fades, phone appears)
+    // Phase 2 (Dashboard): p = 0.45 → 1.0  (phone + stats visible)
+    final brandOpacity = (1.0 - ((p - 0.25) / 0.20)).clamp(0.0, 1.0);
+    final dashOpacity  = ((p - 0.35) / 0.15).clamp(0.0, 1.0);
+
     return Container(
       width: size.width,
-      height: size.height * 2.2, // Massive theatrical runway for sink + stats
+      height: size.height * 2.2,
       color: AppColors.background,
       child: Stack(
         children: [
-          // ── Background Glows & Particles ──
+          // ── Background Particles (lightweight) ──
           Positioned.fill(
             child: RepaintBoundary(
               child: AnimatedBuilder(
@@ -49,69 +56,63 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
                 builder: (context, _) => CustomPaint(
                   painter: ParticlePainter(
                     animValue: _particleCtrl.value,
-                    color: AppColors.accent2.withValues(alpha: 0.1),
-                    count: 25,
+                    color: AppColors.accent2.withValues(alpha: 0.08),
+                    count: 15, // Reduced for performance
                   ),
                 ),
               ),
             ),
           ),
           
-          // ── Main Content (Aligned Top) ──
-          Align(
-            alignment: Alignment.topCenter,
-            child: OverflowBox(
-              maxHeight: double.infinity, // Allow the 3D Stage to draw without overflow warnings
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+          // ── PHASE 1: Branding Screen ──
+          Positioned(
+            top: 0, left: 0, right: 0,
+            height: size.height,
+            child: Opacity(
+              opacity: brandOpacity,
+              child: Transform.translate(
+                offset: Offset(0, -p * 60), // Gentle rise as it fades
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(height: isMob ? 40 : 60), // Navbar clearance
+                      _buildBrandName(p, isMob),
+                      const SizedBox(height: 24),
+                      _buildInnovationHeadline(p, isMob),
+                      const SizedBox(height: 28),
+                      _buildMissionQuote(p, isMob),
+                      const SizedBox(height: 40),
+                      _buildDescription(p, isMob),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // ── PHASE 2: Phone Animation + Stats Dashboard ──
+          Positioned(
+            top: size.height * 0.6, // Starts below branding viewport
+            left: 0, right: 0,
+            child: Opacity(
+              opacity: dashOpacity,
+              child: Transform.translate(
+                offset: Offset(0, -size.height * (p - 0.45).clamp(0.0, 0.55) * 0.8),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start, 
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(height: isMob ? 150 : 260), // Clear Navbar line initially
-                    
-                    // 1. Authoritative Branding (Massive centerpiece) - Sinks with scroll for parallax
-                    Transform.translate(
-                      offset: Offset(0, p * 150), // Parallax 'hold' to keep below Navbar line
-                      child: _buildBrandName(p, isMob),
+                    // The Smartphone Animation
+                    RepaintBoundary(
+                      child: _build3DAnimation(p, isMob),
                     ),
                     
-                    const SizedBox(height: 24),
+                    SizedBox(height: isMob ? 40 : 60),
                     
-                    // 2. Catchy Sub-headline
-                    _buildInnovationHeadline(p, isMob),
+                    // Stats Dashboard (staggered entry)
+                    StatsSection(scrollProgress: p),
                     
-                    const SizedBox(height: 32),
-                    
-                    // 3. Mission Quote
-                    _buildMissionQuote(p, isMob),
-                    
-                    const SizedBox(height: 48),
-                    
-                    // 4. Centered Description text
-                    _buildDescription(p, isMob),
-                    
-                    const SizedBox(height: 100), 
-                    
-                    // 5. THE 3D LANDING STAGE (Phone + Stats sink together)
-                    Transform.translate(
-                      offset: Offset(0, p * size.height * 0.90), // Very deep cinematic sink
-                      child: Column(
-                        children: [
-                          // A. The Smartphone Animation
-                          RepaintBoundary(
-                            child: _build3DAnimation(p, isMob),
-                          ),
-                          
-                          const SizedBox(height: 140), // Gap exactly where the phone lands
-                          
-                          // B. The Stats Dashboard (Reveals when phone reaches final depth)
-                          StatsSection(scrollProgress: p),
-                          
-                          const SizedBox(height: 200), // Grounded bottom padding within stage
-                        ],
-                      ),
-                    ),
+                    const SizedBox(height: 100),
                   ],
                 ),
               ),
@@ -123,22 +124,19 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
   }
 
   Widget _buildBrandName(double p, bool isMob) {
-    return Opacity(
-      opacity: (1 - p * 0.5).clamp(0.0, 1.0),
-      child: ShaderMask(
-        shaderCallback: (bounds) => const LinearGradient(
-          colors: [AppColors.white, Color(0xFFB0B0B0)],
-        ).createShader(bounds),
-        child: Text(
-          'VISION\nOPTOCARE',
-          style: AppFonts.heading(
-            fontSize: isMob ? 56 : 110,
-            fontWeight: FontWeight.w900,
-            height: 0.85,
-            letterSpacing: 8,
-          ),
-          textAlign: TextAlign.center,
+    return ShaderMask(
+      shaderCallback: (bounds) => const LinearGradient(
+        colors: [AppColors.white, Color(0xFFB0B0B0)],
+      ).createShader(bounds),
+      child: Text(
+        'VISION\nOPTOCARE',
+        style: AppFonts.heading(
+          fontSize: isMob ? 56 : 110,
+          fontWeight: FontWeight.w900,
+          height: 0.85,
+          letterSpacing: 8,
         ),
+        textAlign: TextAlign.center,
       ),
     );
   }
@@ -148,7 +146,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
       tween: Tween(begin: 0, end: 1),
       duration: const Duration(milliseconds: 1200),
       builder: (_, v, child) => Opacity(
-        opacity: (v * (1 - p)).clamp(0.0, 1.0),
+        opacity: v.clamp(0.0, 1.0),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
           decoration: BoxDecoration(
@@ -180,7 +178,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
 
   Widget _buildMissionQuote(double p, bool isMob) {
     return Text(
-      '“Your Vision, Our Priority”',
+      '"Your Vision, Our Priority"',
       style: AppFonts.bodyLarge.copyWith(
         color: AppColors.white.withValues(alpha: 0.8),
         fontStyle: FontStyle.italic,
