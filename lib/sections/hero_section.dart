@@ -161,15 +161,18 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
       shaderCallback: (bounds) => const LinearGradient(
         colors: [AppColors.white, Color(0xFFB0B0B0)],
       ).createShader(bounds),
-      child: Text(
-        'VISION\nOPTOCARE',
-        style: AppFonts.heading(
-          fontSize: isMob ? 56 : 110,
-          fontWeight: FontWeight.w900,
-          height: 0.85,
-          letterSpacing: 8,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          'VISION\nOPTOCARE',
+          style: AppFonts.heading(
+            fontSize: isMob ? 64 : 110,
+            fontWeight: FontWeight.w900,
+            height: 0.85,
+            letterSpacing: 8,
+          ),
+          textAlign: TextAlign.center,
         ),
-        textAlign: TextAlign.center,
       ),
     );
   }

@@ -17,11 +17,16 @@
   <title>Visiaxx — Vision Care, Reimagined</title>
   <link rel="manifest" href="manifest.json">
 
-  <!-- Preconnect Google Fonts -->
+  <!-- Preconnect and Preload Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=DM+Sans:wght@400;500;700&display=block" rel="stylesheet">
 
   <style>
+    /* Browser-native preloading to eliminate initial flicker */
+    .font-preload { position: absolute; visibility: hidden; opacity: 0; pointer-events: none; }
+    .syne-preload { font-family: 'Syne'; font-weight: 800; }
+
     body {
       margin: 0;
       padding: 0;
@@ -50,6 +55,8 @@
 </head>
 <body>
   <div class="loading" id="loading"></div>
+  <!-- Forced font preload to eliminate initial flicker -->
+  <div class="font-preload syne-preload">VISION OPTOCARE</div>
   <script>
     window.addEventListener('flutter-first-frame', function() {
       var el = document.getElementById('loading');
