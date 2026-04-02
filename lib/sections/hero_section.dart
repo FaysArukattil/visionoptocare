@@ -175,6 +175,16 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
             fontWeight: FontWeight.w900,
           ),
         ),
+        const SizedBox(height: 12),
+        Text(
+          'AN APP FOR STANDARDIZED VISION DISEASE DETECTION',
+          style: AppFonts.caption.copyWith(
+            color: AppColors.white.withValues(alpha: 0.6), 
+            letterSpacing: 1.5, 
+            fontWeight: FontWeight.w700,
+            fontSize: isMob ? 10 : 12,
+          ),
+        ),
         const SizedBox(height: 24),
         Text(
           'Pioneering Digital\nOptometry.',
