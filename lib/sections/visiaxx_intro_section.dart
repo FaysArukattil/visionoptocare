@@ -1,0 +1,342 @@
+import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_fonts.dart';
+import '../utils/responsive.dart';
+import '../widgets/eye_loader.dart';
+import '../widgets/eye_logo.dart';
+import '../widgets/phone_mockup.dart';
+
+class VisiaxxIntroSection extends StatefulWidget {
+  final bool isActive;
+
+  const VisiaxxIntroSection({super.key, required this.isActive});
+
+  @override
+  State<VisiaxxIntroSection> createState() => _VisiaxxIntroSectionState();
+}
+
+class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
+    with TickerProviderStateMixin {
+  late AnimationController _phoneCtrl;
+  late AnimationController _textCtrl;
+  bool _hasStarted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _phoneCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000));
+    _textCtrl  = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
+
+    if (widget.isActive) _startAnimation();
+  }
+
+  @override
+  void didUpdateWidget(covariant VisiaxxIntroSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && !_hasStarted) _startAnimation();
+  }
+
+  void _startAnimation() async {
+    _hasStarted = true;
+    await Future.delayed(const Duration(milliseconds: 200));
+    if (!mounted) return;
+    _phoneCtrl.forward();
+    await Future.delayed(const Duration(milliseconds: 300));
+    if (!mounted) return;
+    _textCtrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _phoneCtrl.dispose();
+    _textCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isMob = Responsive.isMobile(context);
+
+    return Container(
+      width: size.width,
+      height: size.height,
+      color: AppColors.background,
+      child: Padding(
+        padding: EdgeInsets.only(
+          top: isMob ? 80 : 90, // Clear the navbar
+          left: isMob ? 24 : 60,
+          right: isMob ? 24 : 60,
+          bottom: 24,
+        ),
+        child: isMob
+            ? _buildMobileLayout()
+            : _buildDesktopLayout(),
+      ),
+    );
+  }
+
+  Widget _buildDesktopLayout() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // ── Left: 3D iPhone ──
+        Expanded(
+          flex: 5,
+          child: Center(
+            child: AnimatedBuilder(
+              animation: _phoneCtrl,
+              builder: (context, _) {
+                final t = CurvedAnimation(
+                  parent: _phoneCtrl,
+                  curve: Curves.easeOutBack,
+                ).value.clamp(0.0, 1.0);
+                return Opacity(
+                  opacity: t.clamp(0.0, 1.0),
+                  child: Transform(
+                    transform: Matrix4.identity()
+                      ..setEntry(3, 2, 0.001)
+                      ..rotateX(-0.08 * (1 - t))
+                      ..rotateY(0.5 * (1 - t))
+                      ..setTranslationRaw(0.0, 40.0 * (1 - t), 0.0),
+                    alignment: Alignment.center,
+                    child: PhoneMockup(
+                      width: 300,
+                      height: 580,
+                      tiltX: -0.06,
+                      tiltY: 0.10,
+                      screen: _buildPhoneScreen(),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 80),
+
+        // ── Right: Brand description ──
+        Expanded(
+          flex: 5,
+          child: AnimatedBuilder(
+            animation: _textCtrl,
+            builder: (_, _) {
+              final t = CurvedAnimation(
+                parent: _textCtrl,
+                curve: Curves.easeOutCubic,
+              ).value.clamp(0.0, 1.0);
+              return Opacity(
+                opacity: t.clamp(0.0, 1.0),
+                child: Transform.translate(
+                  offset: Offset(30 * (1 - t), 0),
+                  child: _buildIntroText(false),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMobileLayout() {
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: 20),
+          AnimatedBuilder(
+            animation: _phoneCtrl,
+            builder: (_, _) {
+              final t = CurvedAnimation(
+                parent: _phoneCtrl,
+                curve: Curves.easeOutBack,
+              ).value.clamp(0.0, 1.0);
+              return Opacity(
+                opacity: t,
+                child: PhoneMockup(
+                  width: 230,
+                  height: 450,
+                  tiltX: -0.04,
+                  tiltY: 0.08,
+                  screen: _buildPhoneScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 40),
+          AnimatedBuilder(
+            animation: _textCtrl,
+            builder: (_, _) {
+              final t = CurvedAnimation(
+                parent: _textCtrl,
+                curve: Curves.easeOutCubic,
+              ).value.clamp(0.0, 1.0);
+              return Opacity(
+                opacity: t,
+                child: Transform.translate(
+                  offset: Offset(0, 20 * (1 - t)),
+                  child: _buildIntroText(true),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPhoneScreen() {
+    return Stack(
+      children: [
+        // Splash-like gradient bg
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF050A18), Color(0xFF0F172A)],
+            ),
+          ),
+        ),
+        // Content
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 50),
+              const EyeLogo(size: 80),
+              const SizedBox(height: 28),
+              Text(
+                'Your Vision,\nOur Priority',
+                style: AppFonts.bodyLarge.copyWith(
+                  color: AppColors.white.withValues(alpha: 0.9),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Premium Digital Eye Care',
+                style: AppFonts.caption.copyWith(
+                  color: AppColors.accent2.withValues(alpha: 0.8),
+                  fontSize: 11,
+                  letterSpacing: 1.5,
+                ),
+              ),
+              const SizedBox(height: 40),
+              const EyeLoader.adaptive(size: 40),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildIntroText(bool isMob) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: isMob ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: AppColors.accent2.withValues(alpha: 0.1),
+            border: Border.all(color: AppColors.accent2.withValues(alpha: 0.3)),
+          ),
+          child: Text(
+            'WHAT IS VISIAXX?',
+            style: AppFonts.caption.copyWith(
+              color: AppColors.accent2,
+              letterSpacing: 3,
+              fontWeight: FontWeight.w900,
+              fontSize: 11,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          'AN APP FOR STANDARDIZED VISION DISEASE DETECTION',
+          style: AppFonts.caption.copyWith(
+            color: AppColors.white.withValues(alpha: 0.5),
+            letterSpacing: 1.5,
+            fontWeight: FontWeight.w700,
+            fontSize: isMob ? 9 : 11,
+          ),
+          textAlign: isMob ? TextAlign.center : TextAlign.start,
+        ),
+        const SizedBox(height: 24),
+        Text(
+          'Pioneering Digital\nOptometry.',
+          style: AppFonts.h2.copyWith(
+            color: AppColors.white,
+            fontSize: isMob ? 32 : 52,
+            height: 1.1,
+            fontWeight: FontWeight.w800,
+          ),
+          textAlign: isMob ? TextAlign.center : TextAlign.start,
+        ),
+        const SizedBox(height: 28),
+        Text(
+          'We merge clinical-grade screening with AI-driven analytics to transform your smartphone into a powerful diagnostic tool. Vision Optocare empowers patients and practitioners with accessible, high-precision ocular health tracking.',
+          style: AppFonts.bodyLarge.copyWith(
+            color: AppColors.muted,
+            height: 1.7,
+            fontSize: isMob ? 15 : 17,
+          ),
+          textAlign: isMob ? TextAlign.center : TextAlign.start,
+        ),
+        const SizedBox(height: 36),
+        // Feature chips
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          alignment: isMob ? WrapAlignment.center : WrapAlignment.start,
+          children: [
+            _FeatureChip(icon: Icons.biotech, label: '12 Clinical Tests'),
+            _FeatureChip(icon: Icons.language, label: '13 Languages'),
+            _FeatureChip(icon: Icons.video_call, label: 'Hybrid Consults'),
+            _FeatureChip(icon: Icons.picture_as_pdf, label: 'PDF Reports'),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _FeatureChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _FeatureChip({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(50),
+        color: AppColors.white.withValues(alpha: 0.04),
+        border: Border.all(color: AppColors.white.withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: AppColors.accent2, size: 14),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: AppFonts.caption.copyWith(
+              color: AppColors.white.withValues(alpha: 0.7),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

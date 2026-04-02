@@ -1,0 +1,26 @@
+﻿Analyzing lib...
+
+   info - home_page.dart:8:8 - The import of 'sections/consultation_languages_page.dart' is unnecessary because all of the used elements are also provided by the import of 'sections/reports_wellness_page.dart'. Try removing the import directive. - unnecessary_import
+   info - sections\clinical_tests_page.dart:52:20 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - sections\founders_section.dart:51:20 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - sections\founders_section.dart:182:25 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - sections\hero_section.dart:140:28 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - sections\hero_section.dart:313:20 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - sections\hero_section.dart:361:20 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - sections\philosophy_section.dart:51:20 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - sections\philosophy_section.dart:174:25 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - sections\reports_wellness_page.dart:58:20 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - sections\reports_wellness_page.dart:255:20 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - sections\reports_wellness_page.dart:405:25 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - sections\reports_wellness_page.dart:497:22 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - sections\reports_wellness_page.dart:588:30 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - sections\reports_wellness_page.dart:656:22 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - sections\reports_wellness_page.dart:733:22 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - sections\reports_wellness_page.dart:791:20 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - sections\visiaxx_intro_section.dart:89:28 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - sections\visiaxx_intro_section.dart:101:25 - 'translate' is deprecated and shouldn't be used. Use translateByVector3, translateByVector4, or translateByDouble instead. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - sections\visiaxx_intro_section.dart:124:26 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - sections\visiaxx_intro_section.dart:151:26 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - sections\visiaxx_intro_section.dart:171:26 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+
+22 issues found.

@@ -7,7 +7,15 @@ import '../utils/responsive.dart';
 
 class NavbarSection extends StatefulWidget {
   final bool isScrolled;
-  const NavbarSection({super.key, required this.isScrolled});
+  final int currentPage;
+  final void Function(int)? onNavTap;
+
+  const NavbarSection({
+    super.key,
+    required this.isScrolled,
+    this.currentPage = 0,
+    this.onNavTap,
+  });
 
   @override
   State<NavbarSection> createState() => _NavbarSectionState();
@@ -101,16 +109,31 @@ class _NavbarSectionState extends State<NavbarSection>
                   child: Row(
                     children: [
                       // ── Logo (Left) ──
-                      _buildLogo(isMob),
+                      GestureDetector(
+                        onTap: () => widget.onNavTap?.call(0),
+                        child: _buildLogo(isMob),
+                      ),
                       const Spacer(),
                       // ── Nav Links (Desktop) ──
                       if (!isMob) ...[
-                        for (final link in ['Home', 'Services', 'About Us'])
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: _NavLink(label: link),
-                          ),
-                        const SizedBox(width: 16),
+                        _NavLink(
+                          label: 'Home',
+                          isActive: widget.currentPage == 0,
+                          onTap: () => widget.onNavTap?.call(0),
+                        ),
+                        const SizedBox(width: 32),
+                        _NavLink(
+                          label: 'Services',
+                          isActive: widget.currentPage >= 2 && widget.currentPage <= 4,
+                          onTap: () => widget.onNavTap?.call(2),
+                        ),
+                        const SizedBox(width: 32),
+                        _NavLink(
+                          label: 'About Us',
+                          isActive: widget.currentPage >= 5,
+                          onTap: () => widget.onNavTap?.call(5),
+                        ),
+                        const SizedBox(width: 24),
                         _buildExploreButton(),
                       ],
                       // ── Hamburger (Mobile) ──
@@ -134,11 +157,23 @@ class _NavbarSectionState extends State<NavbarSection>
                             thickness: 1,
                           ),
                           const SizedBox(height: 24),
-                          for (final link in ['Home', 'Services', 'About Us'])
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 24),
-                              child: _NavLink(label: link),
-                            ),
+                          _NavLink(
+                            label: 'Home',
+                            isActive: widget.currentPage == 0,
+                            onTap: () { setState(() => _menuOpen = false); widget.onNavTap?.call(0); },
+                          ),
+                          const SizedBox(height: 24),
+                          _NavLink(
+                            label: 'Services',
+                            isActive: widget.currentPage >= 2 && widget.currentPage <= 4,
+                            onTap: () { setState(() => _menuOpen = false); widget.onNavTap?.call(2); },
+                          ),
+                          const SizedBox(height: 24),
+                          _NavLink(
+                            label: 'About Us',
+                            isActive: widget.currentPage >= 5,
+                            onTap: () { setState(() => _menuOpen = false); widget.onNavTap?.call(5); },
+                          ),
                           const SizedBox(height: 12),
                           _buildExploreButton(),
                         ],
@@ -167,7 +202,7 @@ class _NavbarSectionState extends State<NavbarSection>
   Widget _buildExploreButton() {
     return _GlowButton(
       label: 'Explore',
-      onTap: () {},
+      onTap: () => widget.onNavTap?.call(2),
     );
   }
 
@@ -202,7 +237,9 @@ class _NavbarSectionState extends State<NavbarSection>
 // ══════════════════════════════════════════════
 class _NavLink extends StatefulWidget {
   final String label;
-  const _NavLink({required this.label});
+  final bool isActive;
+  final VoidCallback? onTap;
+  const _NavLink({required this.label, this.isActive = false, this.onTap});
   @override
   State<_NavLink> createState() => _NavLinkState();
 }
@@ -244,56 +281,60 @@ class _NavLinkState extends State<_NavLink>
       },
       onExit: (_) {
         setState(() => _hovered = false);
-        _ctrl.reverse();
+        if (!widget.isActive) _ctrl.reverse();
       },
       cursor: SystemMouseCursors.click,
-      child: AnimatedBuilder(
-        animation: _ctrl,
-        builder: (context, _) {
-          final textColor = Color.lerp(
-            AppColors.white.withValues(alpha: 0.7),
-            AppColors.accent2,
-            _colorLerp.value,
-          )!;
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedBuilder(
+          animation: _ctrl,
+          builder: (context, _) {
+            final isActive = widget.isActive;
+            final lerp = isActive ? 1.0 : _colorLerp.value;
+            final textColor = Color.lerp(
+              AppColors.white.withValues(alpha: 0.7),
+              AppColors.accent2,
+              lerp,
+            )!;
+            final underline = isActive ? 28.0 : _underlineWidth.value;
 
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                widget.label,
-                style: AppFonts.body(
-                  fontSize: 14.5,
-                  fontWeight:
-                      _hovered ? FontWeight.w600 : FontWeight.w400,
-                  color: textColor,
-                  letterSpacing: 0.4,
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  widget.label,
+                  style: AppFonts.body(
+                    fontSize: 14.5,
+                    fontWeight: (_hovered || widget.isActive) ? FontWeight.w600 : FontWeight.w400,
+                    color: textColor,
+                    letterSpacing: 0.4,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Container(
-                height: 2,
-                width: _underlineWidth.value,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(2),
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.accent2.withValues(alpha: 0.9),
-                      AppColors.accent1.withValues(alpha: 0.6),
+                const SizedBox(height: 4),
+                Container(
+                  height: 2,
+                  width: underline,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(2),
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.accent2.withValues(alpha: 0.9),
+                        AppColors.accent1.withValues(alpha: 0.6),
+                      ],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.accent2.withValues(alpha: 0.4 * lerp),
+                        blurRadius: 6,
+                        offset: const Offset(0, 1),
+                      ),
                     ],
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color:
-                          AppColors.accent2.withValues(alpha: 0.4 * _colorLerp.value),
-                      blurRadius: 6,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
