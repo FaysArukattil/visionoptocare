@@ -1,10 +1,10 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../widgets/phone_mockup.dart';
-import '../widgets/particle_painter.dart';
 import '../utils/responsive.dart';
 
 enum TestTier { quick, full, personal, pro }
@@ -32,7 +32,8 @@ const _tests = [
 ];
 
 class TestsSection extends StatefulWidget {
-  const TestsSection({super.key});
+  final bool isActive;
+  const TestsSection({super.key, required this.isActive});
 
   @override
   State<TestsSection> createState() => _TestsSectionState();
@@ -42,6 +43,9 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   late AnimationController _scrollCtrl;
   final ValueNotifier<double> _scrollPos = ValueNotifier<double>(0.0);
   final FocusNode _focusNode = FocusNode();
+  
+  Timer? _autoTimer;
+  bool _userIntervened = false;
 
   @override
   void initState() {
@@ -53,12 +57,56 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
       lowerBound: double.negativeInfinity,
       upperBound: double.infinity,
     );
-    // Removed setState listener for better performance.
-    // Instead, we use AnimatedBuilder in the build method.
+    
+    if (widget.isActive) _startAutoCycle();
+  }
+
+  @override
+  void didUpdateWidget(covariant TestsSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && !oldWidget.isActive) {
+      // User came back to this section, reset intervention and restart cycle
+      _userIntervened = false;
+      _startAutoCycle();
+    } else if (!widget.isActive && oldWidget.isActive) {
+      _stopAutoCycle();
+    }
+  }
+
+  void _startAutoCycle() {
+    _stopAutoCycle(); // Clean existing
+    if (_userIntervened) return;
+
+    _autoTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      if (!mounted) return;
+      _advanceTest();
+    });
+  }
+
+  void _stopAutoCycle() {
+    _autoTimer?.cancel();
+    _autoTimer = null;
+  }
+
+  void _advanceTest() {
+    final next = (_scrollPos.value.round() + 1);
+    _onAutoAdvance(next);
+  }
+
+  void _onAutoAdvance(int targetIndex) {
+    _scrollCtrl.animateTo(targetIndex.toDouble(), 
+      curve: Curves.easeInOutCubic, 
+      duration: const Duration(milliseconds: 800)
+    );
+    _scrollPos.value = _scrollCtrl.value;
   }
 
   void _onPanUpdate(DragUpdateDetails d) {
-    _scrollCtrl.value -= d.delta.dy / 100; // Sensitivity 
+    _userIntervened = true;
+    _stopAutoCycle();
+
+    // Vertical drag scrolls the 3D HUD
+    _scrollCtrl.value -= d.delta.dy / (Responsive.isMobile(context) ? 50 : 100); 
     _scrollPos.value = _scrollCtrl.value;
   }
 
@@ -67,6 +115,9 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   }
 
   void _snapToNearest() {
+    _userIntervened = true;
+    _stopAutoCycle();
+
     final target = _scrollPos.value.roundToDouble();
     _scrollCtrl.value = _scrollPos.value;
     _scrollCtrl.animateTo(target, curve: Curves.easeOutCubic);
@@ -74,6 +125,9 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   }
 
   void _onTapItem(int index) {
+    _userIntervened = true;
+    _stopAutoCycle();
+
     // Shortest path logic for infinite loop
     double current = _scrollPos.value;
     double target = index.toDouble();
@@ -88,6 +142,9 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
 
   void _onKey(KeyEvent event) {
     if (event is KeyDownEvent) {
+      _userIntervened = true;
+      _stopAutoCycle();
+
       if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
         _scrollCtrl.animateTo((_scrollPos.value + 1).roundToDouble(), curve: Curves.easeOutBack);
       } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
@@ -98,41 +155,11 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
 
   @override
   void dispose() { 
+    _stopAutoCycle();
     _scrollCtrl.dispose(); 
     _scrollPos.dispose();
     _focusNode.dispose(); 
     super.dispose(); 
-  }
-
-  Size _getIndicatorSize(String text, bool isMob, bool isSelected) {
-    final fontSize = isSelected ? (isMob ? 18.0 : 28.0) : (isMob ? 14.0 : 18.0);
-    
-    final textStyle = AppFonts.heading(
-      fontSize: fontSize, 
-      letterSpacing: 2,
-    );
-    
-    // Exact layout width matching the rendering container
-    final layoutWidth = isSelected ? (isMob ? 240.0 : 400.0) : (isMob ? 160.0 : 240.0);
-    
-    final textPainter = TextPainter(
-      text: TextSpan(text: text.toUpperCase(), style: textStyle),
-      textDirection: TextDirection.ltr,
-      maxLines: 2,
-    )..layout(maxWidth: layoutWidth);
-
-    final iconSize = isMob ? 32.0 : 44.0;
-    final spacing = isMob ? 10.0 : 15.0;
-    final horizontalPadding = isMob ? 40.0 : 60.0;
-    final verticalPadding = isSelected ? 60.0 : 20.0; 
-    final safetyBuffer = 20.0; // DEFINITIVE FIX FOR OVERFLOW
-
-    // Width is the max of the text and the icon
-    final width = (math.max(textPainter.width, iconSize) + horizontalPadding + safetyBuffer).clamp(isSelected ? 250.0 : 150.0, 600.0);
-    // Height is much smaller for non-selected to prevent overlap
-    final height = (textPainter.height + iconSize + spacing + verticalPadding + safetyBuffer).clamp(isSelected ? 160.0 : 80.0, 240.0);
-    
-    return Size(width, height);
   }
 
   @override
@@ -145,18 +172,33 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
       onKeyEvent: _onKey,
       child: Stack(
         children: [
-          // 1. Background Particles (Independent listener)
+          // 1. Dynamic 'Neural' Background 
           Positioned.fill(
             child: ValueListenableBuilder<double>(
               valueListenable: _scrollPos,
               builder: (context, pos, _) {
                 if (!pos.isFinite) return const SizedBox.shrink();
-                return RepaintBoundary(
-                  child: CustomPaint(
-                    painter: ParticlePainter(
-                      animValue: pos * 0.1,
-                      color: _getTierColor(_tests[(pos.round() % _tests.length).abs() % _tests.length].tier).withValues(alpha: 0.1),
-                      count: 15,
+                final test = _tests[(pos.round() % _tests.length).abs() % _tests.length];
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 600),
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        center: Alignment.center,
+                        radius: 1.5,
+                        colors: [
+                          _getTierColor(test.tier).withValues(alpha: 0.05),
+                          AppColors.background.withValues(alpha: 0.1),
+                          AppColors.background,
+                        ],
+                        stops: const [0.0, 0.4, 1.0],
+                      ),
+                    ),
+                  child: RepaintBoundary(
+                    child: CustomPaint(
+                      painter: _SystemTelemetryPainter(
+                        animValue: pos,
+                        color: _getTierColor(test.tier),
+                      ),
                     ),
                   ),
                 );
@@ -164,7 +206,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
             ),
           ),
 
-          // 2. Main Content
+          // 2. Main 3D Experience
           ValueListenableBuilder<double>(
             valueListenable: _scrollPos,
             builder: (context, pos, child) {
@@ -175,17 +217,14 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
 
               final test = _tests[sIdx];
               final themeColor = _getTierColor(test.tier);
-              final normPos = ((pos % _tests.length) + _tests.length) % _tests.length / _tests.length;
 
-              // We only rebuild the WHEEL on every position change.
-              // We could theoretically isolate further, but this is already massive.
-              return Center(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: isMob ? 0 : 20, vertical: 0),
-                  child: isMob 
-                      ? _buildMobileLayout(test, themeColor, sIdx, pos, normPos) 
-                      : _buildDesktopLayout(test, themeColor, sIdx, pos, normPos),
-                ),
+              return GestureDetector(
+                onVerticalDragUpdate: _onPanUpdate,
+                onVerticalDragEnd: _onPanEnd,
+                behavior: HitTestBehavior.translucent,
+                child: isMob 
+                    ? _buildMobileLayout(test, themeColor, sIdx, pos) 
+                    : _buildDesktopLayout(test, themeColor, sIdx, pos),
               );
             },
           ),
@@ -203,388 +242,493 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     }
   }
 
-  Widget _buildDesktopLayout(TestData test, Color themeColor, int selectedIndex, double scrollPos, double normPos) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+  Widget _buildDesktopLayout(TestData test, Color themeColor, int selectedIndex, double scrollPos) {
+    return Stack(
       children: [
-        Expanded(
-          flex: 5,
-          child: _buildSemiCircularWheel(isMob: false, selectedIndex: selectedIndex, scrollPos: scrollPos, normPos: normPos),
+        // ── Left: Interactive 3D HUD ──
+        Positioned(
+          left: 60,
+          top: 0,
+          bottom: 0,
+          width: 500,
+          child: _buildTacticalHUD(false, scrollPos),
         ),
-        const SizedBox(width: 40),
-        Expanded(
-          flex: 5,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Positioned(
-                left: 120,
-                child: RepaintBoundary(
-                  child: Transform(
-                    transform: Matrix4.identity()
-                      ..setEntry(3, 2, 0.001),
-                    alignment: Alignment.center,
-                    child: PhoneMockup(
-                      width: 220,
-                      height: 480,
-                      tiltX: 0.0,
-                      tiltY: 0.0,
-                      screen: _TestScreenContent(test: test, themeColor: themeColor),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                right: 0,
-                bottom: 20,
-                child: _buildDetailCard(test, themeColor),
-              ),
-            ],
+
+        // ── Center: Floating Phone Simulation ──
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 100), // Offset from HUD
+            child: _buildFloatingPhone(test, themeColor),
           ),
+        ),
+
+        // ── Right: Elevated Data Card ──
+        Positioned(
+          right: 60,
+          bottom: 60,
+          child: _buildDetailCard(test, themeColor, false),
         ),
       ],
     );
   }
 
-  Widget _buildMobileLayout(TestData test, Color themeColor, int selectedIndex, double scrollPos, double normPos) {
+  Widget _buildMobileLayout(TestData test, Color themeColor, int selectedIndex, double scrollPos) {
     return Column(
       children: [
-        Expanded(flex: 4, child: _buildSemiCircularWheel(isMob: true, selectedIndex: selectedIndex, scrollPos: scrollPos, normPos: normPos)),
-        const SizedBox(height: 10),
         Expanded(
           flex: 4,
-          child: RepaintBoundary(
-            child: Center(
-              child: PhoneMockup(
-                width: 150, height: 320,
-                tiltX: 0.0,
-                tiltY: 0.0,
-                screen: _TestScreenContent(test: test, themeColor: themeColor),
+          child: _buildTacticalHUD(true, scrollPos),
+        ),
+        Expanded(
+          flex: 5,
+          child: _buildFloatingPhone(test, themeColor, isMob: true),
+        ),
+        _buildDetailCard(test, themeColor, true),
+      ],
+    );
+  }
+
+  Widget _buildTacticalHUD(bool isMob, double scrollPos) {
+    return Stack(
+      alignment: Alignment.center,
+      children: List.generate(_tests.length, (i) {
+        double diff = i - scrollPos;
+        while (diff > 6.0) { diff -= 12.0; }
+        while (diff < -6.0) { diff += 12.0; }
+
+        final absDiff = diff.abs();
+        final isSelected = absDiff < 0.5;
+        
+        // 3D Perspective Mapping
+        final double z = absDiff * 100; // Depth
+        final double y = diff * 120; // Vertical spread
+        final double scale = (1.0 - (absDiff * 0.15)).clamp(0.5, 1.0);
+        final double opacity = (1.0 - (absDiff * 0.25)).clamp(0.0, 1.0);
+
+        if (opacity < 0.1) return const SizedBox.shrink();
+
+        return Positioned(
+          top: (isMob ? 100 : 250) + y,
+          child: Transform(
+            transform: Matrix4.identity()
+              ..setEntry(3, 2, 0.001)
+              ..translate(0.0, 0.0, -z)
+              ..scale(scale, scale, 1.0),
+            alignment: Alignment.center,
+            child: Opacity(
+              opacity: opacity,
+              child: GestureDetector(
+                onTap: () => _onTapItem(i),
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: _HUDItem(
+                    test: _tests[i],
+                    isSelected: isSelected,
+                    themeColor: _getTierColor(_tests[i].tier),
+                    isMob: isMob,
+                  ),
+                ),
               ),
             ),
           ),
-        ),
-        _buildDetailCard(test, themeColor, isMob: true),
-      ],
+        );
+      }),
     );
   }
 
-  Widget _buildSemiCircularWheel({required bool isMob, required int selectedIndex, required double scrollPos, required double normPos}) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final double h = constraints.maxHeight;
-        final double w = constraints.maxWidth;
-        
-        final itemSize = _getIndicatorSize(_tests[selectedIndex].name, isMob, true);
-        final dynWidth = itemSize.width;
-        final dynHeight = itemSize.height;
-        
-        // ARC GEOMETRY
-        final radius = isMob ? h * 0.4 : h * 0.58; 
-        final centerX = w * 0.5; 
-        final centerY = h * 0.5;
-        final angleRange = math.pi * 1.5; 
-        return GestureDetector(
-          onVerticalDragUpdate: _onPanUpdate,
-          onVerticalDragEnd: _onPanEnd,
-          behavior: HitTestBehavior.translucent,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              // 1. FIXED SELECTION PILLAR (Synchronized with the Wheel Apex)
-              Positioned(
-                left: centerX - (dynWidth / 2),
-                top: centerY - (dynHeight / 2),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOutCubic,
-                  width: dynWidth, 
-                  height: dynHeight,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.03),
-                    borderRadius: BorderRadius.circular(100), // FULLY ROUNDED 'PILL' LOOK
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                    boxShadow: [
-                      BoxShadow(color: AppColors.accent2.withValues(alpha: 0.05), blurRadius: 40),
-                    ],
-                  ),
-                  child: _buildScrollIndicator(dynHeight, normPos),
-                ),
-              ),
-
-              // 2. THE C-SHAPED LIST (Apex at centerX, curving RIGHT)
-              Stack(
-                children: List.generate(_tests.length, (i) {
-                  double diff = i - scrollPos;
-                  while (diff > 6.0) { diff -= 12.0; }
-                  while (diff < -6.0) { diff += 12.0; }
-
-                  final absDiff = diff.abs();
-                  final angle = diff * (angleRange / 6); 
-                  
-                  // Trigonometric Positioning (C-shape curving RIGHT)
-                  // x is positive here, so items move to the right as they move up/down
-                  // Corrected Trigonometric Curve (Apex at index intersection)
-                  final double x = radius * (1 - math.cos(angle / 2.5)); 
-                  final double y = radius * math.sin(angle / 2.5);
-                  
-                  final opacity = (1.0 - (absDiff / 5.5)).clamp(0.01, 1.0);
-                  final scale = (1.0 - (absDiff * 0.22)).clamp(0.4, 1.0); // Aggressive Focal Falloff
-                  
-                  final isSelected = absDiff < 0.5;
-                  final themeColor = _getTierColor(_tests[i].tier);
-                  final itemSize = _getIndicatorSize(_tests[i].name, isMob, isSelected);
-                  final itemWidth = itemSize.width;
-                  final itemHeight = itemSize.height;
-
-                  return Positioned(
-                    top: centerY - (itemHeight / 2) + y,
-                    left: centerX - (itemWidth / 2) + x,
-                    child: MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: GestureDetector(
-                        onTap: () => _onTapItem(i),
-                        behavior: HitTestBehavior.opaque,
-                        child: RepaintBoundary(
-                          child: Opacity(
-                            opacity: opacity,
-                            child: Transform.scale(
-                              scale: scale,
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                width: itemWidth,
-                                height: itemHeight,
-                                alignment: Alignment.center,
-                                color: Colors.transparent,
-                                child: SingleChildScrollView(
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      // 1. THE ICON (On Top)
-                                      Container(
-                                        width: isMob ? 32 : 44, 
-                                        height: isMob ? 32 : 44,
-                                        margin: const EdgeInsets.only(top: 10),
-                                        decoration: BoxDecoration(
-                                          color: isSelected ? themeColor : Colors.white.withValues(alpha: 0.05),
-                                          shape: BoxShape.circle,
-                                          boxShadow: isSelected ? [
-                                            BoxShadow(color: themeColor.withValues(alpha: 0.3), blurRadius: 15)
-                                          ] : null,
-                                        ),
-                                        child: Icon(_tests[i].icon, size: isMob ? 16 : 22, color: isSelected ? Colors.black : Colors.white24),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      // 2. THE TEXT (Centered & Width-Locked)
-                                      SizedBox(
-                                        width: itemWidth - 40, // Match the internal text constraints
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              _tests[i].name.toUpperCase(),
-                                              textAlign: TextAlign.center,
-                                              style: AppFonts.heading(
-                                                fontSize: isSelected ? (isMob ? 18 : 28) : (isMob ? 14 : 18),
-                                                color: isSelected ? Colors.white : Colors.white24,
-                                                letterSpacing: 2,
-                                              ),
-                                              maxLines: 2,
-                                            ),
-                                            if (isSelected && !isMob)
-                                              Text(
-                                                '${_tests[i].tier.name.toUpperCase()} TEST',
-                                                textAlign: TextAlign.center,
-                                                style: AppFonts.caption.copyWith(
-                                                  color: themeColor, 
-                                                  fontSize: 10, 
-                                                  letterSpacing: 3,
-                                                  fontWeight: FontWeight.w900,
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10), // Bottom buffer
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ],
+  Widget _buildFloatingPhone(TestData test, Color themeColor, {bool isMob = false}) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: const Duration(seconds: 4),
+      curve: Curves.easeInOut,
+      builder: (context, val, child) {
+        final floatY = math.sin(val * math.pi * 2) * 10;
+        return Transform.translate(
+          offset: Offset(0, floatY),
+          child: PhoneMockup(
+            width: isMob ? 200 : 260,
+            height: isMob ? 420 : 560,
+            tiltX: 0.0,
+            tiltY: 0.0,
+            screen: _TestSimulationEngine(test: test, themeColor: themeColor),
           ),
         );
       },
     );
   }
 
-  Widget _buildScrollIndicator(double dynHeight, double normPos) {
-    const railMargin = 20.0;
-    final railHeight = dynHeight - (railMargin * 2);
-    const thumbHeight = 16.0;
-    final thumbTop = normPos * (railHeight - thumbHeight);
-
-    return Stack(
-      children: [
-        Positioned(
-          right: 8, top: railMargin, bottom: railMargin,
-          child: Container(
-            width: 1,
-            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.05)),
+  Widget _buildDetailCard(TestData test, Color themeColor, bool isMob) {
+    return Container(
+      width: isMob ? double.infinity : 380,
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: AppColors.background.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: themeColor.withValues(alpha: 0.2), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: themeColor.withValues(alpha: 0.1),
+            blurRadius: 40,
+            offset: const Offset(0, 20),
           ),
-        ),
-        Positioned(
-          right: 7, 
-          top: railMargin + thumbTop,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: 3, height: thumbHeight,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(2),
-              boxShadow: [BoxShadow(color: Colors.white.withValues(alpha: 0.2), blurRadius: 4)],
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 10, height: 10,
+                decoration: BoxDecoration(shape: BoxShape.circle, color: themeColor),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                test.tier.name.toUpperCase(),
+                style: AppFonts.caption.copyWith(color: themeColor, fontWeight: FontWeight.w900, letterSpacing: 2),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(test.name, style: AppFonts.h3.copyWith(color: Colors.white, fontSize: 24)),
+          const SizedBox(height: 12),
+          Text(test.desc, style: AppFonts.bodyLarge.copyWith(color: AppColors.muted, height: 1.6)),
+        ],
+      ),
+    );
+  }
+}
+
+class _HUDItem extends StatelessWidget {
+  final TestData test;
+  final bool isSelected;
+  final Color themeColor;
+  final bool isMob;
+
+  const _HUDItem({required this.test, required this.isSelected, required this.themeColor, required this.isMob});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: isMob ? 200 : 300,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: isSelected ? themeColor.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.02),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: isSelected ? themeColor : Colors.white10),
+      ),
+      child: Row(
+        children: [
+          Icon(test.icon, color: isSelected ? themeColor : Colors.white24, size: 20),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              test.name.toUpperCase(),
+              style: AppFonts.heading(
+                fontSize: 14,
+                color: isSelected ? Colors.white : Colors.white24,
+                letterSpacing: 2,
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
+    );
+  }
+}
+
+class _TestSimulationEngine extends StatefulWidget {
+  final TestData test;
+  final Color themeColor;
+  const _TestSimulationEngine({required this.test, required this.themeColor});
+
+  @override
+  State<_TestSimulationEngine> createState() => _TestSimulationEngineState();
+}
+
+class _TestSimulationEngineState extends State<_TestSimulationEngine> with TickerProviderStateMixin {
+  late AnimationController _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _anim = AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat();
+  }
+
+  @override
+  void dispose() {
+    _anim.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.black,
+      child: Stack(
+        children: [
+          // Basic grid background
+          Positioned.fill(
+            child: CustomPaint(painter: _DiagnosticGridPainter(color: widget.themeColor.withValues(alpha: 0.1))),
+          ),
+          
+          Center(
+            child: _buildSimulation(widget.test.number),
+          ),
+
+          // Scanning Line
+          AnimatedBuilder(
+            animation: _anim,
+            builder: (context, _) => Positioned(
+              top: _anim.value * 600,
+              left: 0, right: 0,
+              child: Container(
+                height: 1,
+                decoration: BoxDecoration(
+                  color: widget.themeColor,
+                  boxShadow: [BoxShadow(color: widget.themeColor, blurRadius: 10)],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildDetailCard(TestData test, Color themeColor, {bool isMob = false}) {
-    return RepaintBoundary(
-      child: Container(
-        width: isMob ? double.infinity : 400,
-        padding: const EdgeInsets.all(32),
-        decoration: BoxDecoration(
-          color: AppColors.background.withValues(alpha: 0.85),
-          borderRadius: BorderRadius.circular(32),
-          border: Border.all(color: themeColor.withValues(alpha: 0.35), width: 1.5),
-          boxShadow: [
-            BoxShadow(color: themeColor.withValues(alpha: 0.1), blurRadius: 40, spreadRadius: -10),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildSimulation(String testNum) {
+    switch (testNum) {
+      case '01': // Visual Acuity
+        return AnimatedBuilder(
+          animation: _anim,
+          builder: (context, _) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('E', style: TextStyle(color: Colors.white, fontSize: 80 * (1 - _anim.value * 0.5), fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              Text('F P', style: TextStyle(color: Colors.white, fontSize: 40 * (1 - _anim.value * 0.5))),
+              const SizedBox(height: 5),
+              Text('T O Z', style: TextStyle(color: Colors.white, fontSize: 20 * (1 - _anim.value * 0.5))),
+            ],
+          ),
+        );
+      case '02': // Reading Test
+        return AnimatedBuilder(
+          animation: _anim,
+          builder: (context, _) {
+            final text = "Reading clarity is essential for daily life. Optometry advanced analytics.";
+            final visibleChars = (text.length * _anim.value).toInt();
+            return Padding(
+              padding: const EdgeInsets.all(20),
+              child: Text(
+                text.substring(0, visibleChars),
+                style: const TextStyle(color: Colors.white, fontSize: 13, height: 1.5),
+                textAlign: TextAlign.center,
+              ),
+            );
+          },
+        );
+      case '03': // Color Vision
+        return CustomPaint(
+          size: const Size(180, 180),
+          painter: _IshiharaPainter(anim: _anim, color: widget.themeColor),
+        );
+      case '04': // Amsler Grid
+        return CustomPaint(
+          size: const Size(160, 160),
+          painter: _AmslerPainter(anim: _anim, color: widget.themeColor),
+        );
+      case '05': // Contrast Sensitivity
+        return AnimatedBuilder(
+          animation: _anim,
+          builder: (context, _) => Opacity(
+            opacity: 0.1 + (_anim.value * 0.8),
+            child: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('CONTRAST', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w900)),
+                Text('LEVEL 12', style: TextStyle(color: Colors.white12, fontSize: 10, letterSpacing: 4)),
+              ],
+            ),
+          ),
+        );
+      case '06': // Refractometry
+        return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 1. TIER TAG
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: themeColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: themeColor.withValues(alpha: 0.2)),
-              ),
-              child: Text(
-                '${test.tier.name.toUpperCase()} TEST',
-                style: AppFonts.caption.copyWith(color: themeColor, fontWeight: FontWeight.bold, fontSize: 9, letterSpacing: 1.5),
-              ),
-            ),
-            const SizedBox(height: 24),
-            
-            // 2. NAME & ACCENT
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+            Stack(
+              alignment: Alignment.center,
               children: [
-                Container(
-                  width: 4, height: 40,
-                  decoration: BoxDecoration(color: themeColor, borderRadius: BorderRadius.circular(2)),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    test.name.toUpperCase(), 
-                    style: AppFonts.heading(fontSize: 26, color: Colors.white, height: 1.1),
+                Container(width: 100, height: 100, decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: widget.themeColor, width: 2))),
+                AnimatedBuilder(
+                  animation: _anim,
+                  builder: (context, _) => Transform.rotate(
+                    angle: _anim.value * math.pi * 2,
+                    child: Container(width: 120, height: 2, color: widget.themeColor),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 20),
-            
-            // 3. DESCRIPTION (Bigger Readability)
-            Text(
-              test.desc, 
-              style: AppFonts.bodyLarge.copyWith(
-                color: AppColors.muted, 
-                height: 1.7, 
-                fontSize: 16, 
-                letterSpacing: 0.5,
-              ),
-            ),
+            Text('REFRACTING...', style: TextStyle(color: widget.themeColor, fontSize: 10, fontWeight: FontWeight.bold)),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TestScreenContent extends StatefulWidget {
-  final TestData test;
-  final Color themeColor;
-  const _TestScreenContent({required this.test, required this.themeColor});
-
-  @override
-  State<_TestScreenContent> createState() => _TestScreenContentState();
-}
-
-class _TestScreenContentState extends State<_TestScreenContent> with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat();
-  }
-  @override
-  void dispose() { _ctrl.dispose(); super.dispose(); }
-
-  @override
-  Widget build(BuildContext context) {
-    return RepaintBoundary(
-      child: Container(
-        color: const Color(0xFF0C0E12),
-        child: Stack(
-          children: [
-            Positioned.fill(child: Opacity(opacity: 0.1, child: CustomPaint(painter: _DiagnosticGridPainter(color: widget.themeColor)))),
-            AnimatedBuilder(
-              animation: _ctrl,
-              builder: (context, _) => Positioned(
-                top: _ctrl.value * 600,
-                left: 0, right: 0,
+        );
+      case '07': // Eye Hydration
+        return AnimatedBuilder(
+          animation: _anim,
+          builder: (context, _) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.water_drop, size: 60, color: widget.themeColor.withValues(alpha: 0.5 + math.sin(_anim.value * math.pi) * 0.5)),
+              const SizedBox(height: 10),
+              Text('HYDRATION: ${(70 + _anim.value * 20).toInt()}%', style: const TextStyle(color: Colors.white, fontSize: 12)),
+            ],
+          ),
+        );
+      case '09': // Stereopsis
+        return AnimatedBuilder(
+          animation: _anim,
+          builder: (context, _) => Stack(
+            alignment: Alignment.center,
+            children: List.generate(4, (i) {
+              final angle = (_anim.value * math.pi * 2) + (i * math.pi / 2);
+              return Transform.translate(
+                offset: Offset(math.cos(angle) * 40, math.sin(angle) * 40),
+                child: Container(width: 12, height: 12, decoration: BoxDecoration(shape: BoxShape.circle, color: widget.themeColor)),
+              );
+            }),
+          ),
+        );
+      case '10': // Visual Field (Sonar)
+        return AnimatedBuilder(
+          animation: _anim,
+          builder: (context, _) => Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: 140, height: 140,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: widget.themeColor.withValues(alpha: 0.2)),
+                ),
+              ),
+              // Radar sweep
+              Transform.rotate(
+                angle: _anim.value * math.pi * 2,
                 child: Container(
-                  height: 2,
+                  width: 140, height: 140,
                   decoration: BoxDecoration(
-                    boxShadow: [BoxShadow(color: widget.themeColor.withValues(alpha: 0.6), blurRadius: 15)],
-                    gradient: LinearGradient(colors: [Colors.transparent, widget.themeColor, Colors.transparent]),
+                    shape: BoxShape.circle,
+                    gradient: SweepGradient(
+                      colors: [widget.themeColor.withValues(alpha: 0.5), Colors.transparent],
+                      stops: const [0.1, 0.2],
+                    ),
                   ),
                 ),
               ),
-            ),
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(widget.test.icon, size: 60, color: widget.themeColor),
-                  const SizedBox(height: 20),
-                  Text('SYSTEM READY', style: AppFonts.caption.copyWith(color: widget.themeColor, fontWeight: FontWeight.w900, letterSpacing: 3, fontSize: 9)),
-                ],
-              ),
-            ),
+              if (_anim.value > 0.7)
+                Positioned(top: 40, left: 30, child: Container(width: 6, height: 6, decoration: BoxDecoration(shape: BoxShape.circle, color: widget.themeColor))),
+            ],
+          ),
+        );
+      default:
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(widget.test.icon, size: 80, color: widget.themeColor),
+            const SizedBox(height: 20),
+            Text('ACTIVE SENSOR', style: TextStyle(color: widget.themeColor, fontSize: 10, letterSpacing: 2)),
           ],
-        ),
-      ),
-    );
+        );
+    }
   }
+}
+
+class _AmslerPainter extends CustomPainter {
+  final Animation<double> anim;
+  final Color color;
+  _AmslerPainter({required this.anim, required this.color}) : super(repaint: anim);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color.withValues(alpha: 0.2)..strokeWidth = 1;
+    final w = size.width;
+    final h = size.height;
+    
+    for (double i = 0; i <= w; i += 20) {
+      final path = Path();
+      path.moveTo(i, 0);
+      for (double j = 0; j <= h; j += 5) {
+        final warp = math.sin((anim.value * math.pi * 2) + (j * 0.05)) * 10;
+        path.lineTo(i + (isSelectedPoint(i, j) ? warp : 0), j);
+      }
+      canvas.drawPath(path, paint..style = PaintingStyle.stroke);
+    }
+    for (double j = 0; j <= h; j += 20) {
+      final path = Path();
+      path.moveTo(0, j);
+      for (double i = 0; i <= w; i += 5) {
+        final warp = math.cos((anim.value * math.pi * 2) + (i * 0.05)) * 10;
+        path.lineTo(i, j + (isSelectedPoint(i, j) ? warp : 0));
+      }
+      canvas.drawPath(path, paint..style = PaintingStyle.stroke);
+    }
+    
+    // Central dot
+    canvas.drawCircle(Offset(w/2, h/2), 4, Paint()..color = color);
+  }
+
+  bool isSelectedPoint(double x, double y) => (x - 80).abs() < 40 && (y - 80).abs() < 40;
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class _IshiharaPainter extends CustomPainter {
+  final Animation<double> anim;
+  final Color color;
+  _IshiharaPainter({required this.anim, required this.color}) : super(repaint: anim);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rand = math.Random(42);
+    final center = Offset(size.width / 2, size.height / 2);
+    for (int i = 0; i < 50; i++) {
+        final dist = rand.nextDouble() * size.width / 2;
+        final angle = rand.nextDouble() * math.pi * 2;
+        final pos = center + Offset(math.cos(angle) * dist, math.sin(angle) * dist);
+        final dotColor = Color.lerp(color, Colors.red, math.sin(anim.value * math.pi + i) * 0.5 + 0.5)!;
+        canvas.drawCircle(pos, rand.nextDouble() * 5 + 2, Paint()..color = dotColor);
+    }
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class _SystemTelemetryPainter extends CustomPainter {
+  final double animValue;
+  final Color color;
+  _SystemTelemetryPainter({required this.animValue, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color.withValues(alpha: 0.1)..strokeWidth = 1;
+    
+    // Static Grid points
+    for (double x = 0; x < size.width; x += 100) {
+      for (double y = 0; y < size.height; y += 100) {
+        canvas.drawCircle(Offset(x, y), 1, paint);
+      }
+    }
+
+    // Moving scan rays
+    final rayX = (animValue * 50) % size.width;
+    canvas.drawLine(Offset(rayX, 0), Offset(rayX, size.height), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
 class _DiagnosticGridPainter extends CustomPainter {
@@ -593,13 +737,13 @@ class _DiagnosticGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..color = color..strokeWidth = 0.5;
-    for (double i = 0; i < size.width; i += 30) {
+    for (double i = 0; i < size.width; i += 20) {
       canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
     }
-    for (double i = 0; i < size.height; i += 30) {
+    for (double i = 0; i < size.height; i += 20) {
       canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
     }
   }
   @override
-  bool shouldRepaint(_DiagnosticGridPainter old) => old.color != color;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

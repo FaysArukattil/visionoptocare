@@ -53,75 +53,71 @@ class _ClinicalTestsPageState extends State<ClinicalTestsPage>
         final t = CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic).value;
         return Opacity(
           opacity: t.clamp(0.0, 1.0),
-          child: Transform.translate(
-            offset: Offset(0, 15 * (1 - t)),
-            child: Container(
-              width: size.width,
-              height: size.height,
-              color: AppColors.background,
-              child: Column(
-                children: [
-                  SizedBox(height: isMob ? 80 : 90), // Navbar clearance
-                  // Header
-                  Padding(
-                    padding: Responsive.padding(context),
-                    child: Column(
-                      children: [
-                        Text(
-                          'TECHNICAL EXCELLENCE & ECOSYSTEM',
-                          style: AppFonts.caption.copyWith(
-                            color: AppColors.accent2,
-                            letterSpacing: 4,
-                            fontWeight: FontWeight.w900,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          '12 Clinical Tests',
-                          style: AppFonts.h2.copyWith(
-                            color: AppColors.white,
-                            fontSize: isMob ? 28 : 48,
-                            height: 1.1,
-                            fontWeight: FontWeight.w800,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Clinical-grade optometry directly on your smartphone, analyzing multiple dimensions of your ocular health using advanced computer vision and AI.',
-                          style: AppFonts.bodyLarge.copyWith(
-                            color: AppColors.muted,
-                            fontSize: isMob ? 14 : 16,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Tests carousel fills remaining height
-                  Expanded(
-                    child: Padding(
+          child: Container(
+            width: size.width,
+            height: size.height,
+            color: AppColors.background,
+            child: Stack(
+              children: [
+                // ── Main Content ──
+                Column(
+                  children: [
+                    SizedBox(height: isMob ? 60 : 80), // Reduced header gap
+                    
+                    // Compact Header
+                    Padding(
                       padding: Responsive.padding(context),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(32),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.surface.withValues(alpha: 0.05),
-                            borderRadius: BorderRadius.circular(32),
-                            border: Border.all(
-                              color: AppColors.accent2.withValues(alpha: 0.1),
+                      child: Column(
+                        children: [
+                          Text(
+                            'TECHNICAL EXCELLENCE',
+                            style: AppFonts.caption.copyWith(
+                              color: AppColors.accent2,
+                              letterSpacing: 4,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 10,
                             ),
+                            textAlign: TextAlign.center,
                           ),
-                          child: const TestsSection(),
+                          const SizedBox(height: 8),
+                          Text(
+                            'The Vision Engine',
+                            style: AppFonts.h2.copyWith(
+                              color: AppColors.white,
+                              fontSize: isMob ? 24 : 40,
+                              height: 1.1,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    // ── The Suite (Full Expansion) ──
+                    Expanded(
+                      child: Container(
+                        margin: EdgeInsets.only(top: isMob ? 10 : 30),
+                        child: TestsSection(isActive: widget.isActive),
+                      ),
+                    ),
+                  ],
+                ),
+                
+                // Subtle side grain or UI accents
+                if (!isMob)
+                  Positioned(
+                    left: 20, top: 0, bottom: 0,
+                    child: Center(
+                      child: RotatedBox(
+                        quarterTurns: 3,
+                        child: Text(
+                          'DIAGNOSTIC PROTOCOL v2.0',
+                          style: TextStyle(color: Colors.white.withValues(alpha: 0.05), fontSize: 10, letterSpacing: 10),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
-                ],
-              ),
+              ],
             ),
           ),
         );

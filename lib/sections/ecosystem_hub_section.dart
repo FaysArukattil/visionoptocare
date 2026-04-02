@@ -72,25 +72,25 @@ class EcosystemHubSection extends StatelessWidget {
   }
 
   Widget _buildDesktopGrid() {
-    // We use explicit heights on Rows to prevent Expanded/RenderFlex crashes in scrolling parents
     return Column(
       children: [
-        // Row 1: 12 Clinical Tests (Full Width)
         _FeatureBentoCard(
           title: '12 Clinical Tests',
           subtitle: 'Our platform brings clinical-grade optometry directly to your smartphone, analyzing multiple dimensions of your ocular health using advanced computer vision and AI.',
           icon: Icons.biotech,
           color: AppColors.accent2,
-          child: const SizedBox(
+          child: SizedBox(
             height: 700,
             width: double.infinity,
             child: ClipRRect(
               borderRadius: BorderRadius.all(Radius.circular(16)),
-              child: TestsSection(),
+              child: TestsSection(isActive: true),
             ),
           ),
         ),
         const SizedBox(height: 24),
+
+        // ... other cards ...
 
         // Row 2: Smart Medical Reports (Full Width)
         _FeatureBentoCard(
@@ -182,12 +182,12 @@ class EcosystemHubSection extends StatelessWidget {
           icon: Icons.biotech,
           color: AppColors.accent2,
           isMobile: true,
-          child: const SizedBox(
+          child: SizedBox(
             height: 700,
             width: double.infinity,
             child: ClipRRect(
               borderRadius: BorderRadius.all(Radius.circular(16)),
-              child: TestsSection(),
+              child: TestsSection(isActive: true),
             ),
           ),
         ),
