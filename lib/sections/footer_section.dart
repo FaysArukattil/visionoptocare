@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
@@ -13,6 +14,26 @@ class FooterSection extends StatefulWidget {
 }
 
 class _FooterSectionState extends State<FooterSection> {
+  bool _showLegal = false;
+  Timer? _legalTimer;
+
+  @override
+  void dispose() {
+    _legalTimer?.cancel();
+    super.dispose();
+  }
+
+  void _toggleLegal() {
+    _legalTimer?.cancel();
+    setState(() => _showLegal = !_showLegal);
+    
+    if (_showLegal) {
+      _legalTimer = Timer(const Duration(seconds: 30), () {
+        if (mounted) setState(() => _showLegal = false);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isMob = Responsive.isMobile(context);
@@ -46,10 +67,16 @@ class _FooterSectionState extends State<FooterSection> {
                           // DATA GRID
                           isMob ? _buildMobileGrid() : _buildDesktopGrid(),
                           
-                          // PERMANENT LEGAL FRAMEWORK
-                          Padding(
-                            padding: const EdgeInsets.only(top: 60),
-                            child: _buildLegalFramework(context, isMob),
+                          // ANIMATED LEGAL FRAMEWORK
+                          AnimatedSize(
+                            duration: const Duration(milliseconds: 600),
+                            curve: Curves.fastOutSlowIn,
+                            child: _showLegal 
+                              ? Padding(
+                                  padding: const EdgeInsets.only(top: 60),
+                                  child: _buildLegalFramework(context, isMob),
+                                )
+                              : const SizedBox.shrink(),
                           ),
                         ],
                       ),
@@ -148,10 +175,13 @@ class _FooterSectionState extends State<FooterSection> {
         ),
         const SizedBox(width: 40),
         // RESOURCES
-        const Expanded(
+        Expanded(
           child: _GridCluster(
             title: 'LEGAL & COMPLIANCE',
             items: ['Legal Terms and Service of Use'],
+            onItemTap: (item) {
+              if (item == 'Legal Terms and Service of Use') _toggleLegal();
+            },
           ),
         ),
       ],
@@ -179,6 +209,9 @@ class _FooterSectionState extends State<FooterSection> {
           title: 'RESOURCES',
           items: ['Legal Terms and Service of Use'],
           isCentered: true,
+          onItemTap: (item) {
+            if (item == 'Legal Terms and Service of Use') _toggleLegal();
+          },
         ),
       ],
     );
@@ -208,26 +241,48 @@ class _FooterSectionState extends State<FooterSection> {
   Widget _buildLegalFramework(BuildContext context, bool isMob) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(48),
+      padding: const EdgeInsets.all(40),
       decoration: BoxDecoration(
-        color: AppColors.white.withValues(alpha: 0.01),
-        borderRadius: BorderRadius.circular(24),
+        color: AppColors.surface.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(40),
         border: Border.all(color: AppColors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
-            spacing: 32,
-            runSpacing: 32,
-            alignment: WrapAlignment.center,
-            children: const [
-              _LegalNode(title: 'NON-DIAGNOSTIC TOOL', content: 'Vision Optocare provides screening and supportive data. It is not a replacement for professional medical diagnosis or clinical eye examinations.'),
-              _LegalNode(title: 'NO LIABILITY AGREEMENT', content: 'Vision Optocare, its developers, and partners are not liable for any decisions, health outcomes, or actions taken based on the results provided by this platform.'),
-              _LegalNode(title: 'ADVOCACY & EDUCATION', content: 'Our mission is to advocate for better eye health through awareness. Always consult a qualified optometrist or ophthalmologist for formal clinical advice.'),
-              _LegalNode(title: 'ACCURACY & RELIABILITY', content: 'Digital screenings are subject to environmental factors like lighting and screen quality. Results should be treated as indicative, not absolute.'),
-              _LegalNode(title: 'USER RESPONSIBILITY', content: 'Users are responsible for ensuring they follow the testing instructions accurately for the most reliable screening data possible.'),
-              _LegalNode(title: 'DATA PROTECTION', content: 'We prioritize your vision data security. Our platform adheres to best practices in data privacy and user confidentiality.'),
+          Row(
+            children: [
+              Icon(Icons.gavel_rounded, color: AppColors.accent2, size: 24),
+              const SizedBox(width: 16),
+              Text(
+                'MEDICAL DISCLAIMER & TERMS OF USE',
+                style: AppFonts.caption.copyWith(color: AppColors.accent2, fontWeight: FontWeight.bold, letterSpacing: 2),
+              ),
+              const Spacer(),
+              IconButton(
+                onPressed: () => setState(() => _showLegal = false),
+                icon: Icon(Icons.close, color: AppColors.white.withValues(alpha: 0.3)),
+                tooltip: 'Close Terms',
+              ),
             ],
+          ),
+          const SizedBox(height: 32),
+          Text(
+            'Important Notice: Vision Optocare provides screening and supportive data for educational and awareness purposes only. It is not a replacement for professional medical diagnosis or clinical eye examinations. All results should be treated as indicative, not absolute, as digital screenings are subject to environmental factors like lighting and screen quality. Vision Optocare, its developers, and partners are not liable for any decisions, health outcomes, or actions taken based on the results provided by this platform. By using this service, you acknowledge that you are responsible for following testing instructions accurately and maintaining your own formal clinical follow-ups. We prioritize your privacy and ensure vision data security adheres to best practices in confidentiality.',
+            style: AppFonts.bodySmall.copyWith(
+              color: AppColors.white.withValues(alpha: 0.5),
+              height: 1.8,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'This notice will automatically hide after 30 seconds of visibility.',
+            style: AppFonts.caption.copyWith(
+              color: AppColors.accent2.withValues(alpha: 0.5),
+              fontStyle: FontStyle.italic,
+              fontSize: 11,
+            ),
           ),
         ],
       ),
@@ -239,7 +294,8 @@ class _GridCluster extends StatelessWidget {
   final String title;
   final List<String> items;
   final bool isCentered;
-  const _GridCluster({required this.title, required this.items, this.isCentered = false});
+  final Function(String)? onItemTap;
+  const _GridCluster({required this.title, required this.items, this.isCentered = false, this.onItemTap});
 
   @override
   Widget build(BuildContext context) {
@@ -253,10 +309,13 @@ class _GridCluster extends StatelessWidget {
         const SizedBox(height: 24),
         ...items.map((item) => Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: Text(
-            item,
-            textAlign: isCentered ? TextAlign.center : TextAlign.left,
-            style: AppFonts.bodySmall.copyWith(color: AppColors.white.withValues(alpha: 0.4), height: 1.6, fontSize: 13),
+          child: InkWell(
+            onTap: onItemTap != null ? () => onItemTap!(item) : null,
+            child: Text(
+              item,
+              textAlign: isCentered ? TextAlign.center : TextAlign.left,
+              style: AppFonts.bodySmall.copyWith(color: AppColors.white.withValues(alpha: 0.4), height: 1.6, fontSize: 13),
+            ),
           ),
         )),
       ],
@@ -323,25 +382,3 @@ class _SocialNodeState extends State<_SocialNode> {
   }
 }
 
-class _LegalNode extends StatelessWidget {
-  final String title;
-  final String content;
-  const _LegalNode({required this.title, required this.content});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 280,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(color: AppColors.white.withValues(alpha: 0.03), borderRadius: BorderRadius.circular(16)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: AppFonts.caption.copyWith(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 10)),
-          const SizedBox(height: 8),
-          Text(content, style: AppFonts.bodySmall.copyWith(color: AppColors.muted, fontSize: 11)),
-        ],
-      ),
-    );
-  }
-}
