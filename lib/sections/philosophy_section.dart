@@ -11,49 +11,51 @@ class PhilosophySection extends StatelessWidget {
   Widget build(BuildContext context) {
     final isMob = Responsive.isMobile(context);
     
-    return ScrollRevealWidget(
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: isMob ? 80 : 160),
-        decoration: BoxDecoration(
-          color: AppColors.background,
-        ),
-        child: Column(
-          children: [
-            // Section Header
-            Padding(
-              padding: Responsive.padding(context),
-              child: Column(
-                children: [
-                  Text(
-                    'OUR PHILOSOPHY',
-                    style: AppFonts.caption.copyWith(
-                      color: AppColors.accent2, 
-                      letterSpacing: 4, 
-                      fontWeight: FontWeight.w900,
+    return RepaintBoundary(
+      child: ScrollRevealWidget(
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: isMob ? 80 : 160),
+          decoration: BoxDecoration(
+            color: AppColors.background,
+          ),
+          child: Column(
+            children: [
+              // Section Header
+              Padding(
+                padding: Responsive.padding(context),
+                child: Column(
+                  children: [
+                    Text(
+                      'OUR PHILOSOPHY',
+                      style: AppFonts.caption.copyWith(
+                        color: AppColors.accent2, 
+                        letterSpacing: 4, 
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'The Vision Behind\nVision Optocare',
-                    style: AppFonts.h2.copyWith(
-                      color: AppColors.white, 
-                      fontSize: isMob ? 32 : 56, 
-                      height: 1.1,
-                      fontWeight: FontWeight.w800,
+                    const SizedBox(height: 24),
+                    Text(
+                      'The Vision Behind\nVision Optocare',
+                      style: AppFonts.h2.copyWith(
+                        color: AppColors.white, 
+                        fontSize: isMob ? 32 : 56, 
+                        height: 1.1,
+                        fontWeight: FontWeight.w800,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 100),
-
-            // Narrative Steps
-            Padding(
-              padding: Responsive.padding(context),
-              child: _buildPhilosophyFlow(context, isMob),
-            ),
-          ],
+              const SizedBox(height: 100),
+  
+              // Narrative Steps
+              Padding(
+                padding: Responsive.padding(context),
+                child: _buildPhilosophyFlow(context, isMob),
+              ),
+            ],
+          ),
         ),
       ),
     );

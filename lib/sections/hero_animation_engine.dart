@@ -105,45 +105,47 @@ class _TraditionalShatterStageState extends State<_TraditionalShatterStage> with
   Widget build(BuildContext context) {
     final shatterP = (widget.p - 0.15).clamp(0.0, 1.0) * 3; // Fast shatter after 0.15
 
-    return AnimatedBuilder(
-      animation: _bobCtrl,
-      builder: (context, _) {
-        return Transform(
-          transform: Matrix4.identity()
-            ..setEntry(3, 2, 0.001)
-            ..rotateY(0.05 * math.sin(_bobCtrl.value * math.pi * 2))
-            ..rotateX(-0.1)
-            ..setTranslationRaw(0.0, 10 * math.sin(_bobCtrl.value * math.pi * 2), 0.0),
-          alignment: Alignment.center,
-          child: Stack(
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _bobCtrl,
+        builder: (context, _) {
+          return Transform(
+            transform: Matrix4.identity()
+              ..setEntry(3, 2, 0.001)
+              ..rotateY(0.05 * math.sin(_bobCtrl.value * math.pi * 2))
+              ..rotateX(-0.1)
+              ..setTranslationRaw(0.0, 10 * math.sin(_bobCtrl.value * math.pi * 2), 0.0),
             alignment: Alignment.center,
-            children: [
-              // Soft Neon Glow Shadow
-              Container(
-                width: 280,
-                height: 400,
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.accent2.withValues(alpha: 0.15 * (1 - shatterP).clamp(0.0, 1.0)),
-                      blurRadius: 100,
-                      offset: const Offset(0, 50),
-                    ),
-                  ],
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Soft Neon Glow Shadow
+                Container(
+                  width: 280,
+                  height: 400,
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.accent2.withValues(alpha: 0.15 * (1 - shatterP).clamp(0.0, 1.0)),
+                        blurRadius: 100,
+                        offset: const Offset(0, 50),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              
-              // The Chart (or shards)
-              RepaintBoundary(
-                child: CustomPaint(
-                  size: const Size(300, 420),
-                  painter: _ShardPainter(shards: _shards, p: shatterP, scrollP: widget.p),
+                
+                // The Chart (or shards)
+                RepaintBoundary(
+                  child: CustomPaint(
+                    size: const Size(300, 420),
+                    painter: _ShardPainter(shards: _shards, p: shatterP, scrollP: widget.p),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -334,103 +336,104 @@ class _SmartphoneScanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final entryP = (p - 0.55) / 0.45; // 0.0 to 1.0 between p=0.55 and 1.0
     
-    return Transform(
-      transform: Matrix4.identity()
-        ..setEntry(3, 2, 0.001)
-        ..setTranslationRaw(0.0, 300 * (1 - entryP), 0.0) // Deeper entry
-        // Levels out to perfectly 'normal' head-on view
-        ..rotateX(0.4 * (1 - entryP)) 
-        ..rotateY(-0.35 * (1 - entryP)),
-      alignment: Alignment.center,
-      child: Stack(
+    return RepaintBoundary(
+      child: Transform(
+        transform: Matrix4.identity()
+          ..setEntry(3, 2, 0.001)
+          ..setTranslationRaw(0.0, 300 * (1 - entryP.clamp(0.0, 1.0)), 0.0) 
+          ..rotateX(0.4 * (1 - entryP.clamp(0.0, 1.0))) 
+          ..rotateY(-0.35 * (1 - entryP.clamp(0.0, 1.0))),
         alignment: Alignment.center,
-        clipBehavior: Clip.none,
-        children: [
-          // Background Glass Cards
-          _buildGlassCard(entryP, -140 * (isMob ? 0.7 : 1.0), -80, "Acuity: 20/20", 0.7),
-          _buildGlassCard(entryP, 140 * (isMob ? 0.7 : 1.0), 100, "Scan Ready ✓", 0.8),
-          
-          // The Phone (Smartphone Mockup)
-          Container(
-            width: isMob ? 280 : 320,
-            height: isMob ? 550 : 600,
-            decoration: BoxDecoration(
-              color: const Color(0xFF020617),
-              borderRadius: BorderRadius.circular(50),
-              border: Border.all(color: AppColors.accent2.withValues(alpha: 0.3), width: 3),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.accent2.withValues(alpha: 0.4 * (entryP > 0 ? entryP : 0)),
-                  blurRadius: 100,
-                  spreadRadius: 10,
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(47),
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0xFF020617), Color(0xFF0F172A)],
+        child: Stack(
+          alignment: Alignment.center,
+          clipBehavior: Clip.none,
+          children: [
+            // Background Glass Cards
+            _buildGlassCard(entryP, -140 * (isMob ? 0.7 : 1.0), -80, "Acuity: 20/20", 0.7),
+            _buildGlassCard(entryP, 140 * (isMob ? 0.7 : 1.0), 100, "Scan Ready ✓", 0.8),
+            
+            // The Phone (Smartphone Mockup)
+            Container(
+              width: isMob ? 280 : 320,
+              height: isMob ? 550 : 600,
+              decoration: BoxDecoration(
+                color: const Color(0xFF020617),
+                borderRadius: BorderRadius.circular(50),
+                border: Border.all(color: AppColors.accent2.withValues(alpha: 0.3), width: 3),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.accent2.withValues(alpha: 0.4 * entryP.clamp(0.0, 1.0)),
+                    blurRadius: 100,
+                    spreadRadius: 10,
                   ),
-                ),
-                child: Stack(
-                  children: [
-                    // Official Splash Layout (Verified Content)
-                    Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          SizedBox(height: isMob ? 90 : 120), // Top margin fix
-                          const EyeLogo(size: 110), // Logo only
-                          const SizedBox(height: 48),
-                          Text(
-                            'Your Vision, Our Priority',
-                            style: AppFonts.bodyLarge.copyWith(
-                              color: AppColors.white.withValues(alpha: 0.85),
-                              fontSize: isMob ? 16 : 20,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.5,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Premium Digital eye care',
-                            style: AppFonts.caption.copyWith(
-                              color: AppColors.accent2.withValues(alpha: 0.7),
-                              fontSize: isMob ? 11 : 13,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 1.2,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(47),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0xFF020617), Color(0xFF0F172A)],
                     ),
-
-                    // Official EyeLoader Footer
-                    Positioned(
-                      bottom: 45, // Slightly higher for better balance
-                      left: 0,
-                      right: 0,
-                      child: Center(
-                        child: RepaintBoundary(
-                          child: Opacity(
-                            opacity: entryP.clamp(0.0, 1.0),
-                            child: const EyeLoader.adaptive(size: 50),
+                  ),
+                  child: Stack(
+                    children: [
+                      // Official Splash Layout
+                      Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            SizedBox(height: isMob ? 90 : 120),
+                            const EyeLogo(size: 110),
+                            const SizedBox(height: 48),
+                            Text(
+                              'Your Vision, Our Priority',
+                              style: AppFonts.bodyLarge.copyWith(
+                                color: AppColors.white.withValues(alpha: 0.85),
+                                fontSize: isMob ? 16 : 20,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Premium Digital eye care',
+                              style: AppFonts.caption.copyWith(
+                                color: AppColors.accent2.withValues(alpha: 0.7),
+                                fontSize: isMob ? 11 : 13,
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 1.2,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+  
+                      // Official EyeLoader Footer
+                      Positioned(
+                        bottom: 45,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child: RepaintBoundary(
+                            child: Opacity(
+                              opacity: entryP.clamp(0.0, 1.0),
+                              child: const EyeLoader.adaptive(size: 50),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -441,21 +444,20 @@ class _SmartphoneScanner extends StatelessWidget {
       offset: Offset(dx * cardP, dy * cardP),
       child: Opacity(
         opacity: cardP,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-              ),
-              child: Text(
-                text,
-                style: AppFonts.caption.copyWith(color: AppColors.white, fontWeight: FontWeight.bold),
-              ),
+        child: RepaintBoundary(
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 20),
+              ],
+            ),
+            child: Text(
+              text,
+              style: AppFonts.caption.copyWith(color: AppColors.white, fontWeight: FontWeight.bold),
             ),
           ),
         ),

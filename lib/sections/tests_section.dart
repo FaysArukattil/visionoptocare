@@ -49,19 +49,17 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     super.initState();
     _scrollCtrl = AnimationController(
       vsync: this, 
+      value: 0.0, // Initialize to 0.0
       duration: const Duration(milliseconds: 300),
       lowerBound: double.negativeInfinity,
       upperBound: double.infinity,
     );
-    _scrollCtrl.addListener(() {
-      setState(() => _scrollPos = _scrollCtrl.value);
-    });
+    // Removed setState listener for better performance.
+    // Instead, we use AnimatedBuilder in the build method.
   }
 
   void _onPanUpdate(DragUpdateDetails d) {
-    setState(() {
-      _scrollPos -= d.delta.dy / 100; // Sensitivity
-    });
+    _scrollCtrl.value -= d.delta.dy / 100; // Sensitivity 
   }
 
   void _onPanEnd(DragEndDetails d) {
@@ -137,46 +135,58 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    int selectedIndex = (_scrollPos.round() % _tests.length);
-    if (selectedIndex < 0) {
-      selectedIndex += _tests.length;
-    }
-
-    final test = _tests[selectedIndex];
     final isMob = Responsive.isMobile(context);
-    final themeColor = _getTierColor(test.tier);
 
     return KeyboardListener(
       focusNode: _focusNode,
       autofocus: true,
       onKeyEvent: _onKey,
-      child: Container(
-        height: double.infinity,
-        color: Colors.transparent,
-        clipBehavior: Clip.none,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned.fill(
-              child: CustomPaint(
-                painter: ParticlePainter(
-                  animValue: _scrollPos * 0.1,
-                  color: themeColor.withValues(alpha: 0.1),
-                  count: 15,
-                ),
-              ),
-            ),
+      child: AnimatedBuilder(
+        animation: _scrollCtrl,
+        builder: (context, child) {
+          final scrollVal = _scrollCtrl.value;
+          if (!scrollVal.isFinite) return const SizedBox.shrink();
+          final scrollPos = scrollVal;
+          int selectedIndex = (scrollPos.round() % _tests.length);
+          if (selectedIndex < 0) {
+            selectedIndex += _tests.length;
+          }
 
-            Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: isMob ? 0 : 20, vertical: 0),
-                child: isMob 
-                    ? _buildMobileLayout(test, themeColor, selectedIndex) 
-                    : _buildDesktopLayout(test, themeColor, selectedIndex),
-              ),
+          final test = _tests[selectedIndex];
+          final themeColor = _getTierColor(test.tier);
+          final normPos = ((scrollPos % _tests.length) + _tests.length) % _tests.length / _tests.length;
+
+          return Container(
+            height: double.infinity,
+            color: Colors.transparent,
+            clipBehavior: Clip.none,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned.fill(
+                  child: RepaintBoundary(
+                    child: CustomPaint(
+                      painter: ParticlePainter(
+                        animValue: scrollPos * 0.1,
+                        color: themeColor.withValues(alpha: 0.1),
+                        count: 15,
+                      ),
+                    ),
+                  ),
+                ),
+
+                Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: isMob ? 0 : 20, vertical: 0),
+                    child: isMob 
+                        ? _buildMobileLayout(test, themeColor, selectedIndex, scrollPos, normPos) 
+                        : _buildDesktopLayout(test, themeColor, selectedIndex, scrollPos, normPos),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -190,13 +200,13 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     }
   }
 
-  Widget _buildDesktopLayout(TestData test, Color themeColor, int selectedIndex) {
+  Widget _buildDesktopLayout(TestData test, Color themeColor, int selectedIndex, double scrollPos, double normPos) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
           flex: 5,
-          child: _buildSemiCircularWheel(isMob: false, selectedIndex: selectedIndex),
+          child: _buildSemiCircularWheel(isMob: false, selectedIndex: selectedIndex, scrollPos: scrollPos, normPos: normPos),
         ),
         const SizedBox(width: 40),
         Expanded(
@@ -206,16 +216,18 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
             children: [
               Positioned(
                 left: 120,
-                child: Transform(
-                  transform: Matrix4.identity()
-                    ..setEntry(3, 2, 0.001)
-                    ..rotateY(-0.1)
-                    ..rotateX(0.02),
-                  alignment: Alignment.center,
-                  child: PhoneMockup(
-                    width: 250,
-                    height: 540,
-                    screen: _TestScreenContent(test: test, themeColor: themeColor),
+                child: RepaintBoundary(
+                  child: Transform(
+                    transform: Matrix4.identity()
+                      ..setEntry(3, 2, 0.001)
+                      ..rotateY(-0.1)
+                      ..rotateX(0.02),
+                    alignment: Alignment.center,
+                    child: PhoneMockup(
+                      width: 250,
+                      height: 540,
+                      screen: _TestScreenContent(test: test, themeColor: themeColor),
+                    ),
                   ),
                 ),
               ),
@@ -231,17 +243,19 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     );
   }
 
-  Widget _buildMobileLayout(TestData test, Color themeColor, int selectedIndex) {
+  Widget _buildMobileLayout(TestData test, Color themeColor, int selectedIndex, double scrollPos, double normPos) {
     return Column(
       children: [
-        Expanded(flex: 4, child: _buildSemiCircularWheel(isMob: true, selectedIndex: selectedIndex)),
+        Expanded(flex: 4, child: _buildSemiCircularWheel(isMob: true, selectedIndex: selectedIndex, scrollPos: scrollPos, normPos: normPos)),
         const SizedBox(height: 10),
         Expanded(
           flex: 4,
-          child: Center(
-            child: PhoneMockup(
-              width: 180, height: 380,
-              screen: _TestScreenContent(test: test, themeColor: themeColor),
+          child: RepaintBoundary(
+            child: Center(
+              child: PhoneMockup(
+                width: 180, height: 380,
+                screen: _TestScreenContent(test: test, themeColor: themeColor),
+              ),
             ),
           ),
         ),
@@ -250,7 +264,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     );
   }
 
-  Widget _buildSemiCircularWheel({required bool isMob, required int selectedIndex}) {
+  Widget _buildSemiCircularWheel({required bool isMob, required int selectedIndex, required double scrollPos, required double normPos}) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final double h = constraints.maxHeight;
@@ -259,13 +273,12 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
         final itemSize = _getIndicatorSize(_tests[selectedIndex].name, isMob, true);
         final dynWidth = itemSize.width;
         final dynHeight = itemSize.height;
-        final normPos = ((_scrollPos % _tests.length) + _tests.length) % _tests.length / _tests.length;
         
-        // ARC GEOMETRY (Spread out massively to fit all 12 tests)
+        // ARC GEOMETRY
         final radius = isMob ? h * 0.4 : h * 0.58; 
-        final centerX = w * 0.5; // Perfectly centered visually
+        final centerX = w * 0.5; 
         final centerY = h * 0.5;
-        final angleRange = math.pi * 1.5; // 270 degrees spread for all 12 tests
+        final angleRange = math.pi * 1.5; 
         return GestureDetector(
           onVerticalDragUpdate: _onPanUpdate,
           onVerticalDragEnd: _onPanEnd,
@@ -297,7 +310,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
               // 2. THE C-SHAPED LIST (Apex at centerX, curving RIGHT)
               Stack(
                 children: List.generate(_tests.length, (i) {
-                  double diff = i - _scrollPos;
+                  double diff = i - scrollPos;
                   while (diff > 6.0) { diff -= 12.0; }
                   while (diff < -6.0) { diff += 12.0; }
 
@@ -327,71 +340,73 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
                       child: GestureDetector(
                         onTap: () => _onTapItem(i),
                         behavior: HitTestBehavior.opaque,
-                        child: Opacity(
-                          opacity: opacity,
-                          child: Transform.scale(
-                            scale: scale,
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              width: itemWidth,
-                              height: itemHeight,
-                              alignment: Alignment.center,
-                              color: Colors.transparent,
-                              child: SingleChildScrollView(
-                                physics: const NeverScrollableScrollPhysics(),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    // 1. THE ICON (On Top)
-                                    Container(
-                                      width: isMob ? 32 : 44, 
-                                      height: isMob ? 32 : 44,
-                                      margin: const EdgeInsets.only(top: 10),
-                                      decoration: BoxDecoration(
-                                        color: isSelected ? themeColor : Colors.white.withValues(alpha: 0.05),
-                                        shape: BoxShape.circle,
-                                        boxShadow: isSelected ? [
-                                          BoxShadow(color: themeColor.withValues(alpha: 0.3), blurRadius: 15)
-                                        ] : null,
+                        child: RepaintBoundary(
+                          child: Opacity(
+                            opacity: opacity,
+                            child: Transform.scale(
+                              scale: scale,
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                width: itemWidth,
+                                height: itemHeight,
+                                alignment: Alignment.center,
+                                color: Colors.transparent,
+                                child: SingleChildScrollView(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      // 1. THE ICON (On Top)
+                                      Container(
+                                        width: isMob ? 32 : 44, 
+                                        height: isMob ? 32 : 44,
+                                        margin: const EdgeInsets.only(top: 10),
+                                        decoration: BoxDecoration(
+                                          color: isSelected ? themeColor : Colors.white.withValues(alpha: 0.05),
+                                          shape: BoxShape.circle,
+                                          boxShadow: isSelected ? [
+                                            BoxShadow(color: themeColor.withValues(alpha: 0.3), blurRadius: 15)
+                                          ] : null,
+                                        ),
+                                        child: Icon(_tests[i].icon, size: isMob ? 16 : 22, color: isSelected ? Colors.black : Colors.white24),
                                       ),
-                                      child: Icon(_tests[i].icon, size: isMob ? 16 : 22, color: isSelected ? Colors.black : Colors.white24),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    // 2. THE TEXT (Centered & Width-Locked)
-                                    SizedBox(
-                                      width: itemWidth - 40, // Match the internal text constraints
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            _tests[i].name.toUpperCase(),
-                                            textAlign: TextAlign.center,
-                                            style: AppFonts.heading(
-                                              fontSize: isSelected ? (isMob ? 18 : 28) : (isMob ? 14 : 18),
-                                              color: isSelected ? Colors.white : Colors.white24,
-                                              letterSpacing: 2,
-                                            ),
-                                            maxLines: 2,
-                                          ),
-                                          if (isSelected && !isMob)
+                                      const SizedBox(height: 12),
+                                      // 2. THE TEXT (Centered & Width-Locked)
+                                      SizedBox(
+                                        width: itemWidth - 40, // Match the internal text constraints
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
                                             Text(
-                                              '${_tests[i].tier.name.toUpperCase()} TEST',
+                                              _tests[i].name.toUpperCase(),
                                               textAlign: TextAlign.center,
-                                              style: AppFonts.caption.copyWith(
-                                                color: themeColor, 
-                                                fontSize: 10, 
-                                                letterSpacing: 3,
-                                                fontWeight: FontWeight.w900,
+                                              style: AppFonts.heading(
+                                                fontSize: isSelected ? (isMob ? 18 : 28) : (isMob ? 14 : 18),
+                                                color: isSelected ? Colors.white : Colors.white24,
+                                                letterSpacing: 2,
                                               ),
+                                              maxLines: 2,
                                             ),
-                                        ],
+                                            if (isSelected && !isMob)
+                                              Text(
+                                                '${_tests[i].tier.name.toUpperCase()} TEST',
+                                                textAlign: TextAlign.center,
+                                                style: AppFonts.caption.copyWith(
+                                                  color: themeColor, 
+                                                  fontSize: 10, 
+                                                  letterSpacing: 3,
+                                                  fontWeight: FontWeight.w900,
+                                                ),
+                                              ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 10), // Bottom buffer
-                                  ],
+                                      const SizedBox(height: 10), // Bottom buffer
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -442,71 +457,67 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   }
 
   Widget _buildDetailCard(TestData test, Color themeColor, {bool isMob = false}) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(32),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          width: isMob ? double.infinity : 400,
-          padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: themeColor.withValues(alpha: 0.2), width: 1.5),
-            boxShadow: [
-              BoxShadow(color: themeColor.withValues(alpha: 0.05), blurRadius: 40, spreadRadius: -10),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 1. TIER TAG
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: themeColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: themeColor.withValues(alpha: 0.2)),
-                ),
-                child: Text(
-                  '${test.tier.name.toUpperCase()} TEST',
-                  style: AppFonts.caption.copyWith(color: themeColor, fontWeight: FontWeight.bold, fontSize: 9, letterSpacing: 1.5),
-                ),
+    return RepaintBoundary(
+      child: Container(
+        width: isMob ? double.infinity : 400,
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: AppColors.background.withValues(alpha: 0.85),
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(color: themeColor.withValues(alpha: 0.35), width: 1.5),
+          boxShadow: [
+            BoxShadow(color: themeColor.withValues(alpha: 0.1), blurRadius: 40, spreadRadius: -10),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 1. TIER TAG
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: themeColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: themeColor.withValues(alpha: 0.2)),
               ),
-              const SizedBox(height: 24),
-              
-              // 2. NAME & ACCENT
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 4, height: 40,
-                    decoration: BoxDecoration(color: themeColor, borderRadius: BorderRadius.circular(2)),
+              child: Text(
+                '${test.tier.name.toUpperCase()} TEST',
+                style: AppFonts.caption.copyWith(color: themeColor, fontWeight: FontWeight.bold, fontSize: 9, letterSpacing: 1.5),
+              ),
+            ),
+            const SizedBox(height: 24),
+            
+            // 2. NAME & ACCENT
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 4, height: 40,
+                  decoration: BoxDecoration(color: themeColor, borderRadius: BorderRadius.circular(2)),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    test.name.toUpperCase(), 
+                    style: AppFonts.heading(fontSize: 26, color: Colors.white, height: 1.1),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      test.name.toUpperCase(), 
-                      style: AppFonts.heading(fontSize: 26, color: Colors.white, height: 1.1),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              
-              // 3. DESCRIPTION (Bigger Readability)
-              Text(
-                test.desc, 
-                style: AppFonts.bodyLarge.copyWith(
-                  color: AppColors.muted, 
-                  height: 1.7, 
-                  fontSize: 16, 
-                  letterSpacing: 0.5,
                 ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            
+            // 3. DESCRIPTION (Bigger Readability)
+            Text(
+              test.desc, 
+              style: AppFonts.bodyLarge.copyWith(
+                color: AppColors.muted, 
+                height: 1.7, 
+                fontSize: 16, 
+                letterSpacing: 0.5,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -534,36 +545,38 @@ class _TestScreenContentState extends State<_TestScreenContent> with SingleTicke
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFF0C0E12),
-      child: Stack(
-        children: [
-          Positioned.fill(child: Opacity(opacity: 0.1, child: CustomPaint(painter: _DiagnosticGridPainter(color: widget.themeColor)))),
-          AnimatedBuilder(
-            animation: _ctrl,
-            builder: (context, _) => Positioned(
-              top: _ctrl.value * 600,
-              left: 0, right: 0,
-              child: Container(
-                height: 2,
-                decoration: BoxDecoration(
-                  boxShadow: [BoxShadow(color: widget.themeColor.withValues(alpha: 0.6), blurRadius: 15)],
-                  gradient: LinearGradient(colors: [Colors.transparent, widget.themeColor, Colors.transparent]),
+    return RepaintBoundary(
+      child: Container(
+        color: const Color(0xFF0C0E12),
+        child: Stack(
+          children: [
+            Positioned.fill(child: Opacity(opacity: 0.1, child: CustomPaint(painter: _DiagnosticGridPainter(color: widget.themeColor)))),
+            AnimatedBuilder(
+              animation: _ctrl,
+              builder: (context, _) => Positioned(
+                top: _ctrl.value * 600,
+                left: 0, right: 0,
+                child: Container(
+                  height: 2,
+                  decoration: BoxDecoration(
+                    boxShadow: [BoxShadow(color: widget.themeColor.withValues(alpha: 0.6), blurRadius: 15)],
+                    gradient: LinearGradient(colors: [Colors.transparent, widget.themeColor, Colors.transparent]),
+                  ),
                 ),
               ),
             ),
-          ),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(widget.test.icon, size: 60, color: widget.themeColor),
-                const SizedBox(height: 20),
-                Text('SYSTEM READY', style: AppFonts.caption.copyWith(color: widget.themeColor, fontWeight: FontWeight.w900, letterSpacing: 3, fontSize: 9)),
-              ],
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(widget.test.icon, size: 60, color: widget.themeColor),
+                  const SizedBox(height: 20),
+                  Text('SYSTEM READY', style: AppFonts.caption.copyWith(color: widget.themeColor, fontWeight: FontWeight.w900, letterSpacing: 3, fontSize: 9)),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

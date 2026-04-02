@@ -11,49 +11,51 @@ class FoundersSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final isMob = Responsive.isMobile(context);
     
-    return ScrollRevealWidget(
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: isMob ? 80 : 160),
-        decoration: BoxDecoration(
-          color: AppColors.background,
-        ),
-        child: Column(
-          children: [
-            // Section Header
-            Padding(
-              padding: Responsive.padding(context),
-              child: Column(
-                children: [
-                  Text(
-                    'THE LEADERSHIP',
-                    style: AppFonts.caption.copyWith(
-                      color: AppColors.accent2, 
-                      letterSpacing: 4, 
-                      fontWeight: FontWeight.w900,
+    return RepaintBoundary(
+      child: ScrollRevealWidget(
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: isMob ? 80 : 160),
+          decoration: BoxDecoration(
+            color: AppColors.background,
+          ),
+          child: Column(
+            children: [
+              // Section Header
+              Padding(
+                padding: Responsive.padding(context),
+                child: Column(
+                  children: [
+                    Text(
+                      'THE LEADERSHIP',
+                      style: AppFonts.caption.copyWith(
+                        color: AppColors.accent2, 
+                        letterSpacing: 4, 
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Visionaries Behind\nVisiaxx',
-                    style: AppFonts.h2.copyWith(
-                      color: AppColors.white, 
-                      fontSize: isMob ? 32 : 56, 
-                      height: 1.1,
-                      fontWeight: FontWeight.w800,
+                    const SizedBox(height: 24),
+                    Text(
+                      'Visionaries Behind\nVisiaxx',
+                      style: AppFonts.h2.copyWith(
+                        color: AppColors.white, 
+                        fontSize: isMob ? 32 : 56, 
+                        height: 1.1,
+                        fontWeight: FontWeight.w800,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 100),
-
-            // Founder Cards
-            Padding(
-              padding: Responsive.padding(context),
-              child: _buildFoundersGrid(context, isMob),
-            ),
-          ],
+              const SizedBox(height: 100),
+  
+              // Founder Cards
+              Padding(
+                padding: Responsive.padding(context),
+                child: _buildFoundersGrid(context, isMob),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -318,26 +318,28 @@ class _FeatureBentoCardState extends State<_FeatureBentoCard> {
                 ),
               ],
             ),
-            child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(widget.icon, color: widget.color, size: 40),
-            const SizedBox(height: 32),
-            Text(
-              widget.title, 
-              style: AppFonts.h4.copyWith(color: AppColors.white, fontSize: widget.isMobile ? 22 : 28, fontWeight: FontWeight.bold),
+            child: RepaintBoundary(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(widget.icon, color: widget.color, size: 40),
+                  const SizedBox(height: 32),
+                  Text(
+                    widget.title, 
+                    style: AppFonts.h4.copyWith(color: AppColors.white, fontSize: widget.isMobile ? 22 : 28, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    widget.subtitle,
+                    style: AppFonts.bodyLarge.copyWith(color: AppColors.muted, fontSize: 15, height: 1.6),
+                  ),
+                  if (widget.child != null) ...[
+                    const SizedBox(height: 32),
+                    widget.child!,
+                  ],
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              widget.subtitle,
-              style: AppFonts.bodyLarge.copyWith(color: AppColors.muted, fontSize: 15, height: 1.6),
-            ),
-            if (widget.child != null) ...[
-              const SizedBox(height: 32),
-              widget.child!,
-            ],
-          ],
-        ),
           );
         },
       ),
@@ -378,7 +380,9 @@ class _AnimatedLanguageGlobeState extends State<_AnimatedLanguageGlobe> with Sin
           clipBehavior: Clip.none,
           children: [
             Positioned.fill(
-              child: CustomPaint(painter: GlobePainter(rotation: _ctrl.value * math.pi * 2, gridColor: widget.color)),
+              child: RepaintBoundary(
+                child: CustomPaint(painter: GlobePainter(rotation: _ctrl.value * math.pi * 2, gridColor: widget.color)),
+              ),
             ),
             ...langs.asMap().entries.map((e) {
               final isMob = Responsive.isMobile(context);
@@ -405,24 +409,21 @@ class _AnimatedLanguageGlobeState extends State<_AnimatedLanguageGlobe> with Sin
                   scale: scale,
                   child: Opacity(
                     opacity: opacity,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(30),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: isMob ? 12 : 20, vertical: isMob ? 6 : 10),
-                          decoration: BoxDecoration(
-                            color: AppColors.background.withValues(alpha: 0.6),
-                            borderRadius: BorderRadius.circular(30),
-                            border: Border.all(color: widget.color.withValues(alpha: 0.4), width: 1.5),
-                            boxShadow: [
-                              BoxShadow(color: widget.color.withValues(alpha: 0.1), blurRadius: 10),
-                            ],
-                          ),
-                          child: Text(
-                            e.value.toUpperCase(),
-                            style: AppFonts.heading(color: Colors.white, fontSize: isMob ? 10 : 18, letterSpacing: 1.5),
-                          ),
+                    child: RepaintBoundary(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: isMob ? 12 : 20, vertical: isMob ? 6 : 10),
+                        decoration: BoxDecoration(
+                          // Optimized Glass Look (removed BackdropFilter for performance)
+                          color: AppColors.background.withValues(alpha: 0.85),
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(color: widget.color.withValues(alpha: 0.5), width: 1.5),
+                          boxShadow: [
+                            BoxShadow(color: widget.color.withValues(alpha: 0.2), blurRadius: 15),
+                          ],
+                        ),
+                        child: Text(
+                          e.value.toUpperCase(),
+                          style: AppFonts.heading(color: Colors.white, fontSize: isMob ? 10 : 18, letterSpacing: 1.5),
                         ),
                       ),
                     ),
@@ -465,110 +466,112 @@ class _AnimatedPdfGeneratorState extends State<_AnimatedPdfGenerator> with Singl
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _ctrl,
-      builder: (context, _) {
-        final progress = _ctrl.value;
-        final isScanning = progress < 0.7;
-        final scanPos = progress / 0.7;
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _ctrl,
+        builder: (context, _) {
+          final progress = _ctrl.value;
+          final isScanning = progress < 0.7;
+          final scanPos = progress / 0.7;
 
-        return Stack(
-          alignment: Alignment.center,
-          children: [
-            // Floating background decor
-            Positioned(
-              left: 20,
-              top: 20,
-              child: Icon(Icons.picture_as_pdf, color: widget.color.withValues(alpha: 0.1), size: 100),
-            ),
-            
-            // Central Document
-            Container(
-              width: 140,
-              height: 180,
-              decoration: BoxDecoration(
-                color: AppColors.background.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: widget.color.withValues(alpha: 0.4), width: 2),
-                boxShadow: [
-                  BoxShadow(color: widget.color.withValues(alpha: 0.2), blurRadius: 20, spreadRadius: 5),
-                ],
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              // Floating background decor
+              Positioned(
+                left: 20,
+                top: 20,
+                child: Icon(Icons.picture_as_pdf, color: widget.color.withValues(alpha: 0.1), size: 100),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Stack(
-                  children: [
-                    // Simulated Content lines
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(width: 60, height: 8, color: widget.color.withValues(alpha: 0.3)),
-                          const SizedBox(height: 16),
-                          Container(width: double.infinity, height: 4, color: widget.color.withValues(alpha: 0.1)),
-                          const SizedBox(height: 8),
-                          Container(width: double.infinity, height: 4, color: widget.color.withValues(alpha: 0.1)),
-                          const SizedBox(height: 8),
-                          Container(width: 80, height: 4, color: widget.color.withValues(alpha: 0.1)),
-                          const SizedBox(height: 16),
-                          // Simulated Data Grid
-                          Row(
-                            children: [
-                              Container(width: 30, height: 30, decoration: BoxDecoration(color: widget.color.withValues(alpha: 0.1), shape: BoxShape.circle)),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(width: 40, height: 4, color: widget.color.withValues(alpha: 0.1)),
-                                    const SizedBox(height: 4),
-                                    Container(width: 30, height: 4, color: widget.color.withValues(alpha: 0.1)),
-                                  ],
+              
+              // Central Document
+              Container(
+                width: 140,
+                height: 180,
+                decoration: BoxDecoration(
+                  color: AppColors.background.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: widget.color.withValues(alpha: 0.4), width: 2),
+                  boxShadow: [
+                    BoxShadow(color: widget.color.withValues(alpha: 0.2), blurRadius: 20, spreadRadius: 5),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Stack(
+                    children: [
+                      // Simulated Content lines
+                      Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(width: 60, height: 8, color: widget.color.withValues(alpha: 0.3)),
+                            const SizedBox(height: 16),
+                            Container(width: double.infinity, height: 4, color: widget.color.withValues(alpha: 0.1)),
+                            const SizedBox(height: 8),
+                            Container(width: double.infinity, height: 4, color: widget.color.withValues(alpha: 0.1)),
+                            const SizedBox(height: 8),
+                            Container(width: 80, height: 4, color: widget.color.withValues(alpha: 0.1)),
+                            const SizedBox(height: 16),
+                            // Simulated Data Grid
+                            Row(
+                              children: [
+                                Container(width: 30, height: 30, decoration: BoxDecoration(color: widget.color.withValues(alpha: 0.1), shape: BoxShape.circle)),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(width: 40, height: 4, color: widget.color.withValues(alpha: 0.1)),
+                                      const SizedBox(height: 4),
+                                      Container(width: 30, height: 4, color: widget.color.withValues(alpha: 0.1)),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const Spacer(),
-                          Container(width: double.infinity, height: 16, color: widget.color.withValues(alpha: progress > 0.8 ? 0.8 : 0.1)),
-                        ],
-                      ),
-                    ),
-                    
-                    // Scanning laser effect
-                    if (isScanning)
-                      Positioned(
-                        top: scanPos * 180,
-                        left: 0,
-                        right: 0,
-                        child: Container(
-                          height: 2,
-                          decoration: BoxDecoration(
-                            color: widget.color,
-                            boxShadow: [
-                              BoxShadow(color: widget.color, blurRadius: 8, spreadRadius: 2),
-                            ],
-                          ),
+                              ],
+                            ),
+                            const Spacer(),
+                            Container(width: double.infinity, height: 16, color: widget.color.withValues(alpha: progress > 0.8 ? 0.8 : 0.1)),
+                          ],
                         ),
                       ),
                       
-                    // Processing overlay
-                    if (!isScanning)
-                      Positioned.fill(
-                        child: Container(
-                          color: AppColors.background.withValues(alpha: 0.8),
-                          child: Center(
-                            child: Icon(Icons.check_circle, color: widget.color, size: 40),
+                      // Scanning laser effect
+                      if (isScanning)
+                        Positioned(
+                          top: scanPos * 180,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            height: 2,
+                            decoration: BoxDecoration(
+                              color: widget.color,
+                              boxShadow: [
+                                BoxShadow(color: widget.color, blurRadius: 8, spreadRadius: 2),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                  ],
+                        
+                      // Processing overlay
+                      if (!isScanning)
+                        Positioned.fill(
+                          child: Container(
+                            color: AppColors.background.withValues(alpha: 0.8),
+                            child: Center(
+                              child: Icon(Icons.check_circle, color: widget.color, size: 40),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
-        );
-      },
+            ],
+          );
+        },
+      ),
     );
   }
 }
@@ -599,76 +602,77 @@ class _AnimatedReelsFeedState extends State<_AnimatedReelsFeed> with SingleTicke
   Widget build(BuildContext context) {
     return Center(
       child: Transform.scale(
-        scale: 0.7, // Reduced slightly to avoid bento card clipping
+        scale: 0.7, 
         child: PhoneMockup(
           width: 160,
-          height: 300, // Reduced to fit comfortably in 280-high card
+          height: 300,
           screen: ClipRect(
-            child: AnimatedBuilder(
-              animation: _ctrl,
-              builder: (context, _) {
-                final double itemHeight = 160.0;
-                final dy = -(_ctrl.value * itemHeight);
-                return SizedBox(
-                  width: double.infinity,
-                  height: 300,
-                  child: Stack(
-                    clipBehavior: Clip.none, // Allow content to overflow for scrolling
-                    children: [
-                      Positioned(
-                        top: dy,
-                        left: 0,
-                        right: 0,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: List.generate(5, (index) {
-                            return Container(
-                              width: double.infinity, 
-                              height: 150,
-                              margin: const EdgeInsets.only(bottom: 10),
-                              decoration: BoxDecoration(
-                                color: widget.color.withValues(alpha: 0.2),
-                                image: const DecorationImage(
-                                  // Using a stable, working medical/eye care image
-                                  image: NetworkImage('https://images.unsplash.com/photo-1576091160550-217359f4ec28?q=80&w=300&auto=format&fit=crop'),
-                                  fit: BoxFit.cover,
-                                  opacity: 0.5,
+            child: RepaintBoundary(
+              child: AnimatedBuilder(
+                animation: _ctrl,
+                builder: (context, _) {
+                  final double itemHeight = 160.0;
+                  final dy = -(_ctrl.value * itemHeight);
+                  return SizedBox(
+                    width: double.infinity,
+                    height: 300,
+                    child: Stack(
+                      clipBehavior: Clip.none, 
+                      children: [
+                        Positioned(
+                          top: dy,
+                          left: 0,
+                          right: 0,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: List.generate(5, (index) {
+                              return Container(
+                                width: double.infinity, 
+                                height: 150,
+                                margin: const EdgeInsets.only(bottom: 10),
+                                decoration: BoxDecoration(
+                                  color: widget.color.withValues(alpha: 0.2),
+                                  image: const DecorationImage(
+                                      image: NetworkImage('https://images.unsplash.com/photo-1551601651-2a8555f1a136?q=80&w=300&auto=format&fit=crop'),
+                                    fit: BoxFit.cover,
+                                    opacity: 0.5,
+                                  ),
                                 ),
-                              ),
-                              child: Stack(
-                                children: [
-                                  Center(
-                                    child: Container(
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withValues(alpha: 0.4),
-                                        shape: BoxShape.circle,
-                                        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                                child: Stack(
+                                  children: [
+                                    Center(
+                                      child: Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withValues(alpha: 0.4),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                                        ),
+                                        child: const Icon(Icons.play_arrow, color: Colors.white, size: 30),
                                       ),
-                                      child: const Icon(Icons.play_arrow, color: Colors.white, size: 30),
                                     ),
-                                  ),
-                                  Positioned(
-                                    bottom: 8, left: 8,
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Container(width: 60, height: 4, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(2))),
-                                        const SizedBox(height: 4),
-                                        Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(2))),
-                                      ],
+                                    Positioned(
+                                      bottom: 8, left: 8,
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Container(width: 60, height: 4, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(2))),
+                                          const SizedBox(height: 4),
+                                          Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(2))),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }),
+                                  ],
+                                ),
+                              );
+                            }),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              },
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -701,42 +705,44 @@ class _AnimatedOcularWellnessState extends State<_AnimatedOcularWellness> with S
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _ctrl,
-      builder: (context, _) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-             SizedBox(
-               height: 60,
-               child: Row(
-                 crossAxisAlignment: CrossAxisAlignment.end,
-                 children: List.generate(5, (i) {
-                   final phase = i * 0.5;
-                   final h = 20.0 + (math.sin((_ctrl.value * math.pi) + phase).abs() * 40.0);
-                   return Container(
-                     width: 8, height: h,
-                     margin: const EdgeInsets.symmetric(horizontal: 4),
-                     decoration: BoxDecoration(
-                       color: widget.color.withValues(alpha: 0.8), 
-                       borderRadius: BorderRadius.circular(4),
-                       boxShadow: [
-                         BoxShadow(color: widget.color.withValues(alpha: 0.4), blurRadius: 8),
-                       ],
-                     ),
-                   );
-                 }),
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _ctrl,
+        builder: (context, _) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+               SizedBox(
+                 height: 60,
+                 child: Row(
+                   crossAxisAlignment: CrossAxisAlignment.end,
+                   children: List.generate(5, (i) {
+                     final phase = i * 0.5;
+                     final h = 20.0 + (math.sin((_ctrl.value * math.pi) + phase).abs() * 40.0);
+                     return Container(
+                       width: 8, height: h,
+                       margin: const EdgeInsets.symmetric(horizontal: 4),
+                       decoration: BoxDecoration(
+                         color: widget.color.withValues(alpha: 0.8), 
+                         borderRadius: BorderRadius.circular(4),
+                         boxShadow: [
+                           BoxShadow(color: widget.color.withValues(alpha: 0.4), blurRadius: 8),
+                         ],
+                       ),
+                     );
+                   }),
+                 ),
                ),
-             ),
-             const SizedBox(width: 32),
-             Transform.translate(
-               offset: Offset(0, math.sin(_ctrl.value * math.pi) * 12),
-               child: Icon(Icons.sports_esports, color: widget.color, size: 64),
-             ),
-          ],
-        );
-      },
+               const SizedBox(width: 32),
+               Transform.translate(
+                 offset: Offset(0, math.sin(_ctrl.value * math.pi) * 12),
+                 child: Icon(Icons.sports_esports, color: widget.color, size: 64),
+               ),
+            ],
+          );
+        },
+      ),
     );
   }
 }
@@ -766,46 +772,50 @@ class _AnimatedConsultationNetworkState extends State<_AnimatedConsultationNetwo
   @override
   Widget build(BuildContext context) {
     final isMob = Responsive.isMobile(context);
-    return AnimatedBuilder(
-      animation: _ctrl,
-      builder: (context, _) {
-        final val = _ctrl.value;
-        return Center(
-          child: SizedBox(
-            width: isMob ? 300 : 500,
-            height: 160,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // 1. Doctor Profile (Left)
-                Positioned(
-                  left: isMob ? 20 : 60,
-                  child: _buildSyncNode(Icons.person, widget.color, 'DOCTOR'),
-                ),
-                
-                // 2. Patient Profile (Right)
-                Positioned(
-                  right: isMob ? 20 : 60,
-                  child: _buildSyncNode(Icons.face, Colors.white.withValues(alpha: 0.8), 'PATIENT'),
-                ),
-
-                // 3. Sync Beam (Connecting)
-                CustomPaint(
-                  size: const Size(double.infinity, 50),
-                  painter: _SyncLinkPainter(
-                    progress: val,
-                    color: widget.color,
-                    isMob: isMob,
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _ctrl,
+        builder: (context, _) {
+          final val = _ctrl.value;
+          return Center(
+            child: SizedBox(
+              width: isMob ? 300 : 500,
+              height: 160,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // 1. Doctor Profile (Left)
+                  Positioned(
+                    left: isMob ? 20 : 60,
+                    child: _buildSyncNode(Icons.person, widget.color, 'DOCTOR'),
                   ),
-                ),
-                
-                // 4. Traveling Data Packet (Pulse)
-                _buildSyncPulse(val, isMob),
-              ],
+                  
+                  // 2. Patient Profile (Right)
+                  Positioned(
+                    right: isMob ? 20 : 60,
+                    child: _buildSyncNode(Icons.face, Colors.white.withValues(alpha: 0.8), 'PATIENT'),
+                  ),
+
+                  // 3. Sync Beam (Connecting)
+                  RepaintBoundary(
+                    child: CustomPaint(
+                      size: const Size(double.infinity, 50),
+                      painter: _SyncLinkPainter(
+                        progress: val,
+                        color: widget.color,
+                        isMob: isMob,
+                      ),
+                    ),
+                  ),
+                  
+                  // 4. Traveling Data Packet (Pulse)
+                  _buildSyncPulse(val, isMob),
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
