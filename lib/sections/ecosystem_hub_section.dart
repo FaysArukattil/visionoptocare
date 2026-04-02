@@ -1,9 +1,11 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../utils/responsive.dart';
 import '../utils/scroll_helpers.dart';
 import '../widgets/animated_counter.dart';
+import '../widgets/globe_painter.dart';
 
 class EcosystemHubSection extends StatelessWidget {
   const EcosystemHubSection({super.key});
@@ -152,23 +154,46 @@ class EcosystemHubSection extends StatelessWidget {
           ),
         const SizedBox(height: 24),
 
-        // Row 3 (Full width for consultations)
-        _FeatureBentoCard(
-            title: 'Hybrid Consultations',
-            subtitle: 'Connect with experts seamlessly. Book an online video consultation directly via the app, or request a convenient offline home visit. Upon request, an optometrist or our dedicated salesperson will come directly to your door to provide personalized care and assistance.',
-            icon: Icons.video_call_outlined,
-            color: const Color(0xFFF5C842),
-            child: Wrap(
-              alignment: WrapAlignment.spaceEvenly,
-              spacing: 24,
-              runSpacing: 24,
-              children: [
-                _buildConsultBadge(Icons.phone_android, 'Online Booking'),
-                _buildConsultBadge(Icons.health_and_safety, 'Optometrist Visit'),
-                _buildConsultBadge(Icons.support_agent, 'Salesperson Visit'),
-              ],
+        // Row 3
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 5,
+              child: _FeatureBentoCard(
+                title: 'Hybrid Consultations',
+                subtitle: 'Connect with experts seamlessly. Book an online video consultation directly via the app, or request a convenient offline home visit. Upon request, an optometrist or our dedicated salesperson will come directly to your door to provide personalized care and assistance.',
+                icon: Icons.video_call_outlined,
+                color: const Color(0xFFF5C842),
+                child: Wrap(
+                  alignment: WrapAlignment.spaceEvenly,
+                  spacing: 24,
+                  runSpacing: 24,
+                  children: [
+                    _buildConsultBadge(Icons.phone_android, 'Online Booking'),
+                    _buildConsultBadge(Icons.health_and_safety, 'Optometrist Visit'),
+                    _buildConsultBadge(Icons.support_agent, 'Salesperson Visit'),
+                  ],
+                ),
+              ),
             ),
-          ),
+            const SizedBox(width: 24),
+            Expanded(
+              flex: 4,
+              child: _FeatureBentoCard(
+                title: '13 Local Languages',
+                subtitle: 'Eye health without borders. The App natively supports 13 major languages to bring digital primary optometry to patients worldwide.',
+                icon: Icons.public,
+                color: const Color(0xFFFF5252),
+                child: const SizedBox(
+                  height: 180,
+                  width: double.infinity,
+                   child: _AnimatedLanguageGlobe(color: Color(0xFFFF5252)),
+                ),
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -215,6 +240,18 @@ class EcosystemHubSection extends StatelessWidget {
           icon: Icons.video_call_outlined,
           color: const Color(0xFFF5C842),
           isMobile: true,
+        ),
+        const SizedBox(height: 24),
+        _FeatureBentoCard(
+          title: '13 Local Languages',
+          subtitle: 'The App is natively localized into 13 major languages.',
+          icon: Icons.public,
+          color: const Color(0xFFFF5252),
+          isMobile: true,
+          child: const SizedBox(
+             height: 150, 
+             child: _AnimatedLanguageGlobe(color: Color(0xFFFF5252)),
+          ),
         ),
       ],
     );
@@ -320,3 +357,79 @@ class _FeatureBentoCardState extends State<_FeatureBentoCard> {
     );
   }
 }
+
+class _AnimatedLanguageGlobe extends StatefulWidget {
+  final Color color;
+  const _AnimatedLanguageGlobe({required this.color});
+  @override
+  State<_AnimatedLanguageGlobe> createState() => _AnimatedLanguageGlobeState();
+}
+
+class _AnimatedLanguageGlobeState extends State<_AnimatedLanguageGlobe> with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  final langs = ['English', 'Hindi', 'Marathi', 'Malayalam', 'Tamil', 'Telugu', 'Kannada', 'Bengali', 'Gujarati', 'Punjabi', 'Odia', 'Urdu', 'Assamese'];
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 15))..repeat();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (context, _) {
+        return Stack(
+          alignment: Alignment.center,
+          clipBehavior: Clip.none,
+          children: [
+            Positioned.fill(
+              child: CustomPaint(painter: GlobePainter(rotation: _ctrl.value * math.pi * 2, gridColor: widget.color)),
+            ),
+            ...langs.asMap().entries.map((e) {
+              final angle = (e.key / langs.length) * math.pi * 2 + (_ctrl.value * math.pi * 2);
+              final x = math.cos(angle) * 70.0;
+              final y = math.sin(angle) * 20.0;
+              final z = math.sin(angle); // depth
+              final scale = 0.7 + (z * 0.3); // bigger in front
+              final opacity = 0.3 + ((z + 1) / 2) * 0.7; // fade in back
+              
+              return Transform.translate(
+                offset: Offset(x, y),
+                child: Transform.scale(
+                  scale: scale,
+                  child: Opacity(
+                    opacity: opacity,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.background.withValues(alpha: 0.8),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: widget.color.withValues(alpha: 0.3)),
+                      ),
+                      child: Text(
+                        e.value,
+                        style: AppFonts.caption.copyWith(color: widget.color, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+            const Center(
+               child: AnimatedCounter(target: 13, forceStart: true),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
