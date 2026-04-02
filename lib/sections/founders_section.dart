@@ -124,16 +124,19 @@ class _FoundersSectionState extends State<FoundersSection>
   ];
 
   Widget _buildDesktopLayout(bool isMob) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: _founders.map((f) => SizedBox(
-        width: 400,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: _FounderCard(founder: f),
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Center(
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 32,
+          runSpacing: 32,
+          children: _founders.map((f) => SizedBox(
+            width: 380,
+            child: _FounderCard(founder: f),
+          )).toList(),
         ),
-      )).toList(),
+      ),
     );
   }
 

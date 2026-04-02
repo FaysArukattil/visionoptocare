@@ -96,15 +96,13 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                   child: Transform(
                     transform: Matrix4.identity()
                       ..setEntry(3, 2, 0.001)
-                      ..rotateX(-0.08 * (1 - t))
-                      ..rotateY(0.5 * (1 - t))
                       ..setTranslationRaw(0.0, 15.0 * (1 - t), 0.0),
                     alignment: Alignment.center,
                     child: PhoneMockup(
-                      width: 300,
-                      height: 580,
-                      tiltX: -0.06,
-                      tiltY: 0.10,
+                      width: 280,
+                      height: 550,
+                      tiltX: 0.0, // Phone rendered straight
+                      tiltY: 0.0,
                       screen: _buildPhoneScreen(),
                     ),
                   ),
@@ -158,8 +156,8 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                 child: PhoneMockup(
                   width: 230,
                   height: 450,
-                  tiltX: -0.04,
-                  tiltY: 0.08,
+                  tiltX: 0.0, // Phone rendered straight
+                  tiltY: 0.0,
                   screen: _buildPhoneScreen(),
                 ),
               );
@@ -188,51 +186,74 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
   }
 
   Widget _buildPhoneScreen() {
-    return Stack(
-      children: [
-        // Splash-like gradient bg
-        Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFF050A18), Color(0xFF0F172A)],
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF050A18), Color(0xFF0F172A)],
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Centered Logo
+          Center(
+            child: SizedBox(
+              width: 140,
+              height: 140,
+              child: Image.asset(
+                'lib/assets/images/app_logo.png', // The available logo
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => const EyeLogo(size: 80),
+              ),
             ),
           ),
-        ),
-        // Content
-        Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 50),
-              const EyeLogo(size: 80),
-              const SizedBox(height: 28),
-              Text(
-                'Your Vision,\nOur Priority',
-                style: AppFonts.bodyLarge.copyWith(
-                  color: AppColors.white.withValues(alpha: 0.9),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  height: 1.4,
+
+          // Tagline
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 120, // Match the splash screen bottom offset proportionally
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Your Vision,\nOur Priority',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.white.withValues(alpha: 0.8),
+                    letterSpacing: 0.5,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Premium Digital Eye Care',
-                style: AppFonts.caption.copyWith(
-                  color: AppColors.accent2.withValues(alpha: 0.8),
-                  fontSize: 11,
-                  letterSpacing: 1.5,
+                const SizedBox(height: 6),
+                Text(
+                  'Premium Digital Eye Care',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.white.withValues(alpha: 0.6),
+                    letterSpacing: 1.0,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 40),
-              const EyeLoader.adaptive(size: 40),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+
+          // Loading Indicator
+          const Positioned(
+            left: 0,
+            right: 0,
+            bottom: 40,
+            child: Center(
+              child: EyeLoader.adaptive(size: 32),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

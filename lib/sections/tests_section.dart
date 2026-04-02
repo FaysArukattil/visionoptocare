@@ -222,13 +222,13 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
                 child: RepaintBoundary(
                   child: Transform(
                     transform: Matrix4.identity()
-                      ..setEntry(3, 2, 0.001)
-                      ..rotateY(-0.1)
-                      ..rotateX(0.02),
+                      ..setEntry(3, 2, 0.001),
                     alignment: Alignment.center,
                     child: PhoneMockup(
-                      width: 250,
-                      height: 540,
+                      width: 220,
+                      height: 480,
+                      tiltX: 0.0,
+                      tiltY: 0.0,
                       screen: _TestScreenContent(test: test, themeColor: themeColor),
                     ),
                   ),
@@ -256,7 +256,9 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
           child: RepaintBoundary(
             child: Center(
               child: PhoneMockup(
-                width: 180, height: 380,
+                width: 150, height: 320,
+                tiltX: 0.0,
+                tiltY: 0.0,
                 screen: _TestScreenContent(test: test, themeColor: themeColor),
               ),
             ),

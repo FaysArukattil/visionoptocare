@@ -38,44 +38,23 @@ class PhoneMockup extends StatelessWidget {
         children: [
           // ── Drop Shadow ──
           Container(
-            width: width + 20,
-            height: height + 40,
+            width: width + 30,
+            height: height + 50,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(52),
+              borderRadius: BorderRadius.circular(56),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  blurRadius: 80,
-                  spreadRadius: -10,
-                  offset: const Offset(0, 40),
+                  color: Colors.black.withValues(alpha: 0.8),
+                  blurRadius: 90,
+                  spreadRadius: -15,
+                  offset: const Offset(0, 45),
                 ),
                 BoxShadow(
-                  color: const Color(0xFF00D4C8).withValues(alpha: 0.06),
-                  blurRadius: 120,
-                  spreadRadius: 5,
+                  color: const Color(0xFF00D4C8).withValues(alpha: 0.08),
+                  blurRadius: 100,
+                  spreadRadius: 0,
+                  offset: const Offset(0, 10),
                 ),
-              ],
-            ),
-          ),
-
-          // ── Right Side: Power Button ──
-          Positioned(
-            right: -6,
-            top: height * 0.28,
-            child: _SideButton(width: 5, height: 74, color: const Color(0xFFC8C8D0)),
-          ),
-
-          // ── Left Side: Action Button + Volume Up + Volume Down ──
-          Positioned(
-            left: -6,
-            top: height * 0.18,
-            child: Column(
-              children: [
-                _SideButton(width: 5, height: 26, color: const Color(0xFFC8C8D0)), // Action
-                const SizedBox(height: 12),
-                _SideButton(width: 5, height: 50, color: const Color(0xFFC8C8D0)), // Vol Up
-                const SizedBox(height: 10),
-                _SideButton(width: 5, height: 50, color: const Color(0xFFC8C8D0)), // Vol Down
               ],
             ),
           ),
@@ -86,93 +65,124 @@ class PhoneMockup extends StatelessWidget {
             height: height,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(52),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.05),
+                width: 0.5,
+              ),
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFFE2E2E2), // Top edge highlight
-                  Color(0xFF242426), // Main dark frame
-                  Color(0xFF1C1C1E),
+                  Color(0xFFEFEFF2), // Top edge highly polished highlight
+                  Color(0xFFB0B0BB), // Subtle titanium reflection
+                  Color(0xFF8A8A96), // Main titanium body
+                  Color(0xFFDEDEE2), // Bottom edge reflection
+                  Color(0xFF5A5A66), // Deep corner shadow
                 ],
-                stops: [0.0, 0.05, 1.0],
+                stops: [0.0, 0.15, 0.5, 0.85, 1.0],
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  blurRadius: 1,
-                  offset: const Offset(1, 1),
+                  color: Colors.white.withValues(alpha: 0.15),
+                  blurRadius: 2,
+                  offset: const Offset(1.5, 1.5),
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 2,
+                  offset: const Offset(-1, -1),
                 ),
               ],
             ),
-            padding: const EdgeInsets.all(4), // Thickness of the metal frame
+            padding: const EdgeInsets.all(2.0), // Ultra-thin 2px metal edge
             child: Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(48),
+                borderRadius: BorderRadius.circular(50),
                 color: Colors.black,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.05),
-                  width: 0.5,
-                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.8),
+                    blurRadius: 2,
+                    spreadRadius: 1,
+                  ),
+                ],
               ),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(46),
-                  color: Colors.black,
-                ),
+              child: Padding(
+                padding: const EdgeInsets.all(1.5), // Inner uniform bezel
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(46),
+                  borderRadius: BorderRadius.circular(48),
                   child: Stack(
                     children: [
                       // ── Screen Background ──
                       Positioned.fill(
+                        child: screen,
+                      ),
+
+                      // ── Screen OLED Edge Glow ──
+                      Positioned.fill(
                         child: Container(
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [Color(0xFF0A0F1E), Color(0xFF111830)],
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(48),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.1),
+                              width: 0.5,
                             ),
                           ),
-                          child: screen,
                         ),
                       ),
 
-                      // ── Dynamic Island (top center notch) ──
+                      // ── Dynamic Island ──
                       Positioned(
                         top: 14,
                         left: 0,
                         right: 0,
                         child: Center(
                           child: Container(
-                            width: 120,
-                            height: 34,
+                            width: 105,
+                            height: 32,
                             decoration: BoxDecoration(
                               color: Colors.black,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                // Camera dot
+                                const SizedBox(width: 50),
+                                // TrueDepth Camera Lens
                                 Container(
-                                  width: 10,
-                                  height: 10,
+                                  width: 12,
+                                  height: 12,
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF1C1C1E),
                                     shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.white.withValues(alpha: 0.1),
+                                    gradient: RadialGradient(
+                                      colors: [
+                                        Colors.blueGrey.shade900,
+                                        Colors.black,
+                                      ],
+                                      stops: const [0.2, 1.0],
                                     ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.white.withValues(alpha: 0.05),
+                                        blurRadius: 1,
+                                        spreadRadius: 0.5,
+                                      ),
+                                    ],
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                // FaceID sensor
-                                Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF2C2C2E),
-                                    shape: BoxShape.circle,
+                                  child: Center(
+                                    child: Container(
+                                      width: 4,
+                                      height: 4,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: RadialGradient(
+                                          colors: [
+                                            Colors.blueAccent.withValues(alpha: 0.4),
+                                            Colors.transparent,
+                                          ],
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -192,15 +202,15 @@ class PhoneMockup extends StatelessWidget {
 
                       // ── Home Indicator Bar ──
                       Positioned(
-                        bottom: 10,
+                        bottom: 8,
                         left: 0,
                         right: 0,
                         child: Center(
                           child: Container(
-                            width: 90,
-                            height: 5,
+                            width: 120,
+                            height: 4.5,
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.25),
+                              color: Colors.white.withValues(alpha: 0.4),
                               borderRadius: BorderRadius.circular(3),
                             ),
                           ),
@@ -212,75 +222,12 @@ class PhoneMockup extends StatelessWidget {
               ),
             ),
           ),
-
-          // ── Camera Module (back, partially visible at angle) ──
-          // Simulated by a subtle gradient in the top corner
-          Positioned(
-            top: 0,
-            left: 0,
-            child: Container(
-              width: width * 0.5,
-              height: height * 0.15,
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(48),
-                ),
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.white.withValues(alpha: 0.03),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────
-// Side Button (Power / Volume)
-// ─────────────────────────────────────────────
-class _SideButton extends StatelessWidget {
-  final double width, height;
-  final Color color;
-
-  const _SideButton({
-    required this.width,
-    required this.height,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(width / 2),
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            color,
-            color.withValues(alpha: 0.8),
-            color,
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.5),
-            blurRadius: 2,
-            offset: const Offset(0.5, 0),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 // ─────────────────────────────────────────────
 // Glass Reflection Painter
