@@ -315,7 +315,7 @@ class _FadeSlide extends StatelessWidget {
         return Opacity(
           opacity: v.clamp(0.0, 1.0),
           child: Transform.translate(
-            offset: Offset(0, 20 * (1 - v)),
+            offset: Offset(0, 12 * (1 - v)),
             child: child,
           ),
         );

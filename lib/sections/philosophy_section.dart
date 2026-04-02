@@ -53,7 +53,7 @@ class _PhilosophySectionState extends State<PhilosophySection>
         return Opacity(
           opacity: t.clamp(0.0, 1.0),
           child: Transform.translate(
-            offset: Offset(0, 40 * (1 - t)),
+            offset: Offset(0, 15 * (1 - t)),
             child: Container(
               width: size.width,
               height: size.height,

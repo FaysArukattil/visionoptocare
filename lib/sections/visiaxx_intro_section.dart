@@ -98,7 +98,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                       ..setEntry(3, 2, 0.001)
                       ..rotateX(-0.08 * (1 - t))
                       ..rotateY(0.5 * (1 - t))
-                      ..setTranslationRaw(0.0, 40.0 * (1 - t), 0.0),
+                      ..setTranslationRaw(0.0, 15.0 * (1 - t), 0.0),
                     alignment: Alignment.center,
                     child: PhoneMockup(
                       width: 300,
@@ -176,7 +176,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
               return Opacity(
                 opacity: t,
                 child: Transform.translate(
-                  offset: Offset(0, 20 * (1 - t)),
+                  offset: Offset(0, 15 * (1 - t)),
                   child: _buildIntroText(true),
                 ),
               );

@@ -58,67 +58,69 @@ class PhoneMockup extends StatelessWidget {
             ),
           ),
 
-          // ── Left Side: Volume Up + Volume Down + Action Button ──
-          Positioned(
-            left: -6,
-            top: height * 0.21,
-            child: Column(
-              children: [
-                // Action button (smaller, rounded)
-                _SideButton(width: 4, height: 32, topRadius: 3, bottomRadius: 3),
-                const SizedBox(height: 10),
-                // Volume Up
-                _SideButton(width: 4, height: 44),
-                const SizedBox(height: 10),
-                // Volume Down
-                _SideButton(width: 4, height: 44),
-              ],
-            ),
-          ),
-
-          // ── Right Side: Power Button + SIM Tray ──
+          // ── Right Side: Power Button ──
           Positioned(
             right: -6,
-            top: height * 0.29,
+            top: height * 0.28,
+            child: _SideButton(width: 5, height: 74, color: const Color(0xFFC8C8D0)),
+          ),
+
+          // ── Left Side: Action Button + Volume Up + Volume Down ──
+          Positioned(
+            left: -6,
+            top: height * 0.18,
             child: Column(
               children: [
-                // Power button (taller)
-                _SideButton(width: 4, height: 72),
-                const SizedBox(height: 40),
-                // SIM tray (thin, with line detail)
-                _SimTray(width: 4, height: 28),
+                _SideButton(width: 5, height: 26, color: const Color(0xFFC8C8D0)), // Action
+                const SizedBox(height: 12),
+                _SideButton(width: 5, height: 50, color: const Color(0xFFC8C8D0)), // Vol Up
+                const SizedBox(height: 10),
+                _SideButton(width: 5, height: 50, color: const Color(0xFFC8C8D0)), // Vol Down
               ],
             ),
           ),
 
-          // ── Main Body (Titanium Chassis) ──
+          // ── Main Body (Chassis with Wrap-around Frame) ──
           Container(
             width: width,
             height: height,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(48),
+              borderRadius: BorderRadius.circular(52),
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFFC8C8D0), // Highlight edge
-                  Color(0xFF1C1C1E), // Main titanium dark
-                  Color(0xFF2C2C2E),
+                  Color(0xFFE2E2E2), // Top edge highlight
+                  Color(0xFF242426), // Main dark frame
                   Color(0xFF1C1C1E),
-                  Color(0xFFB0B0B8), // Highlight opposite edge
                 ],
-                stops: [0.0, 0.08, 0.5, 0.92, 1.0],
+                stops: [0.0, 0.05, 1.0],
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  blurRadius: 1,
+                  offset: const Offset(1, 1),
+                ),
+              ],
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(3.0), // Thin bezel gap
+            padding: const EdgeInsets.all(4), // Thickness of the metal frame
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(48),
+                color: Colors.black,
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  width: 0.5,
+                ),
+              ),
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(45),
+                  borderRadius: BorderRadius.circular(46),
                   color: Colors.black,
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(44),
+                  borderRadius: BorderRadius.circular(46),
                   child: Stack(
                     children: [
                       // ── Screen Background ──
@@ -242,16 +244,13 @@ class PhoneMockup extends StatelessWidget {
 // Side Button (Power / Volume)
 // ─────────────────────────────────────────────
 class _SideButton extends StatelessWidget {
-  final double width;
-  final double height;
-  final double topRadius;
-  final double bottomRadius;
+  final double width, height;
+  final Color color;
 
   const _SideButton({
     required this.width,
     required this.height,
-    this.topRadius = 2,
-    this.bottomRadius = 2,
+    required this.color,
   });
 
   @override
@@ -260,71 +259,25 @@ class _SideButton extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(topRadius),
-          bottom: Radius.circular(bottomRadius),
-        ),
-        gradient: const LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
+        color: color,
+        borderRadius: BorderRadius.circular(width / 2),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
           colors: [
-            Color(0xFF8A8A96),
-            Color(0xFFC8C8D0),
-            Color(0xFF8A8A96),
+            color,
+            color.withValues(alpha: 0.8),
+            color,
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
-            blurRadius: 4,
-            offset: const Offset(-1, 0),
+            color: Colors.black.withValues(alpha: 0.5),
+            blurRadius: 2,
+            offset: const Offset(0.5, 0),
           ),
         ],
       ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────
-// SIM Tray
-// ─────────────────────────────────────────────
-class _SimTray extends StatelessWidget {
-  final double width;
-  final double height;
-
-  const _SimTray({required this.width, required this.height});
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      alignment: Alignment.center,
-      children: [
-        Container(
-          width: width,
-          height: height,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(2),
-            gradient: const LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [Color(0xFF6A6A76), Color(0xFFB0B0B8), Color(0xFF6A6A76)],
-            ),
-          ),
-        ),
-        // Pinhole
-        Positioned(
-          right: -1,
-          child: Container(
-            width: 3,
-            height: 3,
-            decoration: const BoxDecoration(
-              color: Color(0xFF1C1C1E),
-              shape: BoxShape.circle,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
