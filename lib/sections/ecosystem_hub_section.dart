@@ -7,6 +7,7 @@ import '../utils/responsive.dart';
 import '../utils/scroll_helpers.dart';
 import '../widgets/animated_counter.dart';
 import '../widgets/globe_painter.dart';
+import '../widgets/phone_mockup.dart';
 import 'tests_section.dart';
 
 class EcosystemHubSection extends StatelessWidget {
@@ -117,16 +118,10 @@ class EcosystemHubSection extends StatelessWidget {
                 subtitle: 'Read and watch valuable eye care video tips in a TikTok-style feed.',
                 icon: Icons.play_circle_outline,
                 color: const Color(0xFF4F6AFF),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.video_library, color: const Color(0xFF4F6AFF).withValues(alpha: 0.8), size: 32),
-                      const SizedBox(width: 8),
-                      Text('VIDEO TIPS', style: AppFonts.caption.copyWith(color: AppColors.white, fontWeight: FontWeight.bold, letterSpacing: 2)),
-                    ],
-                  ),
+                child: const SizedBox(
+                  height: 150,
+                  width: double.infinity,
+                  child: _AnimatedReelsFeed(color: Color(0xFF4F6AFF)),
                 ),
               ),
             ),
@@ -138,12 +133,10 @@ class EcosystemHubSection extends StatelessWidget {
                 subtitle: 'Relax and rehabilitate with interactive eye therapy games accompanied by AI-generated Hindi eye care songs.',
                 icon: Icons.headphones_outlined,
                 color: const Color(0xFF9D4EDD),
-                child: Row(
-                  children: [
-                    Icon(Icons.music_note, color: const Color(0xFF9D4EDD).withValues(alpha: 0.4), size: 50),
-                    const SizedBox(width: 16),
-                    Icon(Icons.sports_esports, color: const Color(0xFF9D4EDD).withValues(alpha: 0.4), size: 50),
-                  ],
+                child: const SizedBox(
+                  height: 150,
+                  width: double.infinity,
+                  child: _AnimatedOcularWellness(color: Color(0xFF9D4EDD)),
                 ),
               ),
             ),
@@ -157,15 +150,10 @@ class EcosystemHubSection extends StatelessWidget {
           subtitle: 'Connect with experts seamlessly. Book an online video consultation directly via the app, or request a convenient offline home visit from an optometrist or our dedicated salesperson.',
           icon: Icons.video_call_outlined,
           color: const Color(0xFFF5C842),
-          child: Wrap(
-            alignment: WrapAlignment.spaceEvenly,
-            spacing: 24,
-            runSpacing: 24,
-            children: [
-              _buildConsultBadge(Icons.phone_android, 'Online Booking'),
-              _buildConsultBadge(Icons.health_and_safety, 'Optometrist Visit'),
-              _buildConsultBadge(Icons.support_agent, 'Salesperson Visit'),
-            ],
+          child: const SizedBox(
+            height: 200,
+            width: double.infinity,
+            child: _AnimatedConsultationNetwork(color: Color(0xFFF5C842)),
           ),
         ),
         const SizedBox(height: 24),
@@ -224,6 +212,11 @@ class EcosystemHubSection extends StatelessWidget {
           icon: Icons.play_circle_outline,
           color: const Color(0xFF4F6AFF),
           isMobile: true,
+          child: const SizedBox(
+            height: 150,
+            width: double.infinity,
+            child: _AnimatedReelsFeed(color: Color(0xFF4F6AFF)),
+          ),
         ),
         const SizedBox(height: 24),
         _FeatureBentoCard(
@@ -232,6 +225,11 @@ class EcosystemHubSection extends StatelessWidget {
           icon: Icons.headphones_outlined,
           color: const Color(0xFF9D4EDD),
           isMobile: true,
+          child: const SizedBox(
+            height: 150,
+            width: double.infinity,
+            child: _AnimatedOcularWellness(color: Color(0xFF9D4EDD)),
+          ),
         ),
         const SizedBox(height: 24),
         _FeatureBentoCard(
@@ -240,6 +238,10 @@ class EcosystemHubSection extends StatelessWidget {
           icon: Icons.video_call_outlined,
           color: const Color(0xFFF5C842),
           isMobile: true,
+          child: const SizedBox(
+             height: 150, 
+             child: _AnimatedConsultationNetwork(color: Color(0xFFF5C842)),
+          ),
         ),
         const SizedBox(height: 24),
         _FeatureBentoCard(
@@ -259,24 +261,7 @@ class EcosystemHubSection extends StatelessWidget {
 
 
 
-  Widget _buildConsultBadge(IconData icon, String label) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: const Color(0xFFF5C842).withValues(alpha: 0.1),
-            border: Border.all(color: const Color(0xFFF5C842).withValues(alpha: 0.3)),
-          ),
-          child: Icon(icon, color: const Color(0xFFF5C842), size: 32),
-        ),
-        const SizedBox(height: 12),
-        Text(label, style: AppFonts.bodySmall.copyWith(color: AppColors.white)),
-      ],
-    );
-  }
+
 }
 
 class _FeatureBentoCard extends StatefulWidget {
@@ -586,4 +571,285 @@ class _AnimatedPdfGeneratorState extends State<_AnimatedPdfGenerator> with Singl
       },
     );
   }
+}
+
+class _AnimatedReelsFeed extends StatefulWidget {
+  final Color color;
+  const _AnimatedReelsFeed({required this.color});
+  @override
+  State<_AnimatedReelsFeed> createState() => _AnimatedReelsFeedState();
+}
+
+class _AnimatedReelsFeedState extends State<_AnimatedReelsFeed> with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat();
+  }
+  
+  @override
+  void dispose() { 
+    _ctrl.dispose(); 
+    super.dispose(); 
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Transform.scale(
+        scale: 0.6, // Scale down to fit as a decorative element
+        child: PhoneMockup(
+          width: 200,
+          height: 400,
+          screen: ClipRect(
+            child: AnimatedBuilder(
+              animation: _ctrl,
+              builder: (context, _) {
+                final double itemHeight = 160.0; // Taller items for phone screen
+                final dy = -(_ctrl.value * itemHeight); 
+                
+                return Transform.translate(
+                  offset: Offset(0, dy),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(5, (index) {
+                      return Container(
+                        width: double.infinity, 
+                        height: 150,
+                        margin: const EdgeInsets.only(bottom: 10),
+                        decoration: BoxDecoration(
+                          color: widget.color.withValues(alpha: 0.2),
+                          image: DecorationImage(
+                            image: NetworkImage('https://images.unsplash.com/photo-1516733968668-dbdce39c4a41?q=80&w=200&auto=format&fit=crop'), // Eye care themed placeholder
+                            fit: BoxFit.cover,
+                            opacity: 0.5,
+                          ),
+                        ),
+                        child: Stack(
+                          children: [
+                            Center(
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.4),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                                ),
+                                child: Icon(Icons.play_arrow, color: Colors.white, size: 30),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 8, left: 8,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(width: 60, height: 4, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(2))),
+                                  const SizedBox(height: 4),
+                                  Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(2))),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AnimatedOcularWellness extends StatefulWidget {
+  final Color color;
+  const _AnimatedOcularWellness({required this.color});
+  @override
+  State<_AnimatedOcularWellness> createState() => _AnimatedOcularWellnessState();
+}
+
+class _AnimatedOcularWellnessState extends State<_AnimatedOcularWellness> with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 1))..repeat(reverse: true);
+  }
+  
+  @override
+  void dispose() { 
+    _ctrl.dispose(); 
+    super.dispose(); 
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (context, _) {
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+             SizedBox(
+               height: 60,
+               child: Row(
+                 crossAxisAlignment: CrossAxisAlignment.end,
+                 children: List.generate(5, (i) {
+                   final phase = i * 0.5;
+                   final h = 20.0 + (math.sin((_ctrl.value * math.pi) + phase).abs() * 40.0);
+                   return Container(
+                     width: 8, height: h,
+                     margin: const EdgeInsets.symmetric(horizontal: 4),
+                     decoration: BoxDecoration(
+                       color: widget.color.withValues(alpha: 0.8), 
+                       borderRadius: BorderRadius.circular(4),
+                       boxShadow: [
+                         BoxShadow(color: widget.color.withValues(alpha: 0.4), blurRadius: 8),
+                       ],
+                     ),
+                   );
+                 }),
+               ),
+             ),
+             const SizedBox(width: 32),
+             Transform.translate(
+               offset: Offset(0, math.sin(_ctrl.value * math.pi) * 12),
+               child: Icon(Icons.sports_esports, color: widget.color, size: 64),
+             ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _AnimatedConsultationNetwork extends StatefulWidget {
+  final Color color;
+  const _AnimatedConsultationNetwork({required this.color});
+  @override
+  State<_AnimatedConsultationNetwork> createState() => _AnimatedConsultationNetworkState();
+}
+
+class _AnimatedConsultationNetworkState extends State<_AnimatedConsultationNetwork> with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat();
+  }
+  
+  @override
+  void dispose() { 
+    _ctrl.dispose(); 
+    super.dispose(); 
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (context, _) {
+        final val = _ctrl.value;
+        return Center(
+          child: SizedBox(
+            width: 200, height: 160,
+            child: Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
+              children: [
+                // Inner Glow Center
+                Container(
+                  width: 40, height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(color: widget.color.withValues(alpha: 0.3), blurRadius: 30, spreadRadius: 10),
+                    ],
+                  ),
+                ),
+                
+                // Animated Pulse Rings
+                ...List.generate(2, (index) {
+                  final ringVal = (val + (index * 0.5)) % 1.0;
+                  return Opacity(
+                    opacity: (1 - ringVal),
+                    child: Container(
+                      width: 40 + (ringVal * 100),
+                      height: 40 + (ringVal * 100),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: widget.color.withValues(alpha: 0.4), width: 1.5),
+                      ),
+                    ),
+                  );
+                }),
+                
+                // Connection Lines (Decorative)
+                CustomPaint(
+                  size: const Size(200, 160),
+                  painter: _NetworkLinePainter(color: widget.color.withValues(alpha: 0.2)),
+                ),
+                
+                // Doctor Node (Center)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: widget.color, 
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(color: widget.color.withValues(alpha: 0.4), blurRadius: 15)
+                    ],
+                  ),
+                  child: const Icon(Icons.local_hospital, color: Colors.black, size: 24),
+                ),
+                
+                // Patient Nodes (Satellite)
+                _buildSatelliteNode(const Offset(-70, -35), Icons.phone_android),
+                _buildSatelliteNode(const Offset(70, 35), Icons.home),
+                _buildSatelliteNode(const Offset(60, -45), Icons.video_call),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSatelliteNode(Offset offset, IconData icon) {
+    return Transform.translate(
+      offset: offset,
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.black,
+          shape: BoxShape.circle,
+          border: Border.all(color: widget.color.withValues(alpha: 0.3)),
+        ),
+        child: Icon(icon, color: widget.color, size: 20),
+      ),
+    );
+  }
+}
+
+class _NetworkLinePainter extends CustomPainter {
+  final Color color;
+  _NetworkLinePainter({required this.color});
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color..strokeWidth = 1.0..style = PaintingStyle.stroke;
+    final center = Offset(size.width / 2, size.height / 2);
+    canvas.drawLine(center, center + const Offset(-70, -35), paint);
+    canvas.drawLine(center, center + const Offset(70, 35), paint);
+    canvas.drawLine(center, center + const Offset(60, -45), paint);
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
