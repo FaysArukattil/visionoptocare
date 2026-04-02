@@ -119,7 +119,7 @@ class EcosystemHubSection extends StatelessWidget {
                 icon: Icons.play_circle_outline,
                 color: const Color(0xFF4F6AFF),
                 child: const SizedBox(
-                  height: 150,
+                  height: 280,
                   width: double.infinity,
                   child: _AnimatedReelsFeed(color: Color(0xFF4F6AFF)),
                 ),
@@ -134,7 +134,7 @@ class EcosystemHubSection extends StatelessWidget {
                 icon: Icons.headphones_outlined,
                 color: const Color(0xFF9D4EDD),
                 child: const SizedBox(
-                  height: 150,
+                  height: 280,
                   width: double.infinity,
                   child: _AnimatedOcularWellness(color: Color(0xFF9D4EDD)),
                 ),
@@ -213,7 +213,7 @@ class EcosystemHubSection extends StatelessWidget {
           color: const Color(0xFF4F6AFF),
           isMobile: true,
           child: const SizedBox(
-            height: 150,
+            height: 250,
             width: double.infinity,
             child: _AnimatedReelsFeed(color: Color(0xFF4F6AFF)),
           ),
@@ -226,7 +226,7 @@ class EcosystemHubSection extends StatelessWidget {
           color: const Color(0xFF9D4EDD),
           isMobile: true,
           child: const SizedBox(
-            height: 150,
+            height: 250,
             width: double.infinity,
             child: _AnimatedOcularWellness(color: Color(0xFF9D4EDD)),
           ),
@@ -239,7 +239,7 @@ class EcosystemHubSection extends StatelessWidget {
           color: const Color(0xFFF5C842),
           isMobile: true,
           child: const SizedBox(
-             height: 150, 
+             height: 200, 
              child: _AnimatedConsultationNetwork(color: Color(0xFFF5C842)),
           ),
         ),
@@ -599,62 +599,73 @@ class _AnimatedReelsFeedState extends State<_AnimatedReelsFeed> with SingleTicke
   Widget build(BuildContext context) {
     return Center(
       child: Transform.scale(
-        scale: 0.6, // Scale down to fit as a decorative element
+        scale: 0.7, // Reduced slightly to avoid bento card clipping
         child: PhoneMockup(
-          width: 200,
-          height: 400,
+          width: 160,
+          height: 300, // Reduced to fit comfortably in 280-high card
           screen: ClipRect(
             child: AnimatedBuilder(
               animation: _ctrl,
               builder: (context, _) {
-                final double itemHeight = 160.0; // Taller items for phone screen
-                final dy = -(_ctrl.value * itemHeight); 
-                
-                return Transform.translate(
-                  offset: Offset(0, dy),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(5, (index) {
-                      return Container(
-                        width: double.infinity, 
-                        height: 150,
-                        margin: const EdgeInsets.only(bottom: 10),
-                        decoration: BoxDecoration(
-                          color: widget.color.withValues(alpha: 0.2),
-                          image: DecorationImage(
-                            image: NetworkImage('https://images.unsplash.com/photo-1516733968668-dbdce39c4a41?q=80&w=200&auto=format&fit=crop'), // Eye care themed placeholder
-                            fit: BoxFit.cover,
-                            opacity: 0.5,
-                          ),
-                        ),
-                        child: Stack(
-                          children: [
-                            Center(
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.4),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                final double itemHeight = 160.0;
+                final dy = -(_ctrl.value * itemHeight);
+                return SizedBox(
+                  width: double.infinity,
+                  height: 300,
+                  child: Stack(
+                    clipBehavior: Clip.none, // Allow content to overflow for scrolling
+                    children: [
+                      Positioned(
+                        top: dy,
+                        left: 0,
+                        right: 0,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(5, (index) {
+                            return Container(
+                              width: double.infinity, 
+                              height: 150,
+                              margin: const EdgeInsets.only(bottom: 10),
+                              decoration: BoxDecoration(
+                                color: widget.color.withValues(alpha: 0.2),
+                                image: const DecorationImage(
+                                  // Using a stable, working medical/eye care image
+                                  image: NetworkImage('https://images.unsplash.com/photo-1576091160550-217359f4ec28?q=80&w=300&auto=format&fit=crop'),
+                                  fit: BoxFit.cover,
+                                  opacity: 0.5,
                                 ),
-                                child: Icon(Icons.play_arrow, color: Colors.white, size: 30),
                               ),
-                            ),
-                            Positioned(
-                              bottom: 8, left: 8,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              child: Stack(
                                 children: [
-                                  Container(width: 60, height: 4, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(2))),
-                                  const SizedBox(height: 4),
-                                  Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(2))),
+                                  Center(
+                                    child: Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(alpha: 0.4),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                                      ),
+                                      child: const Icon(Icons.play_arrow, color: Colors.white, size: 30),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 8, left: 8,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Container(width: 60, height: 4, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(2))),
+                                        const SizedBox(height: 4),
+                                        Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(2))),
+                                      ],
+                                    ),
+                                  ),
                                 ],
                               ),
-                            ),
-                          ],
+                            );
+                          }),
                         ),
-                      );
-                    }),
+                      ),
+                    ],
                   ),
                 );
               },
@@ -754,67 +765,42 @@ class _AnimatedConsultationNetworkState extends State<_AnimatedConsultationNetwo
 
   @override
   Widget build(BuildContext context) {
+    final isMob = Responsive.isMobile(context);
     return AnimatedBuilder(
       animation: _ctrl,
       builder: (context, _) {
         final val = _ctrl.value;
         return Center(
           child: SizedBox(
-            width: 200, height: 160,
+            width: isMob ? 300 : 500,
+            height: 160,
             child: Stack(
               alignment: Alignment.center,
-              clipBehavior: Clip.none,
               children: [
-                // Inner Glow Center
-                Container(
-                  width: 40, height: 40,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(color: widget.color.withValues(alpha: 0.3), blurRadius: 30, spreadRadius: 10),
-                    ],
-                  ),
+                // 1. Doctor Profile (Left)
+                Positioned(
+                  left: isMob ? 20 : 60,
+                  child: _buildSyncNode(Icons.person, widget.color, 'DOCTOR'),
                 ),
                 
-                // Animated Pulse Rings
-                ...List.generate(2, (index) {
-                  final ringVal = (val + (index * 0.5)) % 1.0;
-                  return Opacity(
-                    opacity: (1 - ringVal),
-                    child: Container(
-                      width: 40 + (ringVal * 100),
-                      height: 40 + (ringVal * 100),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: widget.color.withValues(alpha: 0.4), width: 1.5),
-                      ),
-                    ),
-                  );
-                }),
-                
-                // Connection Lines (Decorative)
+                // 2. Patient Profile (Right)
+                Positioned(
+                  right: isMob ? 20 : 60,
+                  child: _buildSyncNode(Icons.face, Colors.white.withValues(alpha: 0.8), 'PATIENT'),
+                ),
+
+                // 3. Sync Beam (Connecting)
                 CustomPaint(
-                  size: const Size(200, 160),
-                  painter: _NetworkLinePainter(color: widget.color.withValues(alpha: 0.2)),
-                ),
-                
-                // Doctor Node (Center)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: widget.color, 
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(color: widget.color.withValues(alpha: 0.4), blurRadius: 15)
-                    ],
+                  size: const Size(double.infinity, 50),
+                  painter: _SyncLinkPainter(
+                    progress: val,
+                    color: widget.color,
+                    isMob: isMob,
                   ),
-                  child: const Icon(Icons.local_hospital, color: Colors.black, size: 24),
                 ),
                 
-                // Patient Nodes (Satellite)
-                _buildSatelliteNode(const Offset(-70, -35), Icons.phone_android),
-                _buildSatelliteNode(const Offset(70, 35), Icons.home),
-                _buildSatelliteNode(const Offset(60, -45), Icons.video_call),
+                // 4. Traveling Data Packet (Pulse)
+                _buildSyncPulse(val, isMob),
               ],
             ),
           ),
@@ -823,33 +809,83 @@ class _AnimatedConsultationNetworkState extends State<_AnimatedConsultationNetwo
     );
   }
 
-  Widget _buildSatelliteNode(Offset offset, IconData icon) {
-    return Transform.translate(
-      offset: offset,
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.black,
-          shape: BoxShape.circle,
-          border: Border.all(color: widget.color.withValues(alpha: 0.3)),
+  Widget _buildSyncNode(IconData icon, Color color, String label) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+            border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
+            boxShadow: [
+              BoxShadow(color: color.withValues(alpha: 0.1), blurRadius: 10),
+            ],
+          ),
+          child: Icon(icon, color: color, size: 28),
         ),
-        child: Icon(icon, color: widget.color, size: 20),
+        const SizedBox(height: 6),
+        Text(label, style: AppFonts.caption.copyWith(color: color, fontWeight: FontWeight.bold, fontSize: 8)),
+      ],
+    );
+  }
+
+  Widget _buildSyncPulse(double val, bool isMob) {
+    final startX = isMob ? 60.0 : 100.0;
+    final endX = isMob ? 240.0 : 400.0;
+    final currentX = startX + (val * (endX - startX));
+
+    return Positioned(
+      left: currentX - 10,
+      child: Container(
+        width: 15,
+        height: 15,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: widget.color,
+          boxShadow: [
+             BoxShadow(color: widget.color, blurRadius: 10, spreadRadius: 2),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _NetworkLinePainter extends CustomPainter {
+class _SyncLinkPainter extends CustomPainter {
+  final double progress;
   final Color color;
-  _NetworkLinePainter({required this.color});
+  final bool isMob;
+  _SyncLinkPainter({required this.progress, required this.color, required this.isMob});
+
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color..strokeWidth = 1.0..style = PaintingStyle.stroke;
-    final center = Offset(size.width / 2, size.height / 2);
-    canvas.drawLine(center, center + const Offset(-70, -35), paint);
-    canvas.drawLine(center, center + const Offset(70, 35), paint);
-    canvas.drawLine(center, center + const Offset(60, -45), paint);
+    final paint = Paint()
+      ..color = color.withValues(alpha: 0.2)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+
+    final startX = isMob ? 60.0 : 100.0;
+    final endX = isMob ? 240.0 : 400.0;
+    final y = size.height / 2;
+
+    // Background Line
+    canvas.drawLine(Offset(startX, y), Offset(endX, y), paint);
+
+    // Dynamic Wave (DNA-like or Data pulse)
+    final path = Path();
+    path.moveTo(startX, y);
+    for (double i = startX; i <= endX; i += 2) {
+      final wave = math.sin((i / 20) + (progress * math.pi * 2)) * 8;
+      path.lineTo(i, y + wave);
+    }
+    canvas.drawPath(path, Paint()
+      ..color = color.withValues(alpha: 0.4)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0);
   }
+
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _SyncLinkPainter old) => true;
 }
