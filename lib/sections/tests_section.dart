@@ -151,9 +151,11 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
       autofocus: true,
       onKeyEvent: _onKey,
       child: Container(
-        height: MediaQuery.of(context).size.height,
-        color: AppColors.background,
+        height: double.infinity,
+        color: Colors.transparent,
+        clipBehavior: Clip.none,
         child: Stack(
+          clipBehavior: Clip.none,
           children: [
             Positioned.fill(
               child: CustomPaint(
@@ -167,7 +169,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
 
             Center(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: isMob ? 16 : 60, vertical: 40),
+                padding: EdgeInsets.symmetric(horizontal: isMob ? 0 : 20, vertical: 0),
                 child: isMob 
                     ? _buildMobileLayout(test, themeColor, selectedIndex) 
                     : _buildDesktopLayout(test, themeColor, selectedIndex),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'theme/app_colors.dart';
 import 'sections/navbar_section.dart';
 import 'sections/hero_section.dart';
-import 'sections/tests_section.dart';
 import 'sections/ecosystem_hub_section.dart';
 import 'sections/philosophy_section.dart';
 import 'sections/founders_section.dart';
@@ -63,11 +62,6 @@ class _HomePageState extends State<HomePage> {
               // 2. The App Ecosystem (Features Page)
               const SliverToBoxAdapter(
                 child: EcosystemHubSection(),
-              ),
-
-              // 3. Interactive Diagnostic Hub (12 Clinical Tests)
-              const SliverToBoxAdapter(
-                child: TestsSection(),
               ),
 
               // 5. Philosophy (Mission / Vision)

@@ -6,6 +6,7 @@ import '../utils/responsive.dart';
 import '../utils/scroll_helpers.dart';
 import '../widgets/animated_counter.dart';
 import '../widgets/globe_painter.dart';
+import 'tests_section.dart';
 
 class EcosystemHubSection extends StatelessWidget {
   const EcosystemHubSection({super.key});
@@ -73,88 +74,83 @@ class EcosystemHubSection extends StatelessWidget {
     // We use explicit heights on Rows to prevent Expanded/RenderFlex crashes in scrolling parents
     return Column(
       children: [
-        // Row 1
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-              Expanded(
-                flex: 3,
-                child: _FeatureBentoCard(
-                  title: '12 Clinical Tests',
-                  subtitle: 'Our vision test app brings clinical scrutiny directly to your smartphone. Track your ocular health with a comprehensive suite of AI-graded diagnostic tests.',
-                  icon: Icons.biotech,
-                  color: AppColors.accent2,
-                  child: const Align(
-                    alignment: Alignment.centerLeft,
-                    child: AnimatedCounter(target: 12, label: 'CLINICAL TESTS', forceStart: true),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                flex: 2,
-                child: _FeatureBentoCard(
-                  title: 'Smart Medical Reports',
-                  subtitle: 'Instantly download and share your comprehensive visual health reports as clean, readable PDFs with your doctor or family.',
-                  icon: Icons.picture_as_pdf_outlined,
-                  color: const Color(0xFF00D4C8),
-                  child: Align(
-                    alignment: Alignment.bottomRight,
-                    child: Icon(Icons.download_rounded, color: const Color(0xFF00D4C8).withValues(alpha: 0.2), size: 100),
-                  ),
-                ),
-              ),
-            ],
+        // Row 1: 12 Clinical Tests (Full Width)
+        _FeatureBentoCard(
+          title: '12 Clinical Tests',
+          subtitle: 'Our platform brings clinical-grade optometry directly to your smartphone, analyzing multiple dimensions of your ocular health using advanced computer vision and AI.',
+          icon: Icons.biotech,
+          color: AppColors.accent2,
+          child: const SizedBox(
+            height: 700,
+            width: double.infinity,
+            child: ClipRRect(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+              child: TestsSection(),
+            ),
           ),
+        ),
         const SizedBox(height: 24),
-        
-        // Row 2
+
+        // Row 2: Smart Medical Reports (Full Width)
+        _FeatureBentoCard(
+          title: 'Smart Clinical PDF Reports',
+          subtitle: 'Visiaxx auto-generates comprehensive, shareable PDF reports featuring detailed diagnostic breakdowns, grayscale maps, prescription data, and clinical risk analysis.',
+          icon: Icons.picture_as_pdf_outlined,
+          color: const Color(0xFF00D4C8),
+          child: const SizedBox(
+            height: 220,
+            width: double.infinity,
+            child: _AnimatedPdfGenerator(color: Color(0xFF00D4C8)),
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // Row 3: Reels & Therapy
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-              Expanded(
-                flex: 2,
-                child: _FeatureBentoCard(
-                  title: 'Education Reels',
-                  subtitle: 'Scroll through our TikTok-like reels section to read and watch valuable eye care video tips in a fun, short-form format.',
-                  icon: Icons.play_circle_outline,
-                  color: const Color(0xFF4F6AFF),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.video_library, color: const Color(0xFF4F6AFF).withValues(alpha: 0.8), size: 32),
-                        const SizedBox(width: 8),
-                        Text('VIDEO TIPS', style: AppFonts.caption.copyWith(color: AppColors.white, fontWeight: FontWeight.bold, letterSpacing: 2)),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                flex: 3,
-                child: _FeatureBentoCard(
-                  title: 'Ocular Wellness & Audio',
-                  subtitle: 'Relax and rehabilitate. Engage with interactive eye therapy games accompanied by AI-generated therapeutic Hindi songs about eye care.',
-                  icon: Icons.headphones_outlined,
-                  color: const Color(0xFF9D4EDD),
+            Expanded(
+              flex: 1,
+              child: _FeatureBentoCard(
+                title: 'Education Reels',
+                subtitle: 'Read and watch valuable eye care video tips in a TikTok-style feed.',
+                icon: Icons.play_circle_outline,
+                color: const Color(0xFF4F6AFF),
+                child: Align(
+                  alignment: Alignment.centerLeft,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.music_note, color: const Color(0xFF9D4EDD).withValues(alpha: 0.4), size: 64),
-                      const SizedBox(width: 16),
-                      Icon(Icons.gamepad, color: const Color(0xFF9D4EDD).withValues(alpha: 0.4), size: 64),
+                      Icon(Icons.video_library, color: const Color(0xFF4F6AFF).withValues(alpha: 0.8), size: 32),
+                      const SizedBox(width: 8),
+                      Text('VIDEO TIPS', style: AppFonts.caption.copyWith(color: AppColors.white, fontWeight: FontWeight.bold, letterSpacing: 2)),
                     ],
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 24),
+            Expanded(
+              flex: 1,
+              child: _FeatureBentoCard(
+                title: 'Ocular Wellness',
+                subtitle: 'Relax and rehabilitate with interactive eye therapy games accompanied by AI-generated Hindi eye care songs.',
+                icon: Icons.headphones_outlined,
+                color: const Color(0xFF9D4EDD),
+                child: Row(
+                  children: [
+                    Icon(Icons.music_note, color: const Color(0xFF9D4EDD).withValues(alpha: 0.4), size: 50),
+                    const SizedBox(width: 16),
+                    Icon(Icons.sports_esports, color: const Color(0xFF9D4EDD).withValues(alpha: 0.4), size: 50),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 24),
 
-        // Row 3
+        // Row 4: Consultations & Languages
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -162,7 +158,7 @@ class EcosystemHubSection extends StatelessWidget {
               flex: 5,
               child: _FeatureBentoCard(
                 title: 'Hybrid Consultations',
-                subtitle: 'Connect with experts seamlessly. Book an online video consultation directly via the app, or request a convenient offline home visit. Upon request, an optometrist or our dedicated salesperson will come directly to your door to provide personalized care and assistance.',
+                subtitle: 'Connect with experts seamlessly. Book an online video consultation directly via the app, or request a convenient offline home visit from an optometrist or our dedicated salesperson.',
                 icon: Icons.video_call_outlined,
                 color: const Color(0xFFF5C842),
                 child: Wrap(
@@ -203,19 +199,31 @@ class EcosystemHubSection extends StatelessWidget {
       children: [
         _FeatureBentoCard(
           title: '12 Clinical Tests',
-          subtitle: 'Our vision test app brings clinical scrutiny directly to your smartphone.',
+          subtitle: 'Our vision test app brings clinical scrutiny directly to your smartphone, analyzing multiple dimensions of your ocular health.',
           icon: Icons.biotech,
           color: AppColors.accent2,
           isMobile: true,
-          child: const AnimatedCounter(target: 12, label: 'CLINICAL TESTS', forceStart: true),
+          child: const SizedBox(
+            height: 700,
+            width: double.infinity,
+            child: ClipRRect(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+              child: TestsSection(),
+            ),
+          ),
         ),
         const SizedBox(height: 24),
         _FeatureBentoCard(
-          title: 'Smart Medical Reports',
+          title: 'Smart Clinical PDF Reports',
           subtitle: 'Instantly download and share your visual health reports as clean PDFs.',
           icon: Icons.picture_as_pdf_outlined,
           color: const Color(0xFF00D4C8),
           isMobile: true,
+          child: const SizedBox(
+            height: 150,
+            width: double.infinity,
+            child: _AnimatedPdfGenerator(color: Color(0xFF00D4C8)),
+          ),
         ),
         const SizedBox(height: 24),
         _FeatureBentoCard(
@@ -227,7 +235,7 @@ class EcosystemHubSection extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         _FeatureBentoCard(
-          title: 'Therapy & Audio',
+          title: 'Ocular Wellness',
           subtitle: 'Eye therapy games accompanied by AI-generated therapeutic Hindi eye care songs.',
           icon: Icons.headphones_outlined,
           color: const Color(0xFF9D4EDD),
@@ -256,6 +264,8 @@ class EcosystemHubSection extends StatelessWidget {
       ],
     );
   }
+
+
 
   Widget _buildConsultBadge(IconData icon, String label) {
     return Column(
@@ -433,3 +443,135 @@ class _AnimatedLanguageGlobeState extends State<_AnimatedLanguageGlobe> with Sin
   }
 }
 
+class _AnimatedPdfGenerator extends StatefulWidget {
+  final Color color;
+  const _AnimatedPdfGenerator({required this.color});
+
+  @override
+  State<_AnimatedPdfGenerator> createState() => _AnimatedPdfGeneratorState();
+}
+
+class _AnimatedPdfGeneratorState extends State<_AnimatedPdfGenerator> with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (context, _) {
+        final progress = _ctrl.value;
+        final isScanning = progress < 0.7;
+        final scanPos = progress / 0.7;
+
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            // Floating background decor
+            Positioned(
+              left: 20,
+              top: 20,
+              child: Icon(Icons.picture_as_pdf, color: widget.color.withValues(alpha: 0.1), size: 100),
+            ),
+            
+            // Central Document
+            Container(
+              width: 140,
+              height: 180,
+              decoration: BoxDecoration(
+                color: AppColors.background.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: widget.color.withValues(alpha: 0.4), width: 2),
+                boxShadow: [
+                  BoxShadow(color: widget.color.withValues(alpha: 0.2), blurRadius: 20, spreadRadius: 5),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Stack(
+                  children: [
+                    // Simulated Content lines
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(width: 60, height: 8, color: widget.color.withValues(alpha: 0.3)),
+                          const SizedBox(height: 16),
+                          Container(width: double.infinity, height: 4, color: widget.color.withValues(alpha: 0.1)),
+                          const SizedBox(height: 8),
+                          Container(width: double.infinity, height: 4, color: widget.color.withValues(alpha: 0.1)),
+                          const SizedBox(height: 8),
+                          Container(width: 80, height: 4, color: widget.color.withValues(alpha: 0.1)),
+                          const SizedBox(height: 16),
+                          // Simulated Data Grid
+                          Row(
+                            children: [
+                              Container(width: 30, height: 30, decoration: BoxDecoration(color: widget.color.withValues(alpha: 0.1), shape: BoxShape.circle)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(width: 40, height: 4, color: widget.color.withValues(alpha: 0.1)),
+                                    const SizedBox(height: 4),
+                                    Container(width: 30, height: 4, color: widget.color.withValues(alpha: 0.1)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Spacer(),
+                          Container(width: double.infinity, height: 16, color: widget.color.withValues(alpha: progress > 0.8 ? 0.8 : 0.1)),
+                        ],
+                      ),
+                    ),
+                    
+                    // Scanning laser effect
+                    if (isScanning)
+                      Positioned(
+                        top: scanPos * 180,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          height: 2,
+                          decoration: BoxDecoration(
+                            color: widget.color,
+                            boxShadow: [
+                              BoxShadow(color: widget.color, blurRadius: 8, spreadRadius: 2),
+                            ],
+                          ),
+                        ),
+                      ),
+                      
+                    // Processing overlay
+                    if (!isScanning)
+                      Positioned.fill(
+                        child: Container(
+                          color: AppColors.background.withValues(alpha: 0.8),
+                          child: Center(
+                            child: Icon(Icons.check_circle, color: widget.color, size: 40),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
