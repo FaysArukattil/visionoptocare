@@ -6,7 +6,6 @@ import 'sections/ecosystem_hub_section.dart';
 import 'sections/philosophy_section.dart';
 import 'sections/founders_section.dart';
 import 'sections/footer_section.dart';
-import 'sections/download_section.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -72,11 +71,6 @@ class _HomePageState extends State<HomePage> {
               // 6. Leadership (Founders)
               const SliverToBoxAdapter(
                 child: FoundersSection(),
-              ),
-
-              // 7. Final CTA (Download Ecosystem)
-              const SliverToBoxAdapter(
-                child: DownloadSection(),
               ),
 
               // 8. Footer
