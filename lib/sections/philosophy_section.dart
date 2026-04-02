@@ -63,23 +63,23 @@ class PhilosophySection extends StatelessWidget {
     final steps = [
       _PhilosophyStep(
         number: '01',
-        title: 'Accessibility',
-        subtitle: 'Eye care shouldn\'t be a luxury. We are breaking geographical and economic barriers through mobile technology.',
-        icon: Icons.public,
+        title: 'Our Vision',
+        subtitle: 'A world where clinical-grade optometry is not a luxury, but a fundamental right accessible to everyone through mobile technology.',
+        icon: Icons.visibility,
         color: AppColors.accent2,
       ),
       _PhilosophyStep(
         number: '02',
-        title: 'Precision',
-        subtitle: 'Our AI-driven algorithms provide clinical-grade screening, ensuring that your results are accurate and actionable.',
-        icon: Icons.biotech,
+        title: 'Our Mission',
+        subtitle: 'To decentralize global eye care by delivering an AI-driven, highly accurate diagnostic ecosystem directly to your smartphone.',
+        icon: Icons.rocket_launch,
         color: const Color(0xFF00D4C8),
       ),
       _PhilosophyStep(
         number: '03',
-        title: 'Integrative Care',
-        subtitle: 'From diagnostics to therapy and consultations, we offer a complete ecosystem for long-term ocular health.',
-        icon: Icons.hub,
+        title: 'Our Innovation',
+        subtitle: 'Fusing medical science with digital convenience. We integrate AI precision, hybrid care, and therapeutic engagement in one platform.',
+        icon: Icons.lightbulb_outline,
         color: const Color(0xFFF5C842),
       ),
     ];

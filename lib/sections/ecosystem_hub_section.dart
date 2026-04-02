@@ -3,6 +3,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../utils/responsive.dart';
 import '../utils/scroll_helpers.dart';
+import '../widgets/animated_counter.dart';
 
 class EcosystemHubSection extends StatelessWidget {
   const EcosystemHubSection({super.key});
@@ -13,7 +14,7 @@ class EcosystemHubSection extends StatelessWidget {
     
     return ScrollRevealWidget(
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: isMob ? 80 : 120),
+        padding: EdgeInsets.symmetric(vertical: isMob ? 80 : 160),
         decoration: BoxDecoration(
           color: AppColors.background,
         ),
@@ -25,21 +26,29 @@ class EcosystemHubSection extends StatelessWidget {
               child: Column(
                 children: [
                   Text(
-                    'THE ECOSYSTEM',
+                    'TECHNICAL EXCELLENCE & ECOSYSTEM',
                     style: AppFonts.caption.copyWith(
                       color: AppColors.accent2, 
                       letterSpacing: 4, 
                       fontWeight: FontWeight.w900,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'A Comprehensive Hub\nfor Your Vision',
+                    'The Complete Vision\nTest Application',
                     style: AppFonts.h2.copyWith(
                       color: AppColors.white, 
-                      fontSize: isMob ? 28 : 48, 
+                      fontSize: isMob ? 32 : 56, 
                       height: 1.1,
+                      fontWeight: FontWeight.w800,
                     ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Everything you need from clinical screening to offline care booking, consolidated in one unified, easy-to-use platform.',
+                    style: AppFonts.bodyLarge.copyWith(color: AppColors.muted, fontSize: 18),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -47,10 +56,10 @@ class EcosystemHubSection extends StatelessWidget {
             ),
             const SizedBox(height: 80),
 
-            // The Unified Bento Grid
+            // Bulletproof Layout Grid
             Padding(
               padding: Responsive.padding(context),
-              child: _buildBentoGrid(context, isMob),
+              child: isMob ? _buildMobileGrid() : _buildDesktopGrid(),
             ),
           ],
         ),
@@ -58,181 +67,174 @@ class EcosystemHubSection extends StatelessWidget {
     );
   }
 
-  Widget _buildBentoGrid(BuildContext context, bool isMob) {
-    if (isMob) {
-      return Column(
-        children: [
-          _FeatureBentoCard(
-            title: 'Ocular Wellness',
-            subtitle: 'Train your focus with AI therapy games.',
-            icon: Icons.psychology_outlined,
-            color: const Color(0xFF4F6AFF),
-            child: _buildWellnessPreview(),
+  Widget _buildDesktopGrid() {
+    // We use explicit heights on Rows to prevent Expanded/RenderFlex crashes in scrolling parents
+    return Column(
+      children: [
+        // Row 1
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+              Expanded(
+                flex: 3,
+                child: _FeatureBentoCard(
+                  title: '12 Clinical Tests',
+                  subtitle: 'Our vision test app brings clinical scrutiny directly to your smartphone. Track your ocular health with a comprehensive suite of AI-graded diagnostic tests.',
+                  icon: Icons.biotech,
+                  color: AppColors.accent2,
+                  child: const Align(
+                    alignment: Alignment.centerLeft,
+                    child: AnimatedCounter(target: 12, label: 'CLINICAL TESTS', forceStart: true),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 24),
+              Expanded(
+                flex: 2,
+                child: _FeatureBentoCard(
+                  title: 'Smart Medical Reports',
+                  subtitle: 'Instantly download and share your comprehensive visual health reports as clean, readable PDFs with your doctor or family.',
+                  icon: Icons.picture_as_pdf_outlined,
+                  color: const Color(0xFF00D4C8),
+                  child: Align(
+                    alignment: Alignment.bottomRight,
+                    child: Icon(Icons.download_rounded, color: const Color(0xFF00D4C8).withValues(alpha: 0.2), size: 100),
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 24),
-          _FeatureBentoCard(
-            title: 'Education Hub',
-            subtitle: 'Eye care reels and expert articles.',
-            icon: Icons.play_circle_outline,
-            color: const Color(0xFF00D4C8),
-            child: _buildReelsPreview(),
+        const SizedBox(height: 24),
+        
+        // Row 2
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+              Expanded(
+                flex: 2,
+                child: _FeatureBentoCard(
+                  title: 'Education Reels',
+                  subtitle: 'Scroll through our TikTok-like reels section to read and watch valuable eye care video tips in a fun, short-form format.',
+                  icon: Icons.play_circle_outline,
+                  color: const Color(0xFF4F6AFF),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.video_library, color: const Color(0xFF4F6AFF).withValues(alpha: 0.8), size: 32),
+                        const SizedBox(width: 8),
+                        Text('VIDEO TIPS', style: AppFonts.caption.copyWith(color: AppColors.white, fontWeight: FontWeight.bold, letterSpacing: 2)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 24),
+              Expanded(
+                flex: 3,
+                child: _FeatureBentoCard(
+                  title: 'Ocular Wellness & Audio',
+                  subtitle: 'Relax and rehabilitate. Engage with interactive eye therapy games accompanied by AI-generated therapeutic Hindi songs about eye care.',
+                  icon: Icons.headphones_outlined,
+                  color: const Color(0xFF9D4EDD),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Icon(Icons.music_note, color: const Color(0xFF9D4EDD).withValues(alpha: 0.4), size: 64),
+                      const SizedBox(width: 16),
+                      Icon(Icons.gamepad, color: const Color(0xFF9D4EDD).withValues(alpha: 0.4), size: 64),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 24),
-          _FeatureBentoCard(
+        const SizedBox(height: 24),
+
+        // Row 3 (Full width for consultations)
+        _FeatureBentoCard(
             title: 'Hybrid Consultations',
-            subtitle: 'Secure HD video calls and home visits.',
+            subtitle: 'Connect with experts seamlessly. Book an online video consultation directly via the app, or request a convenient offline home visit. Upon request, an optometrist or our dedicated salesperson will come directly to your door to provide personalized care and assistance.',
             icon: Icons.video_call_outlined,
             color: const Color(0xFFF5C842),
-            child: _buildConsultPreview(),
-          ),
-          const SizedBox(height: 24),
-          _FeatureBentoCard(
-            title: 'Digital Diagnostics',
-            subtitle: '12 clinical-grade tests at your fingertips.',
-            icon: Icons.app_registration,
-            color: AppColors.accent2,
-            child: _buildDiagnosticPreview(),
-          ),
-        ],
-      );
-    }
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return Column(
-          children: [
-            Row(
+            child: Wrap(
+              alignment: WrapAlignment.spaceEvenly,
+              spacing: 24,
+              runSpacing: 24,
               children: [
-                // 1. Wellness (Big Card)
-                Expanded(
-                  flex: 3,
-                  child: _FeatureBentoCard(
-                    title: 'Ocular Wellness',
-                    subtitle: 'Train your focus with AI-powered therapy games and a curated 37-track therapeutic music library.',
-                    icon: Icons.psychology_outlined,
-                    color: const Color(0xFF4F6AFF),
-                    child: _buildWellnessPreview(),
-                  ),
-                ),
-                const SizedBox(width: 24),
-                // 2. Education (Right Stack)
-                Expanded(
-                  flex: 2,
-                  child: _FeatureBentoCard(
-                    title: 'Education Hub',
-                    subtitle: 'TikTok-style eye care reels and expert articles.',
-                    icon: Icons.play_circle_outline,
-                    color: const Color(0xFF00D4C8),
-                    height: 600,
-                    child: _buildReelsPreview(),
-                  ),
-                ),
+                _buildConsultBadge(Icons.phone_android, 'Online Booking'),
+                _buildConsultBadge(Icons.health_and_safety, 'Optometrist Visit'),
+                _buildConsultBadge(Icons.support_agent, 'Salesperson Visit'),
               ],
             ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                // 3. Consultations (Bottom Left)
-                Expanded(
-                  child: _FeatureBentoCard(
-                    title: 'Hybrid Consultations',
-                    subtitle: 'Secure HD video calls with optometrists and "Uber-model" home visits.',
-                    icon: Icons.video_call_outlined,
-                    color: const Color(0xFFF5C842),
-                    child: _buildConsultPreview(),
-                  ),
-                ),
-                const SizedBox(width: 24),
-                // 4. Diagnostic Point (Bottom Right)
-                Expanded(
-                  child: _FeatureBentoCard(
-                    title: 'Diagnostic Deep-Dive',
-                    subtitle: 'Instant clinical-grade reports with historical tracking and AI insights.',
-                    icon: Icons.app_registration,
-                    color: AppColors.accent2,
-                    child: _buildDiagnosticPreview(),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        );
-      },
+          ),
+      ],
     );
   }
 
-  // --- PREVIEWS ---
-
-  Widget _buildWellnessPreview() {
+  Widget _buildMobileGrid() {
     return Column(
       children: [
-        const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(4, (i) => Container(
-            width: 60, height: 60,
-            margin: const EdgeInsets.symmetric(horizontal: 10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: AppColors.white.withValues(alpha: 0.05),
-              border: Border.all(color: AppColors.white.withValues(alpha: 0.1)),
-            ),
-            child: Icon(
-              [Icons.videogame_asset, Icons.music_note, Icons.spa, Icons.nightlight][i],
-              color: const Color(0xFF4F6AFF),
-            ),
-          )),
+        _FeatureBentoCard(
+          title: '12 Clinical Tests',
+          subtitle: 'Our vision test app brings clinical scrutiny directly to your smartphone.',
+          icon: Icons.biotech,
+          color: AppColors.accent2,
+          isMobile: true,
+          child: const AnimatedCounter(target: 12, label: 'CLINICAL TESTS', forceStart: true),
+        ),
+        const SizedBox(height: 24),
+        _FeatureBentoCard(
+          title: 'Smart Medical Reports',
+          subtitle: 'Instantly download and share your visual health reports as clean PDFs.',
+          icon: Icons.picture_as_pdf_outlined,
+          color: const Color(0xFF00D4C8),
+          isMobile: true,
+        ),
+        const SizedBox(height: 24),
+        _FeatureBentoCard(
+          title: 'Education Reels',
+          subtitle: 'Read and watch valuable eye care video tips in a TikTok-style feed.',
+          icon: Icons.play_circle_outline,
+          color: const Color(0xFF4F6AFF),
+          isMobile: true,
+        ),
+        const SizedBox(height: 24),
+        _FeatureBentoCard(
+          title: 'Therapy & Audio',
+          subtitle: 'Eye therapy games accompanied by AI-generated therapeutic Hindi eye care songs.',
+          icon: Icons.headphones_outlined,
+          color: const Color(0xFF9D4EDD),
+          isMobile: true,
+        ),
+        const SizedBox(height: 24),
+        _FeatureBentoCard(
+          title: 'Hybrid Consultations',
+          subtitle: 'Book online video consults or request offline home visits by an optometrist or our salesperson.',
+          icon: Icons.video_call_outlined,
+          color: const Color(0xFFF5C842),
+          isMobile: true,
         ),
       ],
     );
   }
 
-  Widget _buildReelsPreview() {
+  Widget _buildConsultBadge(IconData icon, String label) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        const SizedBox(height: 40),
         Container(
-          width: 140, height: 250,
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            color: AppColors.background.withValues(alpha: 0.5),
-            border: Border.all(color: const Color(0xFF00D4C8).withValues(alpha: 0.2)),
+            shape: BoxShape.circle,
+            color: const Color(0xFFF5C842).withValues(alpha: 0.1),
+            border: Border.all(color: const Color(0xFFF5C842).withValues(alpha: 0.3)),
           ),
-          child: const Center(child: Icon(Icons.play_circle_fill, color: Color(0xFF00D4C8), size: 40)),
+          child: Icon(icon, color: const Color(0xFFF5C842), size: 32),
         ),
-      ],
-    );
-  }
-
-  Widget _buildConsultPreview() {
-    return Column(
-      children: [
-        const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            const CircleAvatar(radius: 24, backgroundColor: Color(0xFFF5C842), child: Icon(Icons.person, color: Colors.white)),
-            Icon(Icons.sync, color: AppColors.white.withValues(alpha: 0.3)),
-            const CircleAvatar(radius: 24, backgroundColor: Color(0xFF4F6AFF), child: Icon(Icons.videocam, color: Colors.white)),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDiagnosticPreview() {
-    return Column(
-      children: [
-        const SizedBox(height: 20),
-        Text(
-          '12 CLINICAL TESTS',
-          style: AppFonts.h3.copyWith(color: AppColors.accent2, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Approved Scrutiny',
-          style: AppFonts.bodySmall.copyWith(color: AppColors.muted),
-        ),
+        const SizedBox(height: 12),
+        Text(label, style: AppFonts.bodySmall.copyWith(color: AppColors.white)),
       ],
     );
   }
@@ -242,16 +244,16 @@ class _FeatureBentoCard extends StatefulWidget {
   final String title, subtitle;
   final IconData icon;
   final Color color;
-  final double? height;
   final Widget? child;
+  final bool isMobile;
 
   const _FeatureBentoCard({
     required this.title, 
     required this.subtitle, 
     required this.icon, 
     required this.color,
-    this.height,
     this.child,
+    this.isMobile = false,
   });
 
   @override
@@ -266,42 +268,54 @@ class _FeatureBentoCardState extends State<_FeatureBentoCard> {
     return MouseRegion(
       onEnter: (_) => setState(() => _hov = true),
       onExit: (_) => setState(() => _hov = false),
-      child: AnimatedContainer(
+      child: TweenAnimationBuilder<double>(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeOutCubic,
-        height: widget.height,
-        padding: const EdgeInsets.all(40),
-        decoration: BoxDecoration(
-          color: AppColors.surface.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(40),
-          border: Border.all(
-            color: _hov ? widget.color.withValues(alpha: 0.4) : AppColors.white.withValues(alpha: 0.05),
-            width: 1.5,
-          ),
-          boxShadow: [
-            if (_hov) BoxShadow(color: widget.color.withValues(alpha: 0.1), blurRadius: 40, spreadRadius: -5),
-          ],
-        ),
-        child: Column(
+        tween: Tween(begin: 0.0, end: _hov ? 1.0 : 0.0),
+        builder: (context, v, _) {
+          return Container(
+            padding: const EdgeInsets.all(40),
+            decoration: BoxDecoration(
+              color: AppColors.surface.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(40),
+              border: Border.all(
+                color: Color.lerp(
+                  AppColors.white.withValues(alpha: 0.05),
+                  widget.color.withValues(alpha: 0.4),
+                  v,
+                )!,
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: widget.color.withValues(alpha: 0.1 * v),
+                  blurRadius: 40,
+                  spreadRadius: -5,
+                ),
+              ],
+            ),
+            child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(widget.icon, color: widget.color, size: 40),
             const SizedBox(height: 32),
             Text(
               widget.title, 
-              style: AppFonts.h4.copyWith(color: AppColors.white, fontSize: 24, fontWeight: FontWeight.bold),
+              style: AppFonts.h4.copyWith(color: AppColors.white, fontSize: widget.isMobile ? 22 : 28, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Text(
               widget.subtitle,
-              style: AppFonts.bodyLarge.copyWith(color: AppColors.muted, fontSize: 14, height: 1.5),
+              style: AppFonts.bodyLarge.copyWith(color: AppColors.muted, fontSize: 15, height: 1.6),
             ),
             if (widget.child != null) ...[
-              if (widget.height != null) const Spacer() else const SizedBox(height: 32),
+              const SizedBox(height: 32),
               widget.child!,
             ],
           ],
         ),
+          );
+        },
       ),
     );
   }

@@ -4,7 +4,6 @@ import 'sections/navbar_section.dart';
 import 'sections/hero_section.dart';
 import 'sections/tests_section.dart';
 import 'sections/ecosystem_hub_section.dart';
-import 'sections/stats_section.dart';
 import 'sections/philosophy_section.dart';
 import 'sections/founders_section.dart';
 import 'sections/footer_section.dart';
@@ -66,12 +65,7 @@ class _HomePageState extends State<HomePage> {
                 child: EcosystemHubSection(),
               ),
 
-              // 3. Technical Stats (Standalone)
-              const SliverToBoxAdapter(
-                child: StatsSection(),
-              ),
-
-              // 4. Interactive Diagnostic Hub (12 Clinical Tests)
+              // 3. Interactive Diagnostic Hub (12 Clinical Tests)
               const SliverToBoxAdapter(
                 child: TestsSection(),
               ),

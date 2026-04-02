@@ -173,7 +173,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
         ),
         const SizedBox(height: 24),
         Text(
-          'A Hospital in\nYour Pocket.',
+          'Pioneering Digital\nOptometry.',
           style: AppFonts.h2.copyWith(
             color: AppColors.white, 
             fontSize: isMob ? 32 : 56, 
@@ -184,7 +184,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
         ),
         const SizedBox(height: 32),
         Text(
-          'We are decentralizing eye care by bringing clinical-grade diagnostics and AI-driven therapy directly to your smartphone. No more queues, no more delays—just world-class optometry wherever you are.',
+          'We merge clinical-grade screening with AI-driven analytics to transform your smartphone into a powerful diagnostic tool. Vision Optocare empowers patients and practitioners with accessible, high-precision ocular health tracking.',
           style: AppFonts.bodyLarge.copyWith(
             color: AppColors.muted, 
             height: 1.6,
