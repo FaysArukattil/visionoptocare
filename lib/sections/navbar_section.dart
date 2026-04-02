@@ -1,4 +1,4 @@
-import 'dart:ui';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
@@ -62,7 +62,7 @@ class _NavbarSectionState extends State<NavbarSection>
       child: ClipRRect(
         borderRadius: BorderRadius.circular(isMob ? 24 : (isGlass ? 40 : 0)),
         child: BackdropFilter(
-          filter: ImageFilter.blur(
+          filter: ui.ImageFilter.blur(
             sigmaX: isGlass ? 32 : 0,
             sigmaY: isGlass ? 32 : 0,
           ),

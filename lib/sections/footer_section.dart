@@ -2,196 +2,318 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../widgets/eye_logo.dart';
+import '../widgets/eye_loader.dart';
 import '../utils/responsive.dart';
 
-class FooterSection extends StatelessWidget {
+class FooterSection extends StatefulWidget {
   const FooterSection({super.key});
+
+  @override
+  State<FooterSection> createState() => _FooterSectionState();
+}
+
+class _FooterSectionState extends State<FooterSection> {
+  bool _showLegal = false;
 
   @override
   Widget build(BuildContext context) {
     final isMob = Responsive.isMobile(context);
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF050A18),
-        border: Border(top: BorderSide(color: AppColors.white.withValues(alpha: 0.05), width: 1)),
+        color: const Color(0xFF020617), 
+        border: Border(top: BorderSide(color: AppColors.white.withValues(alpha: 0.05), width: 1.5)),
       ),
       padding: EdgeInsets.symmetric(vertical: isMob ? 60 : 100),
-      child: Padding(
-        padding: Responsive.padding(context),
-        child: Column(
-          children: [
-            isMob ? _buildMobile() : _buildDesktop(),
-            const SizedBox(height: 80),
-            Container(
-              height: 1,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.transparent,
-                    AppColors.white.withValues(alpha: 0.1),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 48),
-            Row(
-              mainAxisAlignment: isMob ? MainAxisAlignment.center : MainAxisAlignment.spaceBetween,
+      child: Stack(
+        children: [
+          Padding(
+            padding: Responsive.padding(context),
+            child: Column(
               children: [
-                Text(
-                  '© 2026 Visiaxx. A Vision Optocare Product.',
-                  style: AppFonts.bodySmall.copyWith(color: AppColors.muted, fontSize: 12),
+                // 1. MASSIVE BRANDING
+                _buildMassiveBranding(isMob),
+                
+                const SizedBox(height: 60),
+
+                // 2. SOCIAL CLUSTER
+                const _SocialCluster(),
+
+                // 3. ANIMATED LEGAL FRAMEWORK (Expands when toggled)
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 600),
+                  curve: Curves.fastOutSlowIn,
+                  child: _showLegal 
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 80),
+                        child: _buildLegalFramework(context, isMob),
+                      )
+                    : const SizedBox(height: 0, width: double.infinity),
                 ),
-                if (!isMob)
-                  Row(
-                    children: [
-                      Text('Privacy Policy', style: AppFonts.bodySmall.copyWith(color: AppColors.muted, fontSize: 12)),
-                      const SizedBox(width: 24),
-                      Text('Terms of Service', style: AppFonts.bodySmall.copyWith(color: AppColors.muted, fontSize: 12)),
-                    ],
-                  ),
+
+                const SizedBox(height: 100),
+
+                // 4. SIGNATURE BOTTOM BAR
+                _buildSignatureBar(context, isMob),
               ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDesktop() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Logo column
-        Expanded(
-          flex: 4,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const EyeLogo(size: 32),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Visiaxx',
-                    style: AppFonts.h4.copyWith(color: AppColors.white, letterSpacing: 1),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: 300,
-                child: Text(
-                  'The world\'s most advanced digital eye care platform. Clinical grade diagnostics in the palm of your hand.',
-                  style: AppFonts.bodyMedium.copyWith(color: AppColors.muted, height: 1.6),
-                ),
-              ),
-              const SizedBox(height: 32),
-              Row(
-                children: [
-                  _socialIcon(Icons.camera_alt),
-                  _socialIcon(Icons.work),
-                  _socialIcon(Icons.play_circle),
-                  _socialIcon(Icons.close),
-                ],
-              ),
-            ],
           ),
-        ),
-        // Links
-        Expanded(
-          flex: 6,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _linkColumn('Platform', ['Tests', 'Therapy', 'Music Library', 'Consultation']),
-              _linkColumn('Solutions', ['Practitioners', 'B2B Licenses', 'Eye Camps']),
-              _linkColumn('Resources', ['Help Center', 'Blog', 'Contact Us']),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
 
-  Widget _buildMobile() {
-    return Column(
-      children: [
-        const EyeLogo(size: 40),
-        const SizedBox(height: 24),
-        Text(
-          'Visiaxx',
-          style: AppFonts.h4.copyWith(color: AppColors.white, letterSpacing: 1),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'See Better. Live Better.',
-          style: AppFonts.bodyMedium.copyWith(color: AppColors.muted),
-        ),
-        const SizedBox(height: 48),
-        Wrap(
-          spacing: 32,
-          runSpacing: 16,
-          alignment: WrapAlignment.center,
-          children: ['Tests', 'Therapy', 'Consult', 'B2B', 'Contact']
-              .map((l) => Text(
-                    l,
-                    style: AppFonts.bodySmall.copyWith(color: AppColors.white.withValues(alpha: 0.8), fontWeight: FontWeight.bold),
-                  ))
-              .toList(),
-        ),
-        const SizedBox(height: 48),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _socialIcon(Icons.camera_alt),
-            _socialIcon(Icons.work),
-            _socialIcon(Icons.play_circle),
-            _socialIcon(Icons.close),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _linkColumn(String title, List<String> links) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: AppFonts.bodySmall.copyWith(color: AppColors.white, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+          // 5. HIDDEN LEGAL TOGGLE (Corner Placement)
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: _buildSubtleToggle(),
           ),
-          const SizedBox(height: 24),
-          ...links.map((l) => Padding(
-                padding: const EdgeInsets.only(bottom: 14),
-                child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: Text(
-                    l,
-                    style: AppFonts.bodySmall.copyWith(color: AppColors.muted),
-                  ),
-                ),
-              )),
         ],
       ),
     );
   }
 
-  Widget _socialIcon(IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 16),
-      child: Container(
-        width: 44, height: 44,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: AppColors.white.withValues(alpha: 0.03),
-          border: Border.all(color: AppColors.white.withValues(alpha: 0.05)),
+  Widget _buildMassiveBranding(bool isMob) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        EyeLogo(size: isMob ? 100 : 160),
+        const SizedBox(height: 48),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            'VISIAXX',
+            style: AppFonts.heading(
+              fontSize: isMob ? 56 : 150, 
+              color: AppColors.white, 
+              fontWeight: FontWeight.w900, 
+              letterSpacing: isMob ? 8 : 16,
+              height: 0.8,
+            ),
+            textAlign: TextAlign.center,
+          ),
         ),
-        child: Icon(icon, color: AppColors.white.withValues(alpha: 0.6), size: 18),
+        const SizedBox(height: 32),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(50),
+            border: Border.all(color: AppColors.accent2.withValues(alpha: 0.2)),
+            color: AppColors.accent2.withValues(alpha: 0.03),
+          ),
+          child: Text(
+            'A PRODUCT OF VISION OPTOCARE',
+            style: AppFonts.caption.copyWith(
+              color: AppColors.accent2.withValues(alpha: 0.8), 
+              letterSpacing: 3, 
+              fontWeight: FontWeight.w900,
+              fontSize: 11,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSubtleToggle() {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => setState(() => _showLegal = !_showLegal),
+        child: Opacity(
+          opacity: 0.2, // Very subtle in the corner
+          child: Text(
+            'Legal notice',
+            style: AppFonts.bodySmall.copyWith(
+              color: AppColors.white, 
+              fontSize: 10,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLegalFramework(BuildContext context, bool isMob) {
+    return Column(
+      children: [
+        Wrap(
+          spacing: 32,
+          runSpacing: 32,
+          alignment: WrapAlignment.center,
+          children: const [
+            _LegalBlock(
+              title: 'NON-DIAGNOSTIC TOOL',
+              content: 'Visiaxx is designed as a preliminary vision screening tool for health tracking and advocacy. It does NOT provide clinical diagnoses or professional medical evaluations.',
+            ),
+            _LegalBlock(
+              title: 'NO LIABILITY AGREEMENT',
+              content: 'Vision Optocare is in no way responsible for decisions, outcomes, or misdiagnoses made based on this software. Users use these tools at their own risk.',
+            ),
+            _LegalBlock(
+              title: 'MEDICAL REQUIREMENT',
+              content: 'Results generated by Visiaxx can never replace formal clinical assessments by a qualified ophthalmologist or optometrist. Always seek professional advice.',
+            ),
+          ],
+        ),
+        const SizedBox(height: 48),
+        IconButton(
+          onPressed: () => setState(() => _showLegal = false),
+          icon: const Icon(Icons.close, color: AppColors.muted, size: 20),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSignatureBar(BuildContext context, bool isMob) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Text(
+            'By using Visiaxx or this website, you acknowledge that you have read and agree to our Terms of Use and Privacy Policy.',
+            textAlign: TextAlign.center,
+            style: AppFonts.bodySmall.copyWith(
+              color: AppColors.muted.withValues(alpha: 0.4), 
+              fontSize: 11,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ),
+        const SizedBox(height: 48),
+        Container(
+          height: 1,
+          width: double.infinity,
+          color: AppColors.white.withValues(alpha: 0.05),
+        ),
+        const SizedBox(height: 48),
+        Padding(
+          padding: Responsive.padding(context),
+          child: Row(
+            mainAxisAlignment: isMob ? MainAxisAlignment.center : MainAxisAlignment.spaceBetween,
+            children: [
+              if (!isMob)
+                Text(
+                  'Vision Advocacy Platform',
+                  style: AppFonts.bodySmall.copyWith(color: AppColors.muted, fontSize: 12),
+                ),
+              
+              const RepaintBoundary(
+                child: EyeLoader.adaptive(size: 36),
+              ),
+
+              if (!isMob)
+                Text(
+                  '© 2026 Vision Optocare',
+                  style: AppFonts.bodySmall.copyWith(color: AppColors.white.withValues(alpha: 0.4), fontSize: 12),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LegalBlock extends StatelessWidget {
+  final String title;
+  final String content;
+
+  const _LegalBlock({required this.title, required this.content});
+
+  @override
+  Widget build(BuildContext context) {
+    final isMob = Responsive.isMobile(context);
+    return Container(
+      width: isMob ? double.infinity : 320,
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: AppColors.white.withValues(alpha: 0.01),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.white.withValues(alpha: 0.03)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: AppFonts.caption.copyWith(
+              color: AppColors.white.withValues(alpha: 0.8), 
+              fontWeight: FontWeight.w900, 
+              fontSize: 11,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            content,
+            style: AppFonts.bodySmall.copyWith(
+              color: AppColors.muted.withValues(alpha: 0.5), 
+              fontSize: 12, 
+              height: 1.6,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SocialCluster extends StatelessWidget {
+  const _SocialCluster();
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 24,
+      runSpacing: 24,
+      alignment: WrapAlignment.center,
+      children: [
+        const _AnimatedSocialIcon(icon: Icons.close, label: 'X (Twitter)', baseColor: AppColors.white),
+        _AnimatedSocialIcon(icon: Icons.email_outlined, label: 'Gmail', baseColor: Colors.red.shade400),
+        _AnimatedSocialIcon(icon: Icons.link, label: 'LinkedIn', baseColor: Colors.blue.shade700),
+        _AnimatedSocialIcon(icon: Icons.chat_bubble_outline, label: 'WhatsApp', baseColor: Colors.green.shade400),
+      ],
+    );
+  }
+}
+
+class _AnimatedSocialIcon extends StatefulWidget {
+  final IconData icon;
+  final String label;
+  final Color baseColor;
+  const _AnimatedSocialIcon({required this.icon, required this.label, required this.baseColor});
+
+  @override
+  State<_AnimatedSocialIcon> createState() => _AnimatedSocialIconState();
+}
+
+class _AnimatedSocialIconState extends State<_AnimatedSocialIcon> {
+  bool _hov = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hov = true),
+      onExit: (_) => setState(() => _hov = false),
+      child: Tooltip(
+        message: widget.label,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+          width: 50, height: 50,
+          decoration: BoxDecoration(
+            color: _hov ? widget.baseColor.withOpacity(0.1) : AppColors.white.withOpacity(0.03),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: _hov ? widget.baseColor.withOpacity(0.3) : AppColors.white.withOpacity(0.08),
+              width: 1.2,
+            ),
+          ),
+          // FIX: Assertion error usually occurs due to shadow interpolation in AnimatedContainer with BoxShape.circle on web
+          // Removing the shadow for now or using a simpler one
+          child: Icon(
+            widget.icon, 
+            color: _hov ? widget.baseColor : AppColors.white.withOpacity(0.3), 
+            size: 22,
+          ),
+        ),
       ),
     );
   }
