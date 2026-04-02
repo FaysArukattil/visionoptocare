@@ -23,7 +23,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=DM+Sans:wght@400;500;700&display=block" rel="stylesheet">
 
   <style>
-    /* Browser-native preloading to eliminate initial flicker */
     .font-preload { position: absolute; visibility: hidden; opacity: 0; pointer-events: none; }
     .syne-preload { font-family: 'Syne'; font-weight: 800; }
 
@@ -34,15 +33,24 @@
       overflow: hidden;
     }
 
-    /* ═══════════════════════════════════════════════════════
-       PREMIUM EYE LOADER — SVG animated eye matching the
-       app's EyeLoader CustomPainter exactly:
-       - Almond-shaped sclera (quadratic bezier)
-       - Iris look-around (4s cycle)
-       - Pupil breathing pulse
-       - Periodic blinks (scaleY at 20%, 50%, 80%)
-       - Reflections & glow stroke
-       ═══════════════════════════════════════════════════════ */
+    /* ═══════════════════════════════════════════════════════════════
+       VISIAXX EYE LOADER
+       Pixel-perfect SVG recreation of the Flutter EyeLoader widget.
+
+       Flutter source coordinates (200×200 square canvas):
+         eyeWidth      = 200 * 0.95  = 190   (x: 5→195)
+         baseEyeHeight = 200 * 0.52  = 104   (control-point offset)
+         Bezier peak   = 100 - 52    = 48    (top), 152 (bottom)
+         irisRadius    = 100 * 0.52  = 52
+         pupilRadius   = 52  * 0.42  ≈ 22
+         irisXOffset   = 190 * 0.28  ≈ 53    (max look distance)
+         reflect1      = iris + (15.6, -15.6)  r=8.3
+         reflect2      = iris + (-10.4, 10.4)  r=4.2
+
+       viewBox crops to "0 38 200 124" showing y 38→162
+       (eye visible from y=48 to y=152 with 10-unit margin)
+       ═══════════════════════════════════════════════════════════════ */
+
     .loading-screen {
       position: fixed;
       inset: 0;
@@ -59,100 +67,98 @@
       pointer-events: none;
     }
 
-    /* ── SVG Eye ── */
+    /* Eye container — aspect ratio  200 : 124  ≈  1.61 : 1 */
     .eye-svg-wrap {
-      width: 120px;
-      height: 65px;
+      width: 150px;
+      aspect-ratio: 200 / 124;
       margin-bottom: 36px;
-      filter: drop-shadow(0 0 20px rgba(0,212,200,0.12));
+      filter: drop-shadow(0 0 18px rgba(0,212,200,0.10));
     }
     @media (min-width: 900px) {
-      .eye-svg-wrap {
-        width: 180px;
-        height: 95px;
-      }
+      .eye-svg-wrap { width: 230px; }
     }
 
     .eye-svg {
+      display: block;
       width: 100%;
       height: 100%;
       overflow: visible;
     }
 
-    /* Blink: whole eye scaleY to 0 and back — matching the Flutter blinkFactor */
+    /* ── Blink animation ──
+       scaleY around eye center (100, 100 in SVG coords).
+       Blinks at 20%, 50%, 80% of 4s cycle (matches Flutter blinkMarkers). */
     .eye-blink-group {
-      transform-origin: 100px 50px;
+      transform-origin: 100px 100px;
       animation: eye-blink 4s ease-in-out infinite;
     }
 
-    /* Iris look-around: translateX matching Flutter's irisXOffset logic
-       0-15%: center
-       15-35%: ease to left (-28% of eyeWidth ≈ -50px on 190px)
-       35-65%: ease left to right (+28% ≈ +50px)
-       65-85%: ease right to center
-       85-100%: center */
+    /* ── Iris look-around ──
+       translateX in SVG user-units (px on SVG elements = SVG units).
+       ±53 units = ±28% of eyeWidth, matching Flutter. */
     .iris-group {
-      animation: iris-look 4s cubic-bezier(0.45,0.05,0.55,0.95) infinite;
+      animation: iris-look 4s cubic-bezier(0.42, 0, 0.58, 1) infinite;
     }
 
-    /* Pupil breathing pulse: 1.0 → 1.15 → 1.0 over 2s */
+    /* ── Pupil breathing pulse ──
+       scale 1 → 1.1 over 2s, matching Flutter's
+       pulseScale = 1.0 + 0.1 * sin(progress * 2π) */
     .pupil-circle {
-      transform-origin: center;
+      transform-origin: 100px 100px;
+      transform-box: view-box;
       animation: pupil-breathe 2s ease-in-out infinite;
     }
 
-    /* Subtle outer glow ring */
+    /* ── Glow stroke pulse ── */
     .eye-glow-stroke {
       animation: glow-opacity 3s ease-in-out infinite;
     }
 
     /* ═══ KEYFRAMES ═══ */
 
-    /* Blink at 20%, 50%, 80% with ~7% window each side — matches blinkMarkers */
     @keyframes eye-blink {
-      0%, 13%   { transform: scaleY(1); }
-      17%       { transform: scaleY(1); }
-      20%       { transform: scaleY(0.04); }
-      23%       { transform: scaleY(1); }
-      43%       { transform: scaleY(1); }
-      47%       { transform: scaleY(1); }
-      50%       { transform: scaleY(0.04); }
-      53%       { transform: scaleY(1); }
-      73%       { transform: scaleY(1); }
-      77%       { transform: scaleY(1); }
-      80%       { transform: scaleY(0.04); }
-      83%       { transform: scaleY(1); }
+      /* Flutter: blink at markers 0.2, 0.5, 0.8 with blinkWindow=0.07
+         Each blink: ramp down to scaleY(0) then back up over 14% of cycle.
+         Using sin(t*π) easing via ease-in-out. */
+      0%, 15%   { transform: scaleY(1); }
+      18%       { transform: scaleY(1); }
+      20%       { transform: scaleY(0.03); }
+      22%       { transform: scaleY(1); }
+      45%       { transform: scaleY(1); }
+      48%       { transform: scaleY(1); }
+      50%       { transform: scaleY(0.03); }
+      52%       { transform: scaleY(1); }
+      75%       { transform: scaleY(1); }
+      78%       { transform: scaleY(1); }
+      80%       { transform: scaleY(0.03); }
+      82%       { transform: scaleY(1); }
       100%      { transform: scaleY(1); }
     }
 
-    /* Iris look-around matching Flutter's irisXOffset phases */
     @keyframes iris-look {
+      /* Flutter phases:
+         0-15%:  center (0)
+         15-35%: ease to left (-53)
+         35-65%: ease left→right (-53 → +53)
+         65-85%: ease right→center (+53 → 0)
+         85-100%: center (0) */
       0%, 15%   { transform: translateX(0); }
-      35%       { transform: translateX(-24px); }
-      65%       { transform: translateX(24px); }
+      35%       { transform: translateX(-53px); }
+      65%       { transform: translateX(53px); }
       85%, 100% { transform: translateX(0); }
     }
-    @media (min-width: 900px) {
-      @keyframes iris-look {
-        0%, 15%   { transform: translateX(0); }
-        35%       { transform: translateX(-36px); }
-        65%       { transform: translateX(36px); }
-        85%, 100% { transform: translateX(0); }
-      }
-    }
 
-    /* Pupil breathing (sin-like) */
     @keyframes pupil-breathe {
       0%, 100%  { transform: scale(1); }
-      50%       { transform: scale(1.18); }
+      50%       { transform: scale(1.1); }
     }
 
     @keyframes glow-opacity {
-      0%, 100% { opacity: 0.3; }
-      50%      { opacity: 0.7; }
+      0%, 100% { opacity: 0.35; }
+      50%      { opacity: 0.75; }
     }
 
-    /* ── Progress Section ── */
+    /* ── Progress area ── */
     .progress-area {
       display: flex;
       flex-direction: column;
@@ -203,66 +209,83 @@
       text-transform: uppercase;
     }
 
-    /* Brand watermark */
     .loading-brand {
       font-family: 'Syne', system-ui, sans-serif;
       font-weight: 800;
       font-size: 10px;
       letter-spacing: 6px;
-      color: rgba(240,244,255,0.1);
+      color: rgba(240,244,255,0.10);
       text-transform: uppercase;
       margin-top: 40px;
     }
   </style>
 </head>
 <body>
-  <!-- ═══ Premium Eye Loading Screen (matches app SplashScreen) ═══ -->
+  <!-- ═══ Visiaxx Eye Loading Screen ═══ -->
   <div class="loading-screen" id="loading-screen">
 
-    <!-- SVG Eye — faithful recreation of EyeLoader CustomPainter -->
+    <!-- SVG Eye — mathematically identical to Flutter EyeLoader CustomPainter -->
     <div class="eye-svg-wrap">
-      <svg class="eye-svg" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+      <!--
+        viewBox "0 38 200 124" crops to the visible eye area:
+        eye top ≈ y48, bottom ≈ y152, with 10-unit padding.
+        All coordinates are in the original 200×200 space.
+      -->
+      <svg class="eye-svg" viewBox="0 38 200 124" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <!-- Iris radial gradient (teal center → semi-transparent teal edge) -->
-          <radialGradient id="irisGrad" cx="50%" cy="50%" r="50%">
+          <!-- Iris: radial gradient from solid teal → 70% alpha teal
+               (matches Flutter RadialGradient [alpha:1.0, alpha:0.7]) -->
+          <radialGradient id="iG" cx="50%" cy="50%" r="50%">
             <stop offset="0%"   stop-color="#00D4C8" stop-opacity="1"/>
             <stop offset="100%" stop-color="#00D4C8" stop-opacity="0.7"/>
           </radialGradient>
-          <!-- Sclera subtle gradient -->
-          <radialGradient id="scleraGrad" cx="50%" cy="50%" r="60%">
+
+          <!-- Sclera: subtle white gradient -->
+          <radialGradient id="sG" cx="50%" cy="50%" r="60%">
             <stop offset="0%"   stop-color="#F0F4FF"/>
-            <stop offset="100%" stop-color="#E0E4F0"/>
+            <stop offset="100%" stop-color="#E4E8F4"/>
           </radialGradient>
+
+          <!-- Clip path matching the sclera almond shape -->
+          <clipPath id="sC">
+            <path d="M 5,100 Q 100,-4 195,100 Q 100,204 5,100 Z"/>
+          </clipPath>
         </defs>
 
         <g class="eye-blink-group">
-          <!-- Sclera: almond/leaf shape via quadratic bezier — matches the Flutter path exactly -->
-          <path d="M 5,50 Q 100,-5 195,50 Q 100,105 5,50 Z"
-                fill="url(#scleraGrad)"/>
-          <!-- Subtle teal glow stroke (matches Flutter's 0.15 alpha stroke) -->
-          <path d="M 5,50 Q 100,-5 195,50 Q 100,105 5,50 Z"
+          <!-- Sclera: almond/leaf shape
+               Flutter path: moveTo(5,100) quadBezTo(100,-4, 195,100)
+                              quadBezTo(100,204, 5,100)
+               Control points -4 and 204 = center ± baseEyeHeight(104) -->
+          <path d="M 5,100 Q 100,-4 195,100 Q 100,204 5,100 Z"
+                fill="url(#sG)"/>
+
+          <!-- Glow stroke: teal at 15% alpha, 1.5px -->
+          <path d="M 5,100 Q 100,-4 195,100 Q 100,204 5,100 Z"
                 fill="none" stroke="rgba(0,212,200,0.15)" stroke-width="1.5"
                 class="eye-glow-stroke"/>
 
-          <!-- Clip to sclera shape for iris/pupil -->
-          <clipPath id="scleraClip">
-            <path d="M 5,50 Q 100,-5 195,50 Q 100,105 5,50 Z"/>
-          </clipPath>
-
-          <g clip-path="url(#scleraClip)">
-            <!-- Iris + Pupil group (animated look-around) -->
+          <!-- Clipped internals: iris, pupil, reflections -->
+          <g clip-path="url(#sC)">
             <g class="iris-group">
-              <!-- Iris circle — radius ~26 (52% of half-width) -->
-              <circle cx="100" cy="50" r="27" fill="url(#irisGrad)"/>
+              <!-- Iris: circle at center, radius=52
+                   (size.width/2 * 0.52 = 100*0.52) -->
+              <circle cx="100" cy="100" r="52" fill="url(#iG)"/>
 
-              <!-- Pupil — 42% of iris radius, with breathing animation -->
-              <circle cx="100" cy="50" r="11" fill="#000510" class="pupil-circle"/>
+              <!-- Pupil: radius = 52*0.42 ≈ 21.8
+                   (breathing animation applied via CSS) -->
+              <circle cx="100" cy="100" r="22" fill="#000510"
+                      class="pupil-circle"/>
 
-              <!-- Primary reflection (top-right of iris) -->
-              <circle cx="108" cy="42" r="4.3" fill="rgba(255,255,255,0.45)"/>
+              <!-- Reflection 1: offset (+15.6, -15.6), r=8.3
+                   = irisRadius * (0.3, -0.3), irisRadius*0.16 -->
+              <circle cx="115.6" cy="84.4" r="8.3"
+                      fill="rgba(255,255,255,0.45)"/>
 
-              <!-- Secondary reflection (bottom-left, smaller) -->
-              <circle cx="94.6" cy="55.4" r="2.2" fill="rgba(255,255,255,0.2)"/>
+              <!-- Reflection 2: offset (-10.4, +10.4), r=4.2
+                   = irisRadius * (-0.2, 0.2), irisRadius*0.08 -->
+              <circle cx="89.6" cy="110.4" r="4.2"
+                      fill="rgba(255,255,255,0.20)"/>
             </g>
           </g>
         </g>
@@ -281,7 +304,7 @@
     <div class="loading-brand">V I S I A X X</div>
   </div>
 
-  <!-- Forced font preload to eliminate initial flicker -->
+  <!-- Forced font preload -->
   <div class="font-preload syne-preload">VISION OPTOCARE</div>
 
   <script>
@@ -335,7 +358,7 @@
       setTarget(100);
     });
 
-    // Safety: don't hang forever
+    // Safety valve
     setTimeout(function() { setTarget(85); }, 6000);
     setTimeout(function() { setTarget(92); }, 9000);
   </script>
