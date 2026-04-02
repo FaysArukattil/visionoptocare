@@ -11,16 +11,18 @@ class AnimatedCounter extends StatefulWidget {
   final Duration duration;
   final bool showPlus;
   final bool forceStart;
+  final TextStyle? style;
 
   const AnimatedCounter({
     super.key,
     this.prefix = '',
     required this.target,
     this.suffix = '',
-    required this.label,
+    this.label = '',
     this.duration = const Duration(milliseconds: 2000),
     this.showPlus = false,
     this.forceStart = false,
+    this.style,
   });
 
   @override
@@ -55,9 +57,9 @@ class _AnimatedCounterState extends State<AnimatedCounter>
     }
 
     return VisibilityDetector(
-      key: Key('counter_${widget.label}'),
+      key: Key('counter_${widget.label}_${widget.target}'),
       onVisibilityChanged: (info) {
-        if (!_started && info.visibleFraction > 0.45) { // Trigger slightly later for better effect
+        if (!_started && info.visibleFraction > 0.45) {
           _started = true;
           _ctrl.forward();
         }
@@ -91,7 +93,7 @@ class _AnimatedCounterState extends State<AnimatedCounter>
                   ),
                   Text(
                     '${widget.prefix}${_countAnim.value.toInt()}${widget.showPlus ? '+' : widget.suffix}',
-                    style: AppFonts.heading(
+                    style: widget.style ?? AppFonts.heading(
                       fontSize: 36,
                       fontWeight: FontWeight.w900,
                       color: AppColors.white,
@@ -100,30 +102,32 @@ class _AnimatedCounterState extends State<AnimatedCounter>
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              // Dynamic Progress line
-              Container(
-                height: 3, 
-                width: 40 * val,
-                decoration: BoxDecoration(
-                  color: AppColors.accent2,
-                  borderRadius: BorderRadius.circular(2),
-                  boxShadow: [
-                    BoxShadow(color: AppColors.accent2.withValues(alpha: 0.5), blurRadius: 10),
-                  ],
+              if (widget.label.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                // Dynamic Progress line
+                Container(
+                  height: 3, 
+                  width: 40 * val,
+                  decoration: BoxDecoration(
+                    color: AppColors.accent2,
+                    borderRadius: BorderRadius.circular(2),
+                    boxShadow: [
+                      BoxShadow(color: AppColors.accent2.withValues(alpha: 0.5), blurRadius: 10),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                widget.label.toUpperCase(),
-                style: AppFonts.caption.copyWith(
-                  color: AppColors.muted,
-                  letterSpacing: 3.0,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
+                const SizedBox(height: 16),
+                Text(
+                  widget.label.toUpperCase(),
+                  style: AppFonts.caption.copyWith(
+                    color: AppColors.muted,
+                    letterSpacing: 3.0,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
+              ],
             ],
           );
         },

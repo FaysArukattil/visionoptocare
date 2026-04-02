@@ -1,216 +1,263 @@
 import 'dart:ui';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
-import '../widgets/animated_counter.dart';
 import '../utils/responsive.dart';
+import '../widgets/globe_painter.dart';
+import '../widgets/animated_counter.dart';
 
-class StatsSection extends StatelessWidget {
-  final double scrollProgress;
-  const StatsSection({super.key, required this.scrollProgress});
-
-  @override
-  Widget build(BuildContext context) {
-    final isMob = Responsive.isMobile(context);
-    // Stats reveal in the last 30% of hero scroll for a more gradual feel
-    final entryP = ((scrollProgress - 0.70) / 0.30).clamp(0.0, 1.0);
-    
-    return RepaintBoundary(
-      child: Opacity(
-        opacity: entryP,
-        child: Transform.translate(
-          offset: Offset(0, 30 * (1 - entryP)),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: isMob ? CrossAxisAlignment.center : CrossAxisAlignment.start,
-            children: [
-              if (!isMob) ...[
-                Text(
-                  'SYSTEM DIAGNOSTICS',
-                  style: AppFonts.caption.copyWith(
-                    color: AppColors.accent2, 
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 4,
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
-              
-              // Dashboard Grid
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  return Wrap(
-                    spacing: 16,
-                    runSpacing: 16,
-                    children: [
-                      _StatCard(
-                        width: isMob ? constraints.maxWidth : (constraints.maxWidth - 16) / 2,
-                        delay: 0.0, p: entryP,
-                        child: AnimatedCounter(
-                          target: 12, 
-                          label: 'CLINICAL TESTS', 
-                          forceStart: entryP > 0.3,
-                        ),
-                      ),
-                      _StatCard(
-                        width: isMob ? constraints.maxWidth : (constraints.maxWidth - 16) / 2,
-                        delay: 0.1, p: entryP,
-                        child: AnimatedCounter(
-                          target: 13, 
-                          label: 'LOCAL LANGUAGES', 
-                          forceStart: entryP > 0.4,
-                        ),
-                      ),
-                      _StatCard(
-                        width: isMob ? constraints.maxWidth : (constraints.maxWidth - 16) / 2,
-                        delay: 0.2, p: entryP,
-                        child: AnimatedCounter(
-                          target: 100, 
-                          showPlus: true, 
-                          label: 'HEALTH TIPS', 
-                          forceStart: entryP > 0.5,
-                        ),
-                      ),
-                      _StatCard(
-                        width: isMob ? constraints.maxWidth : (constraints.maxWidth - 16) / 2,
-                        delay: 0.3, p: entryP,
-                        highlight: true,
-                        child: const _OnlineConsultStat(),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  final Widget child;
-  final bool highlight;
-  final double p;
-  final double delay;
-  final double width;
-
-  const _StatCard({
-    required this.child, 
-    this.highlight = false, 
-    this.p = 1.0,
-    this.delay = 0.0,
-    required this.width,
-  });
+class StatsSection extends StatefulWidget {
+  const StatsSection({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final cardP = (p - delay).clamp(0.0, 1.0);
-
-    return Opacity(
-      opacity: cardP,
-      child: Transform.translate(
-        offset: Offset(0, 10 * (1 - cardP)),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(24),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-            child: Container(
-              width: width,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: (highlight ? AppColors.accent2 : AppColors.white).withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: highlight 
-                      ? AppColors.accent2.withValues(alpha: 0.4) 
-                      : AppColors.white.withValues(alpha: 0.1),
-                  width: 1.5,
-                ),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white.withValues(alpha: 0.05),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-              child: child,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  State<StatsSection> createState() => _StatsSectionState();
 }
 
-class _OnlineConsultStat extends StatefulWidget {
-  const _OnlineConsultStat();
-
-  @override
-  State<_OnlineConsultStat> createState() => _OnlineConsultStatState();
-}
-
-class _OnlineConsultStatState extends State<_OnlineConsultStat> with SingleTickerProviderStateMixin {
-  late AnimationController _pulse;
+class _StatsSectionState extends State<StatsSection> with SingleTickerProviderStateMixin {
+  late AnimationController _globeCtrl;
 
   @override
   void initState() {
     super.initState();
-    _pulse = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
+    _globeCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 20))..repeat();
   }
 
   @override
   void dispose() {
-    _pulse.dispose();
+    _globeCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            AnimatedBuilder(
-              animation: _pulse,
-              builder: (_, _) => Container(
-                width: 44 + (_pulse.value * 12), 
-                height: 44 + (_pulse.value * 12),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.accent2.withValues(alpha: 0.2 * _pulse.value),
+    final isMob = Responsive.isMobile(context);
+    
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: isMob ? 80 : 160),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+      ),
+      child: Column(
+        children: [
+          // Section Header
+          Padding(
+            padding: Responsive.padding(context),
+            child: Column(
+              children: [
+                Text(
+                  'TECHNICAL IDENTITY',
+                  style: AppFonts.caption.copyWith(
+                    color: AppColors.accent2, 
+                    letterSpacing: 4, 
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
+                const SizedBox(height: 24),
+                Text(
+                  'Technical Excellence\nin Ocular Science',
+                  style: AppFonts.h2.copyWith(
+                    color: AppColors.white, 
+                    fontSize: isMob ? 32 : 56, 
+                    height: 1.1,
+                    fontWeight: FontWeight.w800,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 100),
+
+          // Stats Dashboard
+          Padding(
+            padding: Responsive.padding(context),
+            child: _buildStatsGrid(context, isMob),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsGrid(BuildContext context, bool isMob) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (isMob) {
+          return Column(
+            children: [
+              _StatCounterCard(target: 12, label: 'CLINICAL TESTS', showPlus: false),
+              const SizedBox(height: 24),
+              _StatCounterCard(target: 100, label: 'HEALTH TIPS', showPlus: true),
+              const SizedBox(height: 24),
+              _LanguageGlobeStatCard(controller: _globeCtrl, height: 300),
+            ],
+          );
+        }
+
+        return Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: _StatCounterCard(target: 12, label: 'CLINICAL TESTS', showPlus: false),
+                ),
+                const SizedBox(width: 24),
+                Expanded(
+                  child: _StatCounterCard(target: 100, label: 'HEALTH TIPS', showPlus: true),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                // Occupy most width with a detailed care summary or just the globe
+                Expanded(
+                  flex: 2,
+                  child: _LanguageGlobeStatCard(controller: _globeCtrl, height: 350),
+                ),
+                const SizedBox(width: 24),
+                const Expanded(
+                  flex: 1,
+                  child: _SmallActionCard(
+                    title: 'Approved',
+                    subtitle: 'Clinical standards',
+                    icon: Icons.verified_user_outlined,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _StatCounterCard extends StatelessWidget {
+  final int target;
+  final String label;
+  final bool showPlus;
+
+  const _StatCounterCard({required this.target, required this.label, this.showPlus = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(48),
+      decoration: BoxDecoration(
+        color: AppColors.surface.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(40),
+        border: Border.all(color: AppColors.white.withValues(alpha: 0.05)),
+      ),
+      child: Center(
+        child: Column(
+          children: [
+            AnimatedCounter(
+              target: target,
+              showPlus: showPlus,
+              style: AppFonts.h1.copyWith(
+                color: AppColors.white,
+                fontSize: 80,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -2,
               ),
             ),
-            const Icon(Icons.videocam_rounded, color: AppColors.accent2, size: 32),
+            const SizedBox(height: 12),
+            Text(
+              label,
+              style: AppFonts.caption.copyWith(
+                color: AppColors.accent2,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
+              ),
+            ),
           ],
         ),
-        const SizedBox(height: 16),
-        Text(
-          'ONLINE',
-          style: AppFonts.heading(
-            fontSize: 20,
-            color: AppColors.white,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 1.5,
+      ),
+    );
+  }
+}
+
+class _LanguageGlobeStatCard extends StatelessWidget {
+  final AnimationController controller;
+  final double height;
+  const _LanguageGlobeStatCard({required this.controller, required this.height});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: height,
+      padding: const EdgeInsets.all(40),
+      decoration: BoxDecoration(
+        color: AppColors.accent2.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(40),
+        border: Border.all(color: AppColors.accent2.withValues(alpha: 0.15)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 1,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'SPEAKING YOUR LANGUAGE',
+                  style: AppFonts.caption.copyWith(color: AppColors.accent2, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '13 Local\nLanguages',
+                  style: AppFonts.h3.copyWith(color: AppColors.white, fontWeight: FontWeight.w800, height: 1.1),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Localized for Bharat. Accessible to everyone, everywhere.',
+                  style: AppFonts.bodySmall.copyWith(color: AppColors.muted, height: 1.5),
+                ),
+              ],
+            ),
           ),
-        ),
-        Text(
-          'CONSULTATION',
-          style: AppFonts.heading(
-            fontSize: 14,
-            color: AppColors.accent2,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1,
+          const SizedBox(width: 40),
+          Expanded(
+            flex: 1,
+            child: AnimatedBuilder(
+              animation: controller,
+              builder: (context, _) => CustomPaint(
+                painter: GlobePainter(rotation: controller.value * 2 * math.pi),
+              ),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
+    );
+  }
+}
+
+class _SmallActionCard extends StatelessWidget {
+  final String title, subtitle;
+  final IconData icon;
+  const _SmallActionCard({required this.title, required this.subtitle, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: AppColors.surface.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(40),
+        border: Border.all(color: AppColors.white.withValues(alpha: 0.05)),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: AppColors.accent2, size: 48),
+          const SizedBox(height: 24),
+          Text(title, style: AppFonts.h4.copyWith(color: AppColors.white, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Text(subtitle, style: AppFonts.bodySmall.copyWith(color: AppColors.muted)),
+        ],
+      ),
     );
   }
 }

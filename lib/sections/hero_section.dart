@@ -4,7 +4,6 @@ import '../theme/app_fonts.dart';
 import '../widgets/particle_painter.dart';
 import '../utils/responsive.dart';
 import 'hero_animation_engine.dart';
-import 'stats_section.dart';
 
 class HeroSection extends StatefulWidget {
   final double scrollProgress;
@@ -33,16 +32,16 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isMob = Responsive.isMobile(context);
-    final p = widget.scrollProgress; // 0.0 to 1.0
-
+    final safeP = widget.scrollProgress.isFinite && !widget.scrollProgress.isNaN 
+        ? widget.scrollProgress.clamp(0.0, 1.0) : 0.0;
+        
     // High-precision thresholds for a seamless cross-fade
     // Brand fades out between 0.25 and 0.55
-    final brandOpacity = (1.0 - ((p - 0.25) / 0.30)).clamp(0.0, 1.0);
-    // Dashboard (Phone/Stats) fades in between 0.35 and 0.60
-    final dashOpacity  = ((p - 0.35) / 0.25).clamp(0.0, 1.0);
-
+    final brandOpacity = (1.0 - ((safeP - 0.25) / 0.30)).clamp(0.0, 1.0);
+    // Dashboard (Phone/Intro) fades in between 0.35 and 0.60
+    final dashOpacity  = ((safeP - 0.35) / 0.25).clamp(0.0, 1.0);
     // animP maps the 'dashboard' portion of scroll to the full animation lifecycle
-    final animP = ((p - 0.35) / 0.65).clamp(0.0, 1.0);
+    final animP = ((safeP - 0.35) / 0.65).clamp(0.0, 1.0);
 
     return Container(
       width: size.width,
@@ -102,7 +101,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
                 padding: EdgeInsets.symmetric(horizontal: isMob ? 16 : 60),
                 child: isMob 
                   ? _buildMobileDashboard(animP, isMob)
-                  : _buildDesktopDashboard(animP, isMob, p),
+                  : _buildDesktopDashboard(animP, isMob, safeP),
               ),
             ),
           ),
@@ -111,7 +110,7 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
     );
   }
 
-  /// Desktop: Phone animation on the LEFT, Stats on the RIGHT
+  /// Desktop: Phone animation on the LEFT, Intro on the RIGHT
   Widget _buildDesktopDashboard(double animP, bool isMob, double p) {
     return Row(
       children: [
@@ -127,31 +126,86 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
             ),
           ),
         ),
-        const SizedBox(width: 40),
-        // RIGHT: Stats Dashboard
+        const SizedBox(width: 60),
+        // RIGHT: What is Visiaxx?
         Expanded(
           flex: 4,
-          child: StatsSection(scrollProgress: p),
+          child: _buildIntroContent(isMob),
         ),
       ],
     );
   }
 
-  /// Mobile: Stacked — Animation on top, Stats below
+  /// Mobile: Stacked — Animation on top, Intro below
   Widget _buildMobileDashboard(double animP, bool isMob) {
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: 40),
+          // Phone animation
+          RepaintBoundary(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 280, maxHeight: 380),
+              child: HeroAnimationEngine(p: animP, isMob: isMob),
+            ),
+          ),
+          const SizedBox(height: 40),
+          // Intro Content
+          _buildIntroContent(isMob),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIntroContent(bool isMob) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: isMob ? CrossAxisAlignment.center : CrossAxisAlignment.start,
       children: [
-        // Phone animation
-        RepaintBoundary(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 280, maxHeight: 380),
-            child: HeroAnimationEngine(p: animP, isMob: isMob),
+        Text(
+          'WHAT IS VISIAXX?',
+          style: AppFonts.caption.copyWith(
+            color: AppColors.accent2, 
+            letterSpacing: 4, 
+            fontWeight: FontWeight.w900,
           ),
         ),
+        const SizedBox(height: 24),
+        Text(
+          'A Hospital in\nYour Pocket.',
+          style: AppFonts.h2.copyWith(
+            color: AppColors.white, 
+            fontSize: isMob ? 32 : 56, 
+            height: 1.1,
+            fontWeight: FontWeight.w800,
+          ),
+          textAlign: isMob ? TextAlign.center : TextAlign.start,
+        ),
         const SizedBox(height: 32),
-        // Stats
-        StatsSection(scrollProgress: widget.scrollProgress),
+        Text(
+          'We are decentralizing eye care by bringing clinical-grade diagnostics and AI-driven therapy directly to your smartphone. No more queues, no more delays—just world-class optometry wherever you are.',
+          style: AppFonts.bodyLarge.copyWith(
+            color: AppColors.muted, 
+            height: 1.6,
+            fontSize: isMob ? 16 : 18,
+          ),
+          textAlign: isMob ? TextAlign.center : TextAlign.start,
+        ),
+        const SizedBox(height: 40),
+        // CTA Button Placeholder
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(50),
+            border: Border.all(color: AppColors.accent2.withValues(alpha: 0.5)),
+            color: AppColors.accent2.withValues(alpha: 0.1),
+          ),
+          child: Text(
+            'EXPLORE THE ECOSYSTEM',
+            style: AppFonts.caption.copyWith(color: AppColors.accent2, fontWeight: FontWeight.bold),
+          ),
+        ),
       ],
     );
   }

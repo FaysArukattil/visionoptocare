@@ -3,6 +3,12 @@ import 'theme/app_colors.dart';
 import 'sections/navbar_section.dart';
 import 'sections/hero_section.dart';
 import 'sections/tests_section.dart';
+import 'sections/ecosystem_hub_section.dart';
+import 'sections/stats_section.dart';
+import 'sections/philosophy_section.dart';
+import 'sections/founders_section.dart';
+import 'sections/footer_section.dart';
+import 'sections/download_section.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -50,14 +56,44 @@ class _HomePageState extends State<HomePage> {
           CustomScrollView(
             controller: _scrollController,
             slivers: [
-              // 1. Hero (3D Scroll Animation - height 2*screenH)
+              // 1. Hero Spotlight (3D Scroll Animation)
               SliverToBoxAdapter(
                 child: HeroSection(scrollProgress: _heroProgress),
               ),
 
-              // 2. Interactive Diagnostic Hub
+              // 2. The App Ecosystem (Features Page)
+              const SliverToBoxAdapter(
+                child: EcosystemHubSection(),
+              ),
+
+              // 3. Technical Stats (Standalone)
+              const SliverToBoxAdapter(
+                child: StatsSection(),
+              ),
+
+              // 4. Interactive Diagnostic Hub (12 Clinical Tests)
               const SliverToBoxAdapter(
                 child: TestsSection(),
+              ),
+
+              // 5. Philosophy (Mission / Vision)
+              const SliverToBoxAdapter(
+                child: PhilosophySection(),
+              ),
+
+              // 6. Leadership (Founders)
+              const SliverToBoxAdapter(
+                child: FoundersSection(),
+              ),
+
+              // 7. Final CTA (Download Ecosystem)
+              const SliverToBoxAdapter(
+                child: DownloadSection(),
+              ),
+
+              // 8. Footer
+              const SliverToBoxAdapter(
+                child: FooterSection(),
               ),
             ],
           ),
