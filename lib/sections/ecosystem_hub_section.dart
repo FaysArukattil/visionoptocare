@@ -396,12 +396,23 @@ class _AnimatedLanguageGlobeState extends State<_AnimatedLanguageGlobe> with Sin
               child: CustomPaint(painter: GlobePainter(rotation: _ctrl.value * math.pi * 2, gridColor: widget.color)),
             ),
             ...langs.asMap().entries.map((e) {
-              final angle = (e.key / langs.length) * math.pi * 2 + (_ctrl.value * math.pi * 2);
-              final x = math.cos(angle) * 180.0; // Spread wider
-              final y = math.sin(angle) * 50.0; // Taller orbit
-              final z = math.sin(angle); // depth
-              final scale = 0.8 + (z * 0.5); // bigger in front
-              final opacity = 0.5 + ((z + 1) / 2) * 0.5; // fade in back
+              final isMob = Responsive.isMobile(context);
+              
+              // Professional, elegant dual-ring system to prevent overlap
+              final isOuter = e.key % 2 == 0;
+              final direction = isOuter ? 1 : -1; // Rings rotate in opposite directions
+              
+              final angle = (e.key / langs.length) * math.pi * 2 + (_ctrl.value * math.pi * 2 * direction);
+              
+              final xRadius = isMob ? (isOuter ? 140.0 : 80.0) : (isOuter ? 340.0 : 160.0);
+              final yRadius = isMob ? (isOuter ? 35.0 : 20.0) : (isOuter ? 80.0 : 40.0);
+
+              final x = math.cos(angle) * xRadius;
+              final y = math.sin(angle) * yRadius;
+              
+              final z = math.sin(angle); // depth projection
+              final scale = (isOuter ? 0.85 : 0.65) + (z * 0.25); // Subtle scaling
+              final opacity = 0.4 + ((z + 1) / 2) * 0.6; // Fade elements in the back
               
               return Transform.translate(
                 offset: Offset(x, y),
@@ -414,7 +425,7 @@ class _AnimatedLanguageGlobeState extends State<_AnimatedLanguageGlobe> with Sin
                       child: BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: EdgeInsets.symmetric(horizontal: isMob ? 12 : 20, vertical: isMob ? 6 : 10),
                           decoration: BoxDecoration(
                             color: AppColors.background.withValues(alpha: 0.6),
                             borderRadius: BorderRadius.circular(30),
@@ -425,7 +436,7 @@ class _AnimatedLanguageGlobeState extends State<_AnimatedLanguageGlobe> with Sin
                           ),
                           child: Text(
                             e.value.toUpperCase(),
-                            style: AppFonts.heading(color: Colors.white, fontSize: 16, letterSpacing: 1),
+                            style: AppFonts.heading(color: Colors.white, fontSize: isMob ? 10 : 18, letterSpacing: 1.5),
                           ),
                         ),
                       ),
