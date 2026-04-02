@@ -70,14 +70,14 @@ class _HomePageState extends State<HomePage> {
                 child: RepaintBoundary(child: PhilosophySection()),
               ),
 
-              // 6. Leadership (Founders)
+              // 6 & 8. Leadership & Footer (Combined to allow overlapping)
               const SliverToBoxAdapter(
-                child: RepaintBoundary(child: FoundersSection()),
-              ),
-
-              // 8. Footer
-              const SliverToBoxAdapter(
-                child: RepaintBoundary(child: FooterSection()),
+                child: Column(
+                  children: [
+                    FoundersSection(),
+                    FooterSection(),
+                  ],
+                ),
               ),
             ],
           ),

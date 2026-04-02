@@ -13,52 +13,81 @@ class FooterSection extends StatefulWidget {
 }
 
 class _FooterSectionState extends State<FooterSection> {
-  bool _showLegal = false;
-
   @override
   Widget build(BuildContext context) {
     final isMob = Responsive.isMobile(context);
+    final topSpacer = isMob ? 60.0 : 90.0;
     
-    return Container(
-      width: double.infinity,
-      color: const Color(0xFF050A18), // Pure Space Midnight
-      child: Column(
-        children: [
-          // 1. MAIN CONTENT (GRID)
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: isMob ? 60 : 100),
-            child: Padding(
-              padding: Responsive.padding(context),
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Column(
+          children: [
+            // TOP INVISIBLE SPACER (For overlapping eye loader)
+            SizedBox(height: topSpacer),
+            
+            Container(
+              width: double.infinity,
+              color: const Color(0xFF050A18), // Pure Space Midnight
               child: Column(
                 children: [
-                  // TOP BRANDING & SOCIALS
-                  _buildBrandingHeader(context, isMob),
-                  
-                  const SizedBox(height: 80),
+                  // 1. MAIN CONTENT (GRID)
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: isMob ? 80 : 120),
+                    child: Padding(
+                      padding: Responsive.padding(context),
+                      child: Column(
+                        children: [
+                          // TOP BRANDING & SOCIALS
+                          _buildBrandingHeader(context, isMob),
+                          
+                          const SizedBox(height: 80),
 
-                  // DATA GRID
-                  isMob ? _buildMobileGrid() : _buildDesktopGrid(),
-                  
-                  // ANIMATED LEGAL FRAMEWORK
-                  AnimatedSize(
-                    duration: const Duration(milliseconds: 600),
-                    curve: Curves.fastOutSlowIn,
-                    child: _showLegal 
-                      ? Padding(
-                          padding: const EdgeInsets.only(top: 60),
-                          child: _buildLegalFramework(context, isMob),
-                        )
-                      : const SizedBox.shrink(),
+                          // DATA GRID
+                          isMob ? _buildMobileGrid() : _buildDesktopGrid(),
+                          
+                          // PERMANENT LEGAL FRAMEWORK
+                          Padding(
+                            padding: const EdgeInsets.only(top: 60),
+                            child: _buildLegalFramework(context, isMob),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
+
+                  // 2. SIGNATURE BAR
+                  _buildSignatureBar(context, isMob),
                 ],
               ),
             ),
-          ),
+          ],
+        ),
 
-          // 2. SIGNATURE BAR
-          _buildSignatureBar(context, isMob),
-        ],
-      ),
+        // 0. TOP FLOATING EYE LOADER (Always on top and fully visible)
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF050A18), // Match footer background
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.accent2.withValues(alpha: 0.1),
+                    blurRadius: 40,
+                    spreadRadius: 10,
+                  ),
+                ],
+              ),
+              child: const EyeLoader(size: 150),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -69,18 +98,18 @@ class _FooterSectionState extends State<FooterSection> {
         // BRAND IDENTITY
         Row(
           children: [
-            const EyeLogo(size: 64, showGlow: false),
-            const SizedBox(width: 16),
+            const EyeLogo(size: 100, showGlow: false), // Increased size
+            const SizedBox(width: 24),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'VISION OPTOCARE',
-                  style: AppFonts.heading(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.white),
+                  style: AppFonts.heading(fontSize: 28, fontWeight: FontWeight.w900, color: AppColors.white),
                 ),
                 Text(
                   'ADVOCACY ECOSYSTEM',
-                  style: AppFonts.caption.copyWith(color: AppColors.white.withValues(alpha: 0.3), letterSpacing: 4, fontWeight: FontWeight.bold, fontSize: 9),
+                  style: AppFonts.caption.copyWith(color: AppColors.white.withValues(alpha: 0.3), letterSpacing: 4, fontWeight: FontWeight.bold, fontSize: 10),
                 ),
               ],
             ),
@@ -119,13 +148,10 @@ class _FooterSectionState extends State<FooterSection> {
         ),
         const SizedBox(width: 40),
         // RESOURCES
-        Expanded(
+        const Expanded(
           child: _GridCluster(
-            title: 'RESOURCES & LEGAL',
-            items: ['PRIVACY POLICY', 'TERMS OF SERVICE', 'MEDICAL DISCLAIMER'],
-            onItemTap: (item) {
-              if (item == 'MEDICAL DISCLAIMER') setState(() => _showLegal = !_showLegal);
-            },
+            title: 'LEGAL & COMPLIANCE',
+            items: ['Legal Terms and Service of Use'],
           ),
         ),
       ],
@@ -151,11 +177,8 @@ class _FooterSectionState extends State<FooterSection> {
         const SizedBox(height: 48),
         _GridCluster(
           title: 'RESOURCES',
-          items: ['PRIVACY', 'TERMS', 'DISCLAIMER'],
+          items: ['Legal Terms and Service of Use'],
           isCentered: true,
-          onItemTap: (item) {
-            if (item == 'DISCLAIMER') setState(() => _showLegal = !_showLegal);
-          },
         ),
       ],
     );
@@ -175,7 +198,7 @@ class _FooterSectionState extends State<FooterSection> {
               '© 2026 VISION OPTOCARE. ALL RIGHTS RESERVED.',
               style: AppFonts.caption.copyWith(color: AppColors.white.withValues(alpha: 0.2), fontSize: 10, letterSpacing: 1),
             ),
-            if (!isMob) const RepaintBoundary(child: EyeLoader.adaptive(size: 28)),
+            // Removed small eye loader from signature bar
           ],
         ),
       ),
@@ -198,18 +221,13 @@ class _FooterSectionState extends State<FooterSection> {
             runSpacing: 32,
             alignment: WrapAlignment.center,
             children: const [
-              _LegalNode(title: 'NON-DIAGNOSTIC TOOL', content: 'Supportive screening only. Not a medical replacement.'),
-              _LegalNode(title: 'NO LIABILITY AGREEMENT', content: 'Vision Optocare is in no way responsible for decisions.'),
-              _LegalNode(title: 'ADVOCACY MISSION', content: 'Contact qualified personnel for formal clinical advice.'),
+              _LegalNode(title: 'NON-DIAGNOSTIC TOOL', content: 'Vision Optocare provides screening and supportive data. It is not a replacement for professional medical diagnosis or clinical eye examinations.'),
+              _LegalNode(title: 'NO LIABILITY AGREEMENT', content: 'Vision Optocare, its developers, and partners are not liable for any decisions, health outcomes, or actions taken based on the results provided by this platform.'),
+              _LegalNode(title: 'ADVOCACY & EDUCATION', content: 'Our mission is to advocate for better eye health through awareness. Always consult a qualified optometrist or ophthalmologist for formal clinical advice.'),
+              _LegalNode(title: 'ACCURACY & RELIABILITY', content: 'Digital screenings are subject to environmental factors like lighting and screen quality. Results should be treated as indicative, not absolute.'),
+              _LegalNode(title: 'USER RESPONSIBILITY', content: 'Users are responsible for ensuring they follow the testing instructions accurately for the most reliable screening data possible.'),
+              _LegalNode(title: 'DATA PROTECTION', content: 'We prioritize your vision data security. Our platform adheres to best practices in data privacy and user confidentiality.'),
             ],
-          ),
-          const SizedBox(height: 32),
-          InkWell(
-            onTap: () => setState(() => _showLegal = false),
-            child: Text(
-              'CLOSE DISCLAIMER',
-              style: AppFonts.caption.copyWith(color: AppColors.accent2, fontWeight: FontWeight.bold, letterSpacing: 2, fontSize: 10),
-            ),
           ),
         ],
       ),
@@ -221,8 +239,7 @@ class _GridCluster extends StatelessWidget {
   final String title;
   final List<String> items;
   final bool isCentered;
-  final Function(String)? onItemTap;
-  const _GridCluster({required this.title, required this.items, this.isCentered = false, this.onItemTap});
+  const _GridCluster({required this.title, required this.items, this.isCentered = false});
 
   @override
   Widget build(BuildContext context) {
@@ -236,13 +253,10 @@ class _GridCluster extends StatelessWidget {
         const SizedBox(height: 24),
         ...items.map((item) => Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: InkWell(
-            onTap: onItemTap != null ? () => onItemTap!(item) : null,
-            child: Text(
-              item,
-              textAlign: isCentered ? TextAlign.center : TextAlign.left,
-              style: AppFonts.bodySmall.copyWith(color: AppColors.white.withValues(alpha: 0.4), height: 1.6, fontSize: 13),
-            ),
+          child: Text(
+            item,
+            textAlign: isCentered ? TextAlign.center : TextAlign.left,
+            style: AppFonts.bodySmall.copyWith(color: AppColors.white.withValues(alpha: 0.4), height: 1.6, fontSize: 13),
           ),
         )),
       ],
