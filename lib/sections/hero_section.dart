@@ -69,22 +69,24 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
           Positioned(
             top: 0, left: 0, right: 0,
             height: size.height,
-            child: Opacity(
-              opacity: brandOpacity.clamp(0.0, 1.0),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 40),
-                    _buildBrandName(isMob),
-                    const SizedBox(height: 24),
-                    _buildInnovationHeadline(isMob),
-                    const SizedBox(height: 28),
-                    _buildMissionQuote(isMob),
-                    const SizedBox(height: 40),
-                    _buildDescription(isMob),
-                  ],
+            child: RepaintBoundary(
+              child: Opacity(
+                opacity: brandOpacity.clamp(0.0, 1.0),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 40),
+                      _buildBrandName(isMob),
+                      const SizedBox(height: 24),
+                      _buildInnovationHeadline(isMob),
+                      const SizedBox(height: 28),
+                      _buildMissionQuote(isMob),
+                      const SizedBox(height: 40),
+                      _buildDescription(isMob),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -95,13 +97,15 @@ class _HeroSectionState extends State<HeroSection> with TickerProviderStateMixin
             top: size.height,
             left: 0, right: 0,
             height: size.height,
-            child: Opacity(
-              opacity: dashOpacity.clamp(0.0, 1.0),
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: isMob ? 16 : 60),
-                child: isMob 
-                  ? _buildMobileDashboard(animP, isMob)
-                  : _buildDesktopDashboard(animP, isMob, safeP),
+            child: RepaintBoundary(
+              child: Opacity(
+                opacity: dashOpacity.clamp(0.0, 1.0),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: isMob ? 16 : 60),
+                  child: isMob 
+                    ? _buildMobileDashboard(animP, isMob)
+                    : _buildDesktopDashboard(animP, isMob, safeP),
+                ),
               ),
             ),
           ),

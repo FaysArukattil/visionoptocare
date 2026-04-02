@@ -41,7 +41,7 @@ class TestsSection extends StatefulWidget {
 
 class _TestsSectionState extends State<TestsSection> with TickerProviderStateMixin {
   late AnimationController _scrollCtrl;
-  double _scrollPos = 0.0; // Index-based scroll position
+  final ValueNotifier<double> _scrollPos = ValueNotifier<double>(0.0);
   final FocusNode _focusNode = FocusNode();
 
   @override
@@ -60,6 +60,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
 
   void _onPanUpdate(DragUpdateDetails d) {
     _scrollCtrl.value -= d.delta.dy / 100; // Sensitivity 
+    _scrollPos.value = _scrollCtrl.value;
   }
 
   void _onPanEnd(DragEndDetails d) {
@@ -67,30 +68,31 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   }
 
   void _snapToNearest() {
-    final target = _scrollPos.roundToDouble();
-    _scrollCtrl.value = _scrollPos;
+    final target = _scrollPos.value.roundToDouble();
+    _scrollCtrl.value = _scrollPos.value;
     _scrollCtrl.animateTo(target, curve: Curves.easeOutCubic);
+    _scrollPos.value = _scrollCtrl.value;
   }
 
   void _onTapItem(int index) {
     // Shortest path logic for infinite loop
-    double current = _scrollPos;
+    double current = _scrollPos.value;
     double target = index.toDouble();
     
     double diff = target - (current % _tests.length);
     if (diff > _tests.length / 2) diff -= _tests.length;
     if (diff < -_tests.length / 2) diff += _tests.length;
 
-    _scrollCtrl.value = _scrollPos;
-    _scrollCtrl.animateTo(_scrollPos + diff, curve: Curves.easeOutBack, duration: const Duration(milliseconds: 600));
+    _scrollCtrl.value = _scrollPos.value;
+    _scrollCtrl.animateTo(_scrollPos.value + diff, curve: Curves.easeOutBack, duration: const Duration(milliseconds: 600));
   }
 
   void _onKey(KeyEvent event) {
     if (event is KeyDownEvent) {
       if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-        _scrollCtrl.animateTo((_scrollPos + 1).roundToDouble(), curve: Curves.easeOutBack);
+        _scrollCtrl.animateTo((_scrollPos.value + 1).roundToDouble(), curve: Curves.easeOutBack);
       } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-        _scrollCtrl.animateTo((_scrollPos - 1).roundToDouble(), curve: Curves.easeOutBack);
+        _scrollCtrl.animateTo((_scrollPos.value - 1).roundToDouble(), curve: Curves.easeOutBack);
       }
     }
   }
@@ -98,6 +100,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   @override
   void dispose() { 
     _scrollCtrl.dispose(); 
+    _scrollPos.dispose();
     _focusNode.dispose(); 
     super.dispose(); 
   }
@@ -141,52 +144,53 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
       focusNode: _focusNode,
       autofocus: true,
       onKeyEvent: _onKey,
-      child: AnimatedBuilder(
-        animation: _scrollCtrl,
-        builder: (context, child) {
-          final scrollVal = _scrollCtrl.value;
-          if (!scrollVal.isFinite) return const SizedBox.shrink();
-          final scrollPos = scrollVal;
-          int selectedIndex = (scrollPos.round() % _tests.length);
-          if (selectedIndex < 0) {
-            selectedIndex += _tests.length;
-          }
-
-          final test = _tests[selectedIndex];
-          final themeColor = _getTierColor(test.tier);
-          final normPos = ((scrollPos % _tests.length) + _tests.length) % _tests.length / _tests.length;
-
-          return Container(
-            height: double.infinity,
-            color: Colors.transparent,
-            clipBehavior: Clip.none,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Positioned.fill(
-                  child: RepaintBoundary(
-                    child: CustomPaint(
-                      painter: ParticlePainter(
-                        animValue: scrollPos * 0.1,
-                        color: themeColor.withValues(alpha: 0.1),
-                        count: 15,
-                      ),
+      child: Stack(
+        children: [
+          // 1. Background Particles (Independent listener)
+          Positioned.fill(
+            child: ValueListenableBuilder<double>(
+              valueListenable: _scrollPos,
+              builder: (context, pos, _) {
+                if (!pos.isFinite) return const SizedBox.shrink();
+                return RepaintBoundary(
+                  child: CustomPaint(
+                    painter: ParticlePainter(
+                      animValue: pos * 0.1,
+                      color: _getTierColor(_tests[(pos.round() % _tests.length).abs() % _tests.length].tier).withValues(alpha: 0.1),
+                      count: 15,
                     ),
                   ),
-                ),
-
-                Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: isMob ? 0 : 20, vertical: 0),
-                    child: isMob 
-                        ? _buildMobileLayout(test, themeColor, selectedIndex, scrollPos, normPos) 
-                        : _buildDesktopLayout(test, themeColor, selectedIndex, scrollPos, normPos),
-                  ),
-                ),
-              ],
+                );
+              },
             ),
-          );
-        },
+          ),
+
+          // 2. Main Content
+          ValueListenableBuilder<double>(
+            valueListenable: _scrollPos,
+            builder: (context, pos, child) {
+              if (!pos.isFinite) return const SizedBox.shrink();
+              
+              int sIdx = (pos.round() % _tests.length);
+              if (sIdx < 0) sIdx += _tests.length;
+
+              final test = _tests[sIdx];
+              final themeColor = _getTierColor(test.tier);
+              final normPos = ((pos % _tests.length) + _tests.length) % _tests.length / _tests.length;
+
+              // We only rebuild the WHEEL on every position change.
+              // We could theoretically isolate further, but this is already massive.
+              return Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: isMob ? 0 : 20, vertical: 0),
+                  child: isMob 
+                      ? _buildMobileLayout(test, themeColor, sIdx, pos, normPos) 
+                      : _buildDesktopLayout(test, themeColor, sIdx, pos, normPos),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

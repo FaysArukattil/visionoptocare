@@ -16,8 +16,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final ScrollController _scrollController = ScrollController();
-  bool _isScrolled = false;
-  double _heroProgress = 0.0;
+  final ValueNotifier<bool> _isScrolled = ValueNotifier<bool>(false);
+  final ValueNotifier<double> _heroProgress = ValueNotifier<double>(0.0);
 
   @override
   void initState() {
@@ -26,21 +26,18 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onScroll() {
-    final scrolled = _scrollController.offset > 50;
-    if (scrolled != _isScrolled) {
-      if (mounted) setState(() => _isScrolled = scrolled);
-    }
+    _isScrolled.value = _scrollController.offset > 50;
     
-    final screenH = MediaQuery.of(context).size.height;
-    
-    // 1. Hero Progress (0 -> 1.0 over 1 screen height = brand to dashboard)
-    final hProgress = (_scrollController.offset / screenH).clamp(0.0, 1.0);
-    if (mounted) setState(() => _heroProgress = hProgress);
+    // Efficiently calculate progress without triggering full build
+    final screenH = MediaQuery.sizeOf(context).height;
+    _heroProgress.value = (_scrollController.offset / screenH).clamp(0.0, 1.0);
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _isScrolled.dispose();
+    _heroProgress.dispose();
     super.dispose();
   }
 
@@ -55,37 +52,47 @@ class _HomePageState extends State<HomePage> {
             slivers: [
               // 1. Hero Spotlight (3D Scroll Animation)
               SliverToBoxAdapter(
-                child: HeroSection(scrollProgress: _heroProgress),
+                child: ValueListenableBuilder<double>(
+                  valueListenable: _heroProgress,
+                  builder: (context, progress, child) {
+                    return HeroSection(scrollProgress: progress);
+                  },
+                ),
               ),
 
               // 2. The App Ecosystem (Features Page)
               const SliverToBoxAdapter(
-                child: EcosystemHubSection(),
+                child: RepaintBoundary(child: EcosystemHubSection()),
               ),
 
               // 5. Philosophy (Mission / Vision)
               const SliverToBoxAdapter(
-                child: PhilosophySection(),
+                child: RepaintBoundary(child: PhilosophySection()),
               ),
 
               // 6. Leadership (Founders)
               const SliverToBoxAdapter(
-                child: FoundersSection(),
+                child: RepaintBoundary(child: FoundersSection()),
               ),
 
               // 8. Footer
               const SliverToBoxAdapter(
-                child: FooterSection(),
+                child: RepaintBoundary(child: FooterSection()),
               ),
             ],
           ),
           
-          // Navbar (Overlay)
+          // Navbar (Overlay) - Isolated from page rebuilds
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: NavbarSection(isScrolled: _isScrolled),
+            child: ValueListenableBuilder<bool>(
+              valueListenable: _isScrolled,
+              builder: (context, scrolled, child) {
+                return NavbarSection(isScrolled: scrolled);
+              },
+            ),
           ),
         ],
       ),

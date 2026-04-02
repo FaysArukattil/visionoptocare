@@ -292,33 +292,33 @@ class _FeatureBentoCardState extends State<_FeatureBentoCard> {
     return MouseRegion(
       onEnter: (_) => setState(() => _hov = true),
       onExit: (_) => setState(() => _hov = false),
-      child: TweenAnimationBuilder<double>(
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeOutCubic,
-        tween: Tween(begin: 0.0, end: _hov ? 1.0 : 0.0),
-        builder: (context, v, _) {
-          return Container(
-            padding: const EdgeInsets.all(40),
-            decoration: BoxDecoration(
-              color: AppColors.surface.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(40),
-              border: Border.all(
-                color: Color.lerp(
-                  AppColors.white.withValues(alpha: 0.05),
-                  widget.color.withValues(alpha: 0.4),
-                  v,
-                )!,
-                width: 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: widget.color.withValues(alpha: 0.1 * v),
-                  blurRadius: 40,
-                  spreadRadius: -5,
+      child: RepaintBoundary(
+        child: TweenAnimationBuilder<double>(
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOutCubic,
+          tween: Tween(begin: 0.0, end: _hov ? 1.0 : 0.0),
+          builder: (context, v, _) {
+            return Container(
+              padding: const EdgeInsets.all(40),
+              decoration: BoxDecoration(
+                color: AppColors.surface.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(40),
+                border: Border.all(
+                  color: Color.lerp(
+                    AppColors.white.withValues(alpha: 0.05),
+                    widget.color.withValues(alpha: 0.4),
+                    v,
+                  )!,
+                  width: 1.5,
                 ),
-              ],
-            ),
-            child: RepaintBoundary(
+                boxShadow: [
+                  BoxShadow(
+                    color: widget.color.withValues(alpha: 0.1 * v),
+                    blurRadius: 40,
+                    spreadRadius: -5,
+                  ),
+                ],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -339,9 +339,9 @@ class _FeatureBentoCardState extends State<_FeatureBentoCard> {
                   ],
                 ],
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -403,13 +403,13 @@ class _AnimatedLanguageGlobeState extends State<_AnimatedLanguageGlobe> with Sin
               final scale = (isOuter ? 0.85 : 0.65) + (z * 0.25); // Subtle scaling
               final opacity = 0.4 + ((z + 1) / 2) * 0.6; // Fade elements in the back
               
-              return Transform.translate(
-                offset: Offset(x, y),
-                child: Transform.scale(
-                  scale: scale,
-                  child: Opacity(
-                    opacity: opacity,
-                    child: RepaintBoundary(
+              return RepaintBoundary(
+                child: Transform.translate(
+                  offset: Offset(x, y),
+                  child: Transform.scale(
+                    scale: scale,
+                    child: Opacity(
+                      opacity: opacity,
                       child: Container(
                         padding: EdgeInsets.symmetric(horizontal: isMob ? 12 : 20, vertical: isMob ? 6 : 10),
                         decoration: BoxDecoration(

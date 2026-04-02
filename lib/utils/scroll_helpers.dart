@@ -63,9 +63,11 @@ class _ScrollRevealWidgetState extends State<ScrollRevealWidget>
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {
-          return Transform.translate(
-            offset: _slideAnim.value,
-            child: Opacity(opacity: _fadeAnim.value, child: child),
+          return RepaintBoundary(
+            child: Transform.translate(
+              offset: _slideAnim.value,
+              child: Opacity(opacity: _fadeAnim.value, child: child),
+            ),
           );
         },
         child: widget.child,

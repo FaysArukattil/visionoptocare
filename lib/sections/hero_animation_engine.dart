@@ -265,7 +265,9 @@ class _ShardPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _ShardPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _ShardPainter oldDelegate) {
+    return oldDelegate.p != p || oldDelegate.scrollP != scrollP;
+  }
 }
 
 /// ── THE RUPTURE: Pulsing Iris Geometry ──
@@ -323,7 +325,9 @@ class _IrisPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _IrisPainter oldDelegate) {
+    return oldDelegate.p != p;
+  }
 }
 
 /// ── THE FUTURE: Smartphone with Official Splash UI ──
