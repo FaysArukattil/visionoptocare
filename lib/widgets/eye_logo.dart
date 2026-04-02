@@ -4,7 +4,8 @@ import '../theme/app_colors.dart';
 
 class EyeLogo extends StatefulWidget {
   final double size;
-  const EyeLogo({super.key, this.size = 36});
+  final bool showGlow;
+  const EyeLogo({super.key, this.size = 36, this.showGlow = true});
 
   @override
   State<EyeLogo> createState() => _EyeLogoState();
@@ -55,17 +56,17 @@ class _EyeLogoState extends State<EyeLogo> with SingleTickerProviderStateMixin {
                     boxShadow: [
                       BoxShadow(
                         color: AppColors.accent2.withValues(
-                          alpha: 0.25 * glowVal, // High-impact bloom
+                          alpha: widget.showGlow ? (0.25 * glowVal) : 0, // High-impact bloom
                         ),
-                        blurRadius: 40 * glowVal,
-                        spreadRadius: 2 * glowVal,
+                        blurRadius: widget.showGlow ? (40 * glowVal) : 0,
+                        spreadRadius: widget.showGlow ? (2 * glowVal) : 0,
                       ),
                       BoxShadow(
                         color: AppColors.accent1.withValues(
-                          alpha: 0.15 * glowVal,
+                          alpha: widget.showGlow ? (0.15 * glowVal) : 0,
                         ),
-                        blurRadius: 60 * glowVal,
-                        spreadRadius: -5 * glowVal,
+                        blurRadius: widget.showGlow ? (60 * glowVal) : 0,
+                        spreadRadius: widget.showGlow ? (-5 * glowVal) : 0,
                       ),
                     ],
                   ),
