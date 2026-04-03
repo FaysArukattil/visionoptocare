@@ -704,7 +704,7 @@ class _AmslerPainter extends CustomPainter {
   bool isSelectedPoint(double x, double y) => (x - 80).abs() < 40 && (y - 80).abs() < 40;
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _AmslerPainter oldDelegate) => false;
 }
 
 class _IshiharaPainter extends CustomPainter {
@@ -725,7 +725,7 @@ class _IshiharaPainter extends CustomPainter {
     }
   }
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _IshiharaPainter oldDelegate) => false;
 }
 
 class _SystemTelemetryPainter extends CustomPainter {
@@ -750,7 +750,8 @@ class _SystemTelemetryPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _SystemTelemetryPainter oldDelegate) =>
+      oldDelegate.animValue != animValue || oldDelegate.color != color;
 }
 
 class _DiagnosticGridPainter extends CustomPainter {
@@ -767,5 +768,5 @@ class _DiagnosticGridPainter extends CustomPainter {
     }
   }
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _DiagnosticGridPainter oldDelegate) => false;
 }

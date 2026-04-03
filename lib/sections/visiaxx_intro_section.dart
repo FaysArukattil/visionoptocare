@@ -142,6 +142,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
 
   Widget _buildMobileLayout() {
     return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -261,7 +262,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
 
   Widget _buildIntroText(bool isMob) {
     return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(),
+      physics: const NeverScrollableScrollPhysics(),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment:

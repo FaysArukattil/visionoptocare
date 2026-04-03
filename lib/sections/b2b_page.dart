@@ -97,7 +97,7 @@ class _B2BPageState extends State<B2BPage> with TickerProviderStateMixin {
                 ),
                 // Main content: reverted to scrolling for larger text
                 SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
+                  physics: const NeverScrollableScrollPhysics(),
                   child: Column(
                     children: [
                       SizedBox(height: isMob ? 110 : 140),

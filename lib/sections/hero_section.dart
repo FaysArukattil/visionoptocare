@@ -29,7 +29,7 @@ class _HeroSectionState extends State<HeroSection>
   String _displayedText = '';
   int _charIndex = 0;
   Timer? _typeTimer;
-  bool _cursorVisible = true;
+  final ValueNotifier<bool> _cursorVisible = ValueNotifier<bool>(true);
   Timer? _cursorTimer;
 
   // Staggered fade-in controllers for content after typewriter
@@ -70,7 +70,7 @@ class _HeroSectionState extends State<HeroSection>
 
   void _startCursorBlink() {
     _cursorTimer = Timer.periodic(const Duration(milliseconds: 530), (_) {
-      if (mounted) setState(() => _cursorVisible = !_cursorVisible);
+      if (mounted) _cursorVisible.value = !_cursorVisible.value;
     });
   }
 
@@ -118,6 +118,7 @@ class _HeroSectionState extends State<HeroSection>
     _descCtrl.dispose();
     _ctaCtrl.dispose();
     _typeTimer?.cancel();
+    _cursorVisible.dispose();
     _cursorTimer?.cancel();
     super.dispose();
   }
@@ -192,18 +193,20 @@ class _HeroSectionState extends State<HeroSection>
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        // Blinking Cursor
+                        // Blinking Cursor — isolated rebuild via ValueListenableBuilder
                         if (!_typewriterDone)
-                          AnimatedOpacity(
-                            duration: const Duration(milliseconds: 50),
-                            opacity: _cursorVisible ? 1.0 : 0.0,
-                            child: Text(
-                              '|',
-                              style: AppFonts.heading(
-                                fontSize: isMob ? 60 : 110,
-                                fontWeight: FontWeight.w900,
-                                height: 0.88,
-                                color: AppColors.accent2,
+                          ValueListenableBuilder<bool>(
+                            valueListenable: _cursorVisible,
+                            builder: (context, visible, _) => Opacity(
+                              opacity: visible ? 1.0 : 0.0,
+                              child: Text(
+                                '|',
+                                style: AppFonts.heading(
+                                  fontSize: isMob ? 60 : 110,
+                                  fontWeight: FontWeight.w900,
+                                  height: 0.88,
+                                  color: AppColors.accent2,
+                                ),
                               ),
                             ),
                           ),

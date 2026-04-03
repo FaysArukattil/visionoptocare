@@ -65,7 +65,7 @@ class _VisionTeamSectionState extends State<VisionTeamSection>
 
           // ── Scrollable Content ──
           SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
+            physics: const NeverScrollableScrollPhysics(),
             child: Column(
               children: [
                 SizedBox(height: isMob ? 80 : 110),
@@ -189,7 +189,7 @@ class _VisionTeamSectionState extends State<VisionTeamSection>
             delay: 0.5,
             name: 'Fays Arukattil',
             role: 'SOFTWARE DEVELOPER',
-            imagePath: 'assets/images/Team_members/Lead_Dev.jpeg',
+            imagePath: 'assets/images/Team_members/Software_Dev.jpeg',
             credential: 'Full-Stack Architect',
             experience: 'Product · R&D',
             bio: 'Architecting the Visiaxx core with Flutter.', // Refined text

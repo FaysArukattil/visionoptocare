@@ -42,71 +42,74 @@ class _FooterSectionState extends State<FooterSection> {
       width: size.width,
       height: size.height,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          // ── Footer Body (with Eye attached) ──
-          Flexible(
-            child: Stack(
-              alignment: Alignment.topCenter,
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  width: double.infinity,
-                  color: const Color(0xFF050A18),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.only(
-                            top: isMob ? 70 : 90,
-                            bottom: isMob ? 30 : 48,
-                          ),
-                          child: Padding(
-                            padding: Responsive.padding(context),
-                            child: Column(
-                              children: [
-                                _buildBrandingHeader(context, isMob),
-                                const SizedBox(height: 32),
-                                isMob ? _buildMobileGrid() : _buildDesktopGrid(),
-                                AnimatedSize(
-                                  duration: const Duration(milliseconds: 600),
-                                  curve: Curves.fastOutSlowIn,
-                                  child: _showLegal
-                                      ? Padding(
-                                          padding: const EdgeInsets.only(top: 40),
-                                          child: _buildLegalFramework(context, isMob),
-                                        )
-                                      : const SizedBox.shrink(),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        _buildSignatureBar(context, isMob),
-                      ],
-                    ),
-                  ),
-                ),
-                // ── The Attached Eye (bridging the footer line) ──
-                Positioned(
-                  top: -25,
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF050A18),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.accent2.withValues(alpha: 0.15),
-                          blurRadius: 30,
-                          spreadRadius: 5,
-                        ),
-                      ],
-                    ),
-                    child: const EyeLoader(size: 50),
-                  ),
+          // ── Top spacer to push footer content to center/bottom ──
+          const Spacer(flex: 2),
+
+          // ── Eye Logo Bridge ──
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF050A18),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.accent2.withValues(alpha: 0.15),
+                  blurRadius: 30,
+                  spreadRadius: 5,
                 ),
               ],
+            ),
+            child: const EyeLoader(size: 50),
+          ),
+          const SizedBox(height: 8),
+
+          // ── Divider Line ──
+          Container(
+            margin: Responsive.padding(context),
+            height: 1,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.transparent,
+                  AppColors.accent2.withValues(alpha: 0.2),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+
+          // ── Footer Body ──
+          Expanded(
+            flex: 5,
+            child: Container(
+              width: double.infinity,
+              color: const Color(0xFF050A18),
+              child: Padding(
+                padding: Responsive.padding(context),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 16),
+                    _buildBrandingHeader(context, isMob),
+                    const SizedBox(height: 32),
+                    isMob ? _buildMobileGrid() : _buildDesktopGrid(),
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 600),
+                      curve: Curves.fastOutSlowIn,
+                      child: _showLegal
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: 32),
+                              child: _buildLegalFramework(context, isMob),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                    const Spacer(),
+                    _buildSignatureBar(context, isMob),
+                    SizedBox(height: isMob ? 8 : 16),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
@@ -154,24 +157,21 @@ class _FooterSectionState extends State<FooterSection> {
     final size = MediaQuery.of(context).size;
     final useStack = size.width < 1100;
 
-    return Padding(
-      padding: Responsive.padding(context),
-      child: useStack
-          ? Column(
-              children: [
-                _buildBranding(isMob: false),
-                const SizedBox(height: 32),
-                const _SocialCluster(),
-              ],
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildBranding(isMob: false),
-                const _SocialCluster(),
-              ],
-            ),
-    );
+    return useStack
+        ? Column(
+            children: [
+              _buildBranding(isMob: false),
+              const SizedBox(height: 32),
+              const _SocialCluster(),
+            ],
+          )
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildBranding(isMob: false),
+              const _SocialCluster(),
+            ],
+          );
   }
 
   Widget _buildBranding({required bool isMob}) {
@@ -241,19 +241,19 @@ class _FooterSectionState extends State<FooterSection> {
     return Column(
       children: [
         const _SocialCluster(),
-        const SizedBox(height: 60),
+        const SizedBox(height: 40),
         const _GridCluster(
           title: 'LOCATION',
           items: ['B-19, Gokul Dham, Mumbai-63'],
           isCentered: true,
         ),
-        const SizedBox(height: 48),
+        const SizedBox(height: 32),
         const _GridCluster(
           title: 'CONTACT',
           items: ['contact@visionoptocare.co.in', '+91-9819335775'],
           isCentered: true,
         ),
-        const SizedBox(height: 48),
+        const SizedBox(height: 32),
         _GridCluster(
           title: 'RESOURCES',
           items: ['Legal Terms and Service of Use'],
@@ -269,26 +269,22 @@ class _FooterSectionState extends State<FooterSection> {
   Widget _buildSignatureBar(BuildContext context, bool isMob) {
     return Container(
       width: double.infinity,
-      color: Colors.black.withValues(alpha: 0.2),
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      child: Padding(
-        padding: Responsive.padding(context),
-        child: Row(
-          mainAxisAlignment: isMob ? MainAxisAlignment.center : MainAxisAlignment.spaceBetween,
-          children: [
-            Flexible(
-              child: Text(
-                '© 2026 VISION OPTOCARE. ALL RIGHTS RESERVED.',
-                style: AppFonts.caption.copyWith(
-                  color: AppColors.white.withValues(alpha: 0.2),
-                  fontSize: 10,
-                  letterSpacing: 1,
-                ),
-                textAlign: isMob ? TextAlign.center : TextAlign.left,
-              ),
-            ),
-          ],
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: AppColors.white.withValues(alpha: 0.05),
+          ),
         ),
+      ),
+      child: Text(
+        '© 2026 VISION OPTOCARE. ALL RIGHTS RESERVED.',
+        style: AppFonts.caption.copyWith(
+          color: AppColors.white.withValues(alpha: 0.2),
+          fontSize: 10,
+          letterSpacing: 1,
+        ),
+        textAlign: isMob ? TextAlign.center : TextAlign.left,
       ),
     );
   }
@@ -296,10 +292,10 @@ class _FooterSectionState extends State<FooterSection> {
   Widget _buildLegalFramework(BuildContext context, bool isMob) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(40),
+      padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: AppColors.surface.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(40),
+        borderRadius: BorderRadius.circular(32),
         border: Border.all(color: AppColors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
@@ -309,15 +305,16 @@ class _FooterSectionState extends State<FooterSection> {
             children: [
               Icon(Icons.gavel_rounded, color: AppColors.accent2, size: 24),
               const SizedBox(width: 16),
-              Text(
-                'MEDICAL DISCLAIMER & TERMS OF USE',
-                style: AppFonts.caption.copyWith(
-                  color: AppColors.accent2,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
+              Expanded(
+                child: Text(
+                  'MEDICAL DISCLAIMER & TERMS OF USE',
+                  style: AppFonts.caption.copyWith(
+                    color: AppColors.accent2,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2,
+                  ),
                 ),
               ),
-              const Spacer(),
               IconButton(
                 onPressed: () => setState(() => _showLegal = false),
                 icon: Icon(Icons.close, color: AppColors.white.withValues(alpha: 0.3)),
@@ -325,16 +322,16 @@ class _FooterSectionState extends State<FooterSection> {
               ),
             ],
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
           Text(
             'Important Notice: Vision Optocare provides screening and supportive data for educational and awareness purposes only. It is not a replacement for professional medical diagnosis or clinical eye examinations. All results should be treated as indicative, not absolute, as digital screenings are subject to environmental factors like lighting and screen quality. Vision Optocare, its developers, and partners are not liable for any decisions, health outcomes, or actions taken based on the results provided by this platform. By using this service, you acknowledge that you are responsible for following testing instructions accurately and maintaining your own formal clinical follow-ups. We prioritize your privacy and ensure vision data security adheres to best practices in confidentiality.',
             style: AppFonts.bodySmall.copyWith(
               color: AppColors.white.withValues(alpha: 0.5),
               height: 1.8,
-              fontSize: 14,
+              fontSize: isMob ? 12 : 14,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           Text(
             'This notice will automatically hide after 30 seconds of visibility.',
             style: AppFonts.caption.copyWith(
@@ -376,7 +373,7 @@ class _GridCluster extends StatelessWidget {
             color: AppColors.white.withValues(alpha: 0.6),
             fontWeight: FontWeight.bold,
             letterSpacing: 2,
-            fontSize: 13, // Increased for readability
+            fontSize: 13,
           ),
         ),
         const SizedBox(height: 24),
@@ -390,7 +387,7 @@ class _GridCluster extends StatelessWidget {
               style: AppFonts.bodySmall.copyWith(
                 color: AppColors.white.withValues(alpha: 0.4),
                 height: 1.6,
-                fontSize: 15, // Increased for readability
+                fontSize: 15,
               ),
             ),
           ),
@@ -465,7 +462,7 @@ class _SocialNodeState extends State<_SocialNode> {
           child: Icon(
             widget.icon,
             color: _hov ? widget.baseColor : AppColors.white.withValues(alpha: 0.3),
-            size: 24, // Increased from 20
+            size: 24,
           ),
         ),
       ),

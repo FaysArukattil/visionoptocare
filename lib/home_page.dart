@@ -88,7 +88,7 @@ class _HomePageState extends State<HomePage> {
               controller: _scrollController,
               physics:
                   const ClampingScrollPhysics(), // Prevent bouncy jitter on web
-              cacheExtent: size.height * 2,
+              cacheExtent: size.height * 3,
               slivers: [
                 SliverList(
                   delegate: SliverChildBuilderDelegate((context, i) {
