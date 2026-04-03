@@ -105,6 +105,7 @@ class _VisionTeamSectionState extends State<VisionTeamSection>
                   bio: 'Driving global healthcare innovation and the product mission.',
                   accent: AppColors.accent2,
                   isLeader: true,
+                  alignment: Alignment.topCenter,
                 ),
               ),
               const SizedBox(width: 20),
@@ -120,6 +121,7 @@ class _VisionTeamSectionState extends State<VisionTeamSection>
                   accent: const Color(0xFF4F6AFF),
                   isLeader: true,
                   isReverse: true,
+                  alignment: Alignment.center,
                 ),
               ),
             ],
@@ -141,6 +143,7 @@ class _VisionTeamSectionState extends State<VisionTeamSection>
                   bio: 'Scalable Software Ops.',
                   accent: const Color(0xFF9D4EDD),
                   isLeader: false,
+                  alignment: Alignment.topCenter,
                 ),
               ),
               const SizedBox(width: 20),
@@ -156,6 +159,7 @@ class _VisionTeamSectionState extends State<VisionTeamSection>
                   accent: const Color(0xFFF5C842),
                   isLeader: false,
                   isReverse: true,
+                  alignment: Alignment.center,
                 ),
               ),
             ],
@@ -175,6 +179,7 @@ class _VisionTeamSectionState extends State<VisionTeamSection>
         credential: 'B.Optom · BMS', experience: '14+ Years',
         bio: 'Driving global healthcare innovation.',
         accent: AppColors.accent2, isLeader: true,
+        alignment: Alignment.topCenter,
       ),
       _CinematicProfile(
         ctrl: _ctrl, delay: 0.25,
@@ -183,6 +188,7 @@ class _VisionTeamSectionState extends State<VisionTeamSection>
         credential: 'Rajan Optics', experience: '44+ Years',
         bio: 'Legacy of trust and diagnostic precision.',
         accent: const Color(0xFF4F6AFF), isLeader: true,
+        alignment: Alignment.center,
       ),
       _CinematicProfile(
         ctrl: _ctrl, delay: 0.35,
@@ -191,6 +197,7 @@ class _VisionTeamSectionState extends State<VisionTeamSection>
         credential: 'B.Tech ECE', experience: '9+ Years',
         bio: 'Scalable Software Ops.',
         accent: const Color(0xFF9D4EDD), isLeader: false,
+        alignment: Alignment.topCenter,
       ),
       _CinematicProfile(
         ctrl: _ctrl, delay: 0.45,
@@ -199,6 +206,7 @@ class _VisionTeamSectionState extends State<VisionTeamSection>
         credential: 'Full-Stack', experience: 'Product · R&D',
         bio: 'Architecting the Visiaxx core.',
         accent: const Color(0xFFF5C842), isLeader: false,
+        alignment: Alignment.center,
       ),
     ];
 
@@ -256,6 +264,7 @@ class _CinematicProfile extends StatelessWidget {
   final Color accent;
   final bool isLeader;
   final bool isReverse;
+  final AlignmentGeometry alignment;
 
   const _CinematicProfile({
     required this.ctrl,
@@ -269,6 +278,7 @@ class _CinematicProfile extends StatelessWidget {
     required this.accent,
     required this.isLeader,
     this.isReverse = false,
+    this.alignment = Alignment.center,
   });
 
   @override
@@ -365,7 +375,7 @@ class _CinematicProfile extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.asset(imagePath, fit: BoxFit.cover, alignment: Alignment.center),
+              Image.asset(imagePath, fit: BoxFit.cover, alignment: alignment),
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(

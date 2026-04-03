@@ -41,7 +41,9 @@ class _HomePageState extends State<HomePage> {
     if (vh <= 0) return;
 
     final rawPage = offset / vh;
-    _scrollProgress.value = rawPage;
+    if (rawPage <= 1.2 || _scrollProgress.value <= 1.2) {
+      _scrollProgress.value = rawPage;
+    }
 
     final page = rawPage.round().clamp(0, _totalPages - 1);
     if (page != _currentPage.value) {
@@ -86,9 +88,8 @@ class _HomePageState extends State<HomePage> {
             ).copyWith(scrollbars: false, overscroll: false),
             child: CustomScrollView(
               controller: _scrollController,
-              physics:
-                  const ClampingScrollPhysics(), // Prevent bouncy jitter on web
-              cacheExtent: size.height * 3,
+              physics: const ClampingScrollPhysics(),
+              cacheExtent: size.height * 1,
               slivers: [
                 SliverList(
                   delegate: SliverChildBuilderDelegate((context, i) {

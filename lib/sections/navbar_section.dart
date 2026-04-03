@@ -71,8 +71,8 @@ class _NavbarSectionState extends State<NavbarSection>
         borderRadius: BorderRadius.circular(isMob ? 24 : (isGlass ? 40 : 0)),
         child: BackdropFilter(
           filter: ui.ImageFilter.blur(
-            sigmaX: isGlass ? 32 : 0,
-            sigmaY: isGlass ? 32 : 0,
+            sigmaX: isGlass ? 12 : 0.001,
+            sigmaY: isGlass ? 12 : 0.001,
           ),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 500),
