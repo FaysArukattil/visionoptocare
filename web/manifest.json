@@ -1,11 +1,11 @@
 {
-    "name": "visionoptocare",
-    "short_name": "visionoptocare",
+    "name": "Visiaxx — Vision Care, Reimagined",
+    "short_name": "Visiaxx",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0A0F1E",
+    "theme_color": "#0A0F1E",
+    "description": "12 clinical-grade eye tests from your couch. Digital eye care reimagined.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

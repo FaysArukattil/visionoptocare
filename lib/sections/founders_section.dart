@@ -125,30 +125,25 @@ class _FoundersSectionState extends State<FoundersSection>
   ];
 
   Widget _buildDesktopLayout(bool isMob) {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      child: Center(
-        child: Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 32,
-          runSpacing: 32,
-          children: _founders.map((f) => SizedBox(
-            width: 380,
-            child: _FounderCard(founder: f),
-          )).toList(),
-        ),
+    return Center(
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 32,
+        runSpacing: 32,
+        children: _founders.map((f) => SizedBox(
+          width: 380,
+          child: _FounderCard(founder: f),
+        )).toList(),
       ),
     );
   }
 
   Widget _buildMobileLayout() {
-    return SingleChildScrollView(
-      child: Column(
-        children: _founders.map((f) => Padding(
-          padding: const EdgeInsets.only(bottom: 20),
-          child: _FounderCard(founder: f),
-        )).toList(),
-      ),
+    return Column(
+      children: _founders.map((f) => Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: _FounderCard(founder: f),
+      )).toList(),
     );
   }
 }

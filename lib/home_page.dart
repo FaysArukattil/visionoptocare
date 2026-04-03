@@ -34,10 +34,10 @@ class _HomePageState extends State<HomePage> {
 
   void _onScroll() {
     final rawPage = _pageController.page ?? 0.0;
-    _scrollProgress.value = rawPage; // No setState — only hero overlay listens
+    _scrollProgress.value = rawPage;
     final page = rawPage.round();
     if (page != _currentPage && mounted) {
-      setState(() => _currentPage = page); // Only rebuild on actual page change
+      setState(() => _currentPage = page);
     }
   }
 
@@ -57,10 +57,41 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// Only enable tickers for the current page and its immediate neighbours.
+  /// This automatically pauses ALL AnimationControllers in off-screen pages,
+  /// eliminating the 20+ simultaneous repeat-animation jitter.
+  bool _isTickerActive(int pageIndex) {
+    return (_currentPage - pageIndex).abs() <= 1;
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isMob = size.width < 768;
+
+    final pages = <Widget>[
+      // Page 0: Hero — Typewriter
+      HeroSection(
+        isActive: _currentPage == 0,
+        onScrollDown: () => _goToPage(1),
+      ),
+      // Page 1: What is Visiaxx?
+      VisiaxxIntroSection(isActive: _currentPage == 1),
+      // Page 2: 12 Clinical Tests
+      ClinicalTestsPage(isActive: _currentPage == 2),
+      // Page 3: PDF + Reels + Ocular Wellness
+      ReportsWellnessPage(isActive: _currentPage == 3),
+      // Page 4: Hybrid Consultations + Languages
+      ConsultationLanguagesPage(isActive: _currentPage == 4),
+      // Page 5: Philosophy
+      PhilosophySection(isActive: _currentPage == 5),
+      // Page 6: B2B — Practitioner Licensing
+      B2BPage(isActive: _currentPage == 6),
+      // Page 7: Founders
+      FoundersSection(isActive: _currentPage == 7),
+      // Page 8: Footer
+      FooterSection(),
+    ];
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -71,73 +102,17 @@ class _HomePageState extends State<HomePage> {
             controller: _pageController,
             scrollDirection: Axis.vertical,
             physics: const _SnapPagePhysics(),
-            children: [
-              // Page 0: Hero — Typewriter
-              RepaintBoundary(
-                child: HeroSection(
-                  isActive: _currentPage == 0,
-                  onScrollDown: () => _goToPage(1),
+            children: List.generate(pages.length, (i) {
+              return RepaintBoundary(
+                child: TickerMode(
+                  enabled: _isTickerActive(i),
+                  child: pages[i],
                 ),
-              ),
-
-              // Page 1: What is Visiaxx?
-              RepaintBoundary(
-                child: VisiaxxIntroSection(
-                  isActive: _currentPage == 1,
-                ),
-              ),
-
-              // Page 2: 12 Clinical Tests
-              RepaintBoundary(
-                child: ClinicalTestsPage(
-                  isActive: _currentPage == 2,
-                ),
-              ),
-
-              // Page 3: PDF + Reels + Ocular Wellness
-              RepaintBoundary(
-                child: ReportsWellnessPage(
-                  isActive: _currentPage == 3,
-                ),
-              ),
-
-              // Page 4: Hybrid Consultations + Languages
-              RepaintBoundary(
-                child: ConsultationLanguagesPage(
-                  isActive: _currentPage == 4,
-                ),
-              ),
-
-              // Page 5: Philosophy
-              RepaintBoundary(
-                child: PhilosophySection(
-                  isActive: _currentPage == 5,
-                ),
-              ),
-
-              // Page 6: B2B — Practitioner Licensing
-              RepaintBoundary(
-                child: B2BPage(
-                  isActive: _currentPage == 6,
-                ),
-              ),
-
-              // Page 7: Founders
-              RepaintBoundary(
-                child: FoundersSection(
-                  isActive: _currentPage == 7,
-                ),
-              ),
-
-              // Page 8: Footer
-              RepaintBoundary(
-                child: FooterSection(),
-              ),
-            ],
+              );
+            }),
           ),
 
           // ── Snellen E → Iris Transition Overlay (Pages 0→1 only) ──
-          // Uses ValueListenableBuilder to avoid rebuilding entire page tree
           ValueListenableBuilder<double>(
             valueListenable: _scrollProgress,
             builder: (context, progress, _) {
@@ -146,9 +121,9 @@ class _HomePageState extends State<HomePage> {
               }
               return Positioned.fill(
                 child: IgnorePointer(
-                  child: Opacity(
-                    opacity: _bellCurveOpacity(progress, 0.05, 0.92, 0.65),
-                    child: RepaintBoundary(
+                  child: RepaintBoundary(
+                    child: Opacity(
+                      opacity: _bellCurveOpacity(progress, 0.05, 0.92, 0.65),
                       child: HeroAnimationEngine(
                         p: progress.clamp(0.0, 1.0),
                         isMob: isMob,
@@ -191,7 +166,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// Smooth bell-curve opacity: rises from [start], peaks at midpoint, falls to 0 by [end].
   double _bellCurveOpacity(double p, double start, double end, double maxOpacity) {
     if (p <= start || p >= end) return 0.0;
     final mid = (start + end) / 2;
@@ -206,7 +180,7 @@ class _HomePageState extends State<HomePage> {
 }
 
 // ─────────────────────────────────────────────
-// Snap Physics — locks each page cleanly
+// Snap Physics — buttery smooth with higher damping
 // ─────────────────────────────────────────────
 class _SnapPagePhysics extends ScrollPhysics {
   const _SnapPagePhysics({super.parent});
@@ -218,9 +192,9 @@ class _SnapPagePhysics extends ScrollPhysics {
 
   @override
   SpringDescription get spring => const SpringDescription(
-        mass: 0.8,
-        stiffness: 80,
-        damping: 16,
+        mass: 0.6,
+        stiffness: 100,
+        damping: 18,
       );
 }
 
