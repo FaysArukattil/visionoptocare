@@ -1,0 +1,20 @@
+﻿Analyzing visionoptocare...                                     
+
+   info - Unnecessary use of multiple underscores - lib\sections\founders_section.dart:436:35 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\sections\founders_section.dart:436:39 - unnecessary_underscores
+
+flutter : 2 issues found. (ran in 
+1.3s)
+At line:1 char:1
++ flutter analyze --no-fatal-infos 
+2>&1 | Out-File -Encoding utf8 analy 
+...
++ 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpe 
+   cified: (2 issues found. (ran in  
+   1.3s):String) [], RemoteExcepti   
+ on
+    + FullyQualifiedErrorId : Native 
+   CommandError
+ 

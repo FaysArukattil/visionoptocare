@@ -261,7 +261,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
 
   Widget _buildIntroText(bool isMob) {
     return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment:

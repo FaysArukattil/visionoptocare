@@ -6,7 +6,8 @@ import 'sections/visiaxx_intro_section.dart';
 import 'sections/clinical_tests_page.dart';
 import 'sections/reports_wellness_page.dart';
 import 'sections/philosophy_section.dart';
-import 'sections/founders_section.dart';
+import 'sections/leadership_section.dart';
+import 'sections/team_section.dart';
 import 'sections/b2b_page.dart';
 import 'sections/footer_section.dart';
 import 'sections/hero_animation_engine.dart';
@@ -19,49 +20,51 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late final PageController _pageController;
-  int _currentPage = 0;
+  late final ScrollController _scrollController;
+
+  // Use ValueNotifiers instead of setState to avoid full-tree rebuilds
+  // during scrolling — this is the key to smooth performance.
+  final ValueNotifier<int> _currentPage = ValueNotifier(0);
   final ValueNotifier<double> _scrollProgress = ValueNotifier(0.0);
 
-  static const int _totalPages = 9;
+  static const int _totalPages = 10;
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
-    _pageController.addListener(_onScroll);
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
   }
 
   void _onScroll() {
-    final rawPage = _pageController.page ?? 0.0;
+    if (!_scrollController.hasClients) return;
+    final offset = _scrollController.offset;
+    final vh = _scrollController.position.viewportDimension;
+    if (vh <= 0) return;
+
+    final rawPage = offset / vh;
     _scrollProgress.value = rawPage;
-    final page = rawPage.round();
-    if (page != _currentPage && mounted) {
-      setState(() => _currentPage = page);
-    }
+    _currentPage.value = rawPage.round().clamp(0, _totalPages - 1);
   }
 
   @override
   void dispose() {
-    _pageController.removeListener(_onScroll);
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    _currentPage.dispose();
     _scrollProgress.dispose();
-    _pageController.dispose();
     super.dispose();
   }
 
   void _goToPage(int index) {
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 800),
+    if (index < 0 || index >= _totalPages) return;
+    if (!_scrollController.hasClients) return;
+    final vh = _scrollController.position.viewportDimension;
+    _scrollController.animateTo(
+      index * vh,
+      duration: const Duration(milliseconds: 600),
       curve: Curves.easeInOutCubic,
     );
-  }
-
-  /// Only enable tickers for the current page and its immediate neighbours.
-  /// This automatically pauses ALL AnimationControllers in off-screen pages,
-  /// eliminating the 20+ simultaneous repeat-animation jitter.
-  bool _isTickerActive(int pageIndex) {
-    return (_currentPage - pageIndex).abs() <= 1;
   }
 
   @override
@@ -69,50 +72,49 @@ class _HomePageState extends State<HomePage> {
     final size = MediaQuery.of(context).size;
     final isMob = size.width < 768;
 
+    // Build pages once — they don't depend on _currentPage anymore.
+    // Section entry animations use their own internal visibility detection.
     final pages = <Widget>[
-      // Page 0: Hero — Typewriter
-      HeroSection(
-        isActive: _currentPage == 0,
-        onScrollDown: () => _goToPage(1),
-      ),
-      // Page 1: What is Visiaxx?
-      VisiaxxIntroSection(isActive: _currentPage == 1),
-      // Page 2: 12 Clinical Tests
-      ClinicalTestsPage(isActive: _currentPage == 2),
-      // Page 3: PDF + Reels + Ocular Wellness
-      ReportsWellnessPage(isActive: _currentPage == 3),
-      // Page 4: Hybrid Consultations + Languages
-      ConsultationLanguagesPage(isActive: _currentPage == 4),
-      // Page 5: Philosophy
-      PhilosophySection(isActive: _currentPage == 5),
-      // Page 6: B2B — Practitioner Licensing
-      B2BPage(isActive: _currentPage == 6),
-      // Page 7: Founders
-      FoundersSection(isActive: _currentPage == 7),
-      // Page 8: Footer
-      FooterSection(),
+      HeroSection(isActive: true, onScrollDown: () => _goToPage(1)),
+      const VisiaxxIntroSection(isActive: true),
+      const ClinicalTestsPage(isActive: true),
+      const ReportsWellnessPage(isActive: true),
+      const ConsultationLanguagesPage(isActive: true),
+      const PhilosophySection(isActive: true),
+      const B2BPage(isActive: true),
+      const LeadershipSection(isActive: true),
+      const TeamSection(isActive: true),
+      const FooterSection(),
     ];
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          // ── Main Page View ──
-          PageView(
-            controller: _pageController,
-            scrollDirection: Axis.vertical,
-
-            children: List.generate(pages.length, (i) {
-              return RepaintBoundary(
-                child: TickerMode(
-                  enabled: _isTickerActive(i),
-                  child: pages[i],
+          // ── Buttery smooth continuous scroll ──
+          CustomScrollView(
+            controller: _scrollController,
+            // Default physics — let the platform decide (smooth on web)
+            slivers: [
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, i) {
+                    return RepaintBoundary(
+                      child: SizedBox(
+                        height: size.height,
+                        child: pages[i],
+                      ),
+                    );
+                  },
+                  childCount: pages.length,
+                  addAutomaticKeepAlives: false,
+                  addRepaintBoundaries: false, // We add our own above
                 ),
-              );
-            }),
+              ),
+            ],
           ),
 
-          // ── Snellen E → Iris Transition Overlay (Pages 0→1 only) ──
+          // ── Hero Transition Overlay (Pages 0→1) ──
           ValueListenableBuilder<double>(
             valueListenable: _scrollProgress,
             builder: (context, progress, _) {
@@ -135,29 +137,35 @@ class _HomePageState extends State<HomePage> {
             },
           ),
 
-          // ── Navbar (always on top) ──
+          // ── Navbar — rebuilds only when currentPage changes ──
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: NavbarSection(
-              isScrolled: _currentPage > 0,
-              currentPage: _currentPage,
-              onNavTap: _goToPage,
+            child: ValueListenableBuilder<int>(
+              valueListenable: _currentPage,
+              builder: (context, page, _) => NavbarSection(
+                isScrolled: page > 0,
+                currentPage: page,
+                onNavTap: _goToPage,
+              ),
             ),
           ),
 
-          // ── Page Indicator (desktop only) ──
+          // ── Page Indicator (desktop) ──
           if (!isMob)
             Positioned(
               right: 24,
               top: 0,
               bottom: 0,
               child: Center(
-                child: _PageIndicator(
-                  total: _totalPages,
-                  current: _currentPage,
-                  onTap: _goToPage,
+                child: ValueListenableBuilder<int>(
+                  valueListenable: _currentPage,
+                  builder: (context, page, _) => _PageIndicator(
+                    total: _totalPages,
+                    current: page,
+                    onTap: _goToPage,
+                  ),
                 ),
               ),
             ),
@@ -166,7 +174,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  double _bellCurveOpacity(double p, double start, double end, double maxOpacity) {
+  double _bellCurveOpacity(
+      double p, double start, double end, double maxOpacity) {
     if (p <= start || p >= end) return 0.0;
     final mid = (start + end) / 2;
     if (p < mid) {
@@ -179,9 +188,6 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// ─────────────────────────────────────────────
-// Dot Page Indicator
-// ─────────────────────────────────────────────
 class _PageIndicator extends StatelessWidget {
   final int total;
   final int current;

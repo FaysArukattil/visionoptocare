@@ -118,7 +118,7 @@ class _NavbarSectionState extends State<NavbarSection>
                       if (!isMob)
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
+                          physics: const ClampingScrollPhysics(),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -157,7 +157,7 @@ class _NavbarSectionState extends State<NavbarSection>
                       maxHeight: MediaQuery.of(context).size.height * 0.55,
                     ),
                     child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
+                      physics: const ClampingScrollPhysics(),
                       padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
                       child: Column(
                         children: [

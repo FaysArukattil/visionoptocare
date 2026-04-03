@@ -305,7 +305,7 @@ class _AnimatedCardState extends State<_AnimatedCard> {
                         ],
                       ),
                       child: SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
+                        physics: const ClampingScrollPhysics(),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 20),
                           child: Column(

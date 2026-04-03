@@ -170,7 +170,7 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage>
 
   Widget _buildMobileLayout() {
     return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       child: Column(
         children: [
           SizedBox(
@@ -364,7 +364,7 @@ class _ConsultationLanguagesPageState extends State<ConsultationLanguagesPage>
 
   Widget _buildMobileLayout() {
     return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       child: Column(
         children: [
           SizedBox(
