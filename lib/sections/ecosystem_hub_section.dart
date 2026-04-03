@@ -735,7 +735,7 @@ class _AnimatedOcularWellnessState extends State<_AnimatedOcularWellness> with S
                ),
                const SizedBox(width: 32),
                Transform.translate(
-                 offset: Offset(0, math.sin(_ctrl.value * math.pi) * 12),
+                 offset: Offset(0, math.sin(_ctrl.value * math.pi) * 1),
                  child: Icon(Icons.sports_esports, color: widget.color, size: 64),
                ),
             ],
@@ -886,7 +886,7 @@ class _SyncLinkPainter extends CustomPainter {
     final path = Path();
     path.moveTo(startX, y);
     for (double i = startX; i <= endX; i += 2) {
-      final wave = math.sin((i / 20) + (progress * math.pi * 2)) * 8;
+      final wave = math.sin((i / 20) + (progress * math.pi * 2)) * 2;
       path.lineTo(i, y + wave);
     }
     canvas.drawPath(path, Paint()

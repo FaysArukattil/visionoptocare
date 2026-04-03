@@ -81,7 +81,7 @@ class _ClinicalTestsPageState extends State<ClinicalTestsPage>
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'The Vision Engine',
+                            '12 Precision Diagnostics',
                             style: AppFonts.h2.copyWith(
                               color: AppColors.white,
                               fontSize: isMob ? 24 : 40,

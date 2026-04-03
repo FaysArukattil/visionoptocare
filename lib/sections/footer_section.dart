@@ -105,7 +105,7 @@ class _FooterSectionState extends State<FooterSection> {
                     ),
                   ],
                 ),
-                child: const EyeLoader(size: 150),
+                child: EyeLoader(size: isMob ? 80 : 150),
               ),
             ),
           ),
@@ -115,8 +115,44 @@ class _FooterSectionState extends State<FooterSection> {
   }
 
   Widget _buildBrandingHeader(BuildContext context, bool isMob) {
+    if (isMob) {
+      return Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const EyeLogo(size: 70, showGlow: false),
+              const SizedBox(width: 16),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'VISION OPTOCARE',
+                      style: AppFonts.heading(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.white),
+                    ),
+                    Text(
+                      'ADVOCACY ECOSYSTEM',
+                      style: AppFonts.caption.copyWith(
+                        color: AppColors.white.withValues(alpha: 0.3),
+                        letterSpacing: 2,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 8,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
     return Row(
-      mainAxisAlignment: isMob ? MainAxisAlignment.center : MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(
           children: [
@@ -127,7 +163,10 @@ class _FooterSectionState extends State<FooterSection> {
               children: [
                 Text(
                   'VISION OPTOCARE',
-                  style: AppFonts.heading(fontSize: 28, fontWeight: FontWeight.w900, color: AppColors.white),
+                  style: AppFonts.heading(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.white),
                 ),
                 Text(
                   'ADVOCACY ECOSYSTEM',
@@ -142,7 +181,7 @@ class _FooterSectionState extends State<FooterSection> {
             ),
           ],
         ),
-        if (!isMob) const _SocialCluster(),
+        const _SocialCluster(),
       ],
     );
   }

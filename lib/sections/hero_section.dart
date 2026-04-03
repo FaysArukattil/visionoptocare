@@ -47,7 +47,7 @@ class _HeroSectionState extends State<HeroSection>
 
     _particleCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 30),
+      duration: const Duration(seconds: 60),
     )..repeat();
 
     _taglineCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
@@ -344,7 +344,7 @@ class _PulsingScrollCtaState extends State<_PulsingScrollCta>
     super.initState();
     _ctrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 2500),
     )..repeat(reverse: true);
   }
 

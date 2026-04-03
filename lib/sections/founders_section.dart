@@ -175,6 +175,7 @@ class _FounderCardState extends State<_FounderCard> {
 
   @override
   Widget build(BuildContext context) {
+    final isMob = Responsive.isMobile(context);
     return MouseRegion(
       onEnter: (_) => setState(() => _hov = true),
       onExit: (_) => setState(() => _hov = false),
@@ -183,10 +184,10 @@ class _FounderCardState extends State<_FounderCard> {
         curve: Curves.easeOutCubic,
         tween: Tween(begin: 0.0, end: _hov ? 1.0 : 0.0),
         builder: (context, v, _) => Container(
-          padding: const EdgeInsets.all(40),
+          padding: EdgeInsets.all(isMob ? 24 : 40),
           decoration: BoxDecoration(
             color: AppColors.surface.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(40),
+            borderRadius: BorderRadius.circular(isMob ? 30 : 40),
             border: Border.all(
               color: Color.lerp(
                 AppColors.white.withValues(alpha: 0.05),
@@ -207,8 +208,8 @@ class _FounderCardState extends State<_FounderCard> {
           child: Column(
             children: [
               Container(
-                width: 100,
-                height: 100,
+                width: isMob ? 80 : 100,
+                height: isMob ? 80 : 100,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.accent2.withValues(alpha: 0.1),
@@ -216,14 +217,14 @@ class _FounderCardState extends State<_FounderCard> {
                     color: AppColors.accent2.withValues(alpha: 0.2 + v * 0.2),
                   ),
                 ),
-                child: Icon(widget.founder.icon, color: AppColors.accent2, size: 44),
+                child: Icon(widget.founder.icon, color: AppColors.accent2, size: isMob ? 36 : 44),
               ),
-              const SizedBox(height: 28),
+              SizedBox(height: isMob ? 20 : 28),
               Text(
                 widget.founder.name,
                 style: AppFonts.h4.copyWith(
                   color: AppColors.white,
-                  fontSize: 22,
+                  fontSize: isMob ? 19 : 22,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -234,19 +235,20 @@ class _FounderCardState extends State<_FounderCard> {
                   color: AppColors.accent2,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1,
+                  fontSize: isMob ? 10 : 12,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: isMob ? 14 : 20),
               Text(
                 widget.founder.bio,
                 style: AppFonts.bodyLarge.copyWith(
                   color: AppColors.muted,
-                  fontSize: 15,
+                  fontSize: isMob ? 14 : 15,
                   height: 1.6,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 28),
+              SizedBox(height: isMob ? 20 : 28),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

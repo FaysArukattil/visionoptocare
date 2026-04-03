@@ -52,11 +52,14 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     super.initState();
     _scrollCtrl = AnimationController(
       vsync: this, 
-      value: 0.0, // Initialize to 0.0
+      value: 0.0,
       duration: const Duration(milliseconds: 300),
       lowerBound: double.negativeInfinity,
       upperBound: double.infinity,
     );
+    _scrollCtrl.addListener(() {
+      _scrollPos.value = _scrollCtrl.value;
+    });
     
     if (widget.isActive) _startAutoCycle();
   }
@@ -65,7 +68,6 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   void didUpdateWidget(covariant TestsSection oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive && !oldWidget.isActive) {
-      // User came back to this section, reset intervention and restart cycle
       _userIntervened = false;
       _startAutoCycle();
     } else if (!widget.isActive && oldWidget.isActive) {
@@ -74,31 +76,25 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   }
 
   void _startAutoCycle() {
-    _stopAutoCycle(); // Clean existing
+    _stopAutoCycle();
     if (_userIntervened) return;
 
-    _autoTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
-      if (!mounted) return;
-      _advanceTest();
+    // Continuous smooth scroll through all 12 tests
+    // ~1.5 seconds per test = 18 seconds total
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (!mounted || _userIntervened) return;
+      _scrollCtrl.animateTo(
+        11.0,
+        duration: const Duration(seconds: 18),
+        curve: Curves.linear,
+      );
     });
   }
 
   void _stopAutoCycle() {
     _autoTimer?.cancel();
     _autoTimer = null;
-  }
-
-  void _advanceTest() {
-    final next = (_scrollPos.value.round() + 1);
-    _onAutoAdvance(next);
-  }
-
-  void _onAutoAdvance(int targetIndex) {
-    _scrollCtrl.animateTo(targetIndex.toDouble(), 
-      curve: Curves.easeInOutCubic, 
-      duration: const Duration(milliseconds: 800)
-    );
-    _scrollPos.value = _scrollCtrl.value;
+    _scrollCtrl.stop();
   }
 
   void _onPanUpdate(DragUpdateDetails d) {
@@ -107,7 +103,6 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
 
     // Vertical drag scrolls the 3D HUD
     _scrollCtrl.value -= d.delta.dy / (Responsive.isMobile(context) ? 50 : 100); 
-    _scrollPos.value = _scrollCtrl.value;
   }
 
   void _onPanEnd(DragEndDetails d) {
@@ -121,7 +116,6 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     final target = _scrollPos.value.roundToDouble();
     _scrollCtrl.value = _scrollPos.value;
     _scrollCtrl.animateTo(target, curve: Curves.easeOutCubic);
-    _scrollPos.value = _scrollCtrl.value;
   }
 
   void _onTapItem(int index) {
@@ -273,18 +267,30 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   }
 
   Widget _buildMobileLayout(TestData test, Color themeColor, int selectedIndex, double scrollPos) {
-    return Column(
-      children: [
-        Expanded(
-          flex: 4,
-          child: _buildTacticalHUD(true, scrollPos),
-        ),
-        Expanded(
-          flex: 5,
-          child: _buildFloatingPhone(test, themeColor, isMob: true),
-        ),
-        _buildDetailCard(test, themeColor, true),
-      ],
+    return GestureDetector(
+      onHorizontalDragUpdate: (d) {
+        _userIntervened = true;
+        _stopAutoCycle();
+        _scrollCtrl.value -= d.delta.dx / 50;
+      },
+      onHorizontalDragEnd: (_) => _snapToNearest(),
+      child: Column(
+        children: [
+          Expanded(
+            flex: 3,
+            child: _buildTacticalHUD(true, scrollPos),
+          ),
+          Expanded(
+            flex: 5,
+            child: _buildFloatingPhone(test, themeColor, isMob: true),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _buildDetailCard(test, themeColor, true),
+          ),
+          const SizedBox(height: 4),
+        ],
+      ),
     );
   }
 
@@ -308,24 +314,26 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
         if (opacity < 0.1) return const SizedBox.shrink();
 
         return Positioned(
-          top: (isMob ? 100 : 250) + y,
+          top: (isMob ? 80 : 250) + y,
           child: Transform(
             transform: Matrix4.identity()
               ..setEntry(3, 2, 0.001)
-              ..translate(0.0, 0.0, -z)
-              ..scale(scale, scale, 1.0),
+              ..translateByDouble(0.0, 0.0, -z, 1.0),
             alignment: Alignment.center,
-            child: Opacity(
-              opacity: opacity,
-              child: GestureDetector(
-                onTap: () => _onTapItem(i),
-                child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: _HUDItem(
-                    test: _tests[i],
-                    isSelected: isSelected,
-                    themeColor: _getTierColor(_tests[i].tier),
-                    isMob: isMob,
+            child: Transform.scale(
+              scale: scale,
+              child: Opacity(
+                opacity: opacity,
+                child: GestureDetector(
+                  onTap: () => _onTapItem(i),
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: _HUDItem(
+                      test: _tests[i],
+                      isSelected: isSelected,
+                      themeColor: _getTierColor(_tests[i].tier),
+                      isMob: isMob,
+                    ),
                   ),
                 ),
               ),
@@ -339,10 +347,10 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   Widget _buildFloatingPhone(TestData test, Color themeColor, {bool isMob = false}) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
-      duration: const Duration(seconds: 4),
+      duration: const Duration(seconds: 12),
       curve: Curves.easeInOut,
       builder: (context, val, child) {
-        final floatY = math.sin(val * math.pi * 2) * 10;
+        final floatY = math.sin(val * math.pi * 2) * 0.4;
         return Transform.translate(
           offset: Offset(0, floatY),
           child: PhoneMockup(
@@ -360,10 +368,10 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   Widget _buildDetailCard(TestData test, Color themeColor, bool isMob) {
     return Container(
       width: isMob ? double.infinity : 380,
-      padding: const EdgeInsets.all(32),
+      padding: EdgeInsets.all(isMob ? 16 : 32),
       decoration: BoxDecoration(
         color: AppColors.background.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(isMob ? 16 : 24),
         border: Border.all(color: themeColor.withValues(alpha: 0.2), width: 1.5),
         boxShadow: [
           BoxShadow(
@@ -380,20 +388,34 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
           Row(
             children: [
               Container(
-                width: 10, height: 10,
+                width: 8, height: 8,
                 decoration: BoxDecoration(shape: BoxShape.circle, color: themeColor),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Text(
                 test.tier.name.toUpperCase(),
-                style: AppFonts.caption.copyWith(color: themeColor, fontWeight: FontWeight.w900, letterSpacing: 2),
+                style: AppFonts.caption.copyWith(
+                  color: themeColor,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
+                  fontSize: isMob ? 9 : 12,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Text(test.name, style: AppFonts.h3.copyWith(color: Colors.white, fontSize: 24)),
-          const SizedBox(height: 12),
-          Text(test.desc, style: AppFonts.bodyLarge.copyWith(color: AppColors.muted, height: 1.6)),
+          SizedBox(height: isMob ? 8 : 16),
+          Text(test.name, style: AppFonts.h3.copyWith(color: Colors.white, fontSize: isMob ? 18 : 24)),
+          SizedBox(height: isMob ? 6 : 12),
+          Text(
+            test.desc,
+            style: AppFonts.bodyLarge.copyWith(
+              color: AppColors.muted,
+              height: 1.5,
+              fontSize: isMob ? 12 : 16,
+            ),
+            maxLines: isMob ? 2 : 4,
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
       ),
     );
@@ -660,7 +682,7 @@ class _AmslerPainter extends CustomPainter {
       final path = Path();
       path.moveTo(i, 0);
       for (double j = 0; j <= h; j += 5) {
-        final warp = math.sin((anim.value * math.pi * 2) + (j * 0.05)) * 10;
+        final warp = math.sin((anim.value * math.pi * 2) + (j * 0.05)) * 2;
         path.lineTo(i + (isSelectedPoint(i, j) ? warp : 0), j);
       }
       canvas.drawPath(path, paint..style = PaintingStyle.stroke);

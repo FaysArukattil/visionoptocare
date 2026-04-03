@@ -96,12 +96,13 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                   child: Transform(
                     transform: Matrix4.identity()
                       ..setEntry(3, 2, 0.001)
+                      ..rotateY(0.15 * (1 - t)) // subtle swivel on entry
                       ..setTranslationRaw(0.0, 15.0 * (1 - t), 0.0),
                     alignment: Alignment.center,
                     child: PhoneMockup(
                       width: 280,
                       height: 550,
-                      tiltX: 0.0, // Phone rendered straight
+                      tiltX: 0.0,
                       tiltY: 0.0,
                       screen: _buildPhoneScreen(),
                     ),

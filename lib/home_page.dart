@@ -7,7 +7,9 @@ import 'sections/clinical_tests_page.dart';
 import 'sections/reports_wellness_page.dart';
 import 'sections/philosophy_section.dart';
 import 'sections/founders_section.dart';
+import 'sections/b2b_page.dart';
 import 'sections/footer_section.dart';
+import 'sections/hero_animation_engine.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,17 +21,22 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late final PageController _pageController;
   int _currentPage = 0;
+  double _pageProgress = 0.0;
 
-  static const int _totalPages = 8;
+  static const int _totalPages = 9;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
     _pageController.addListener(() {
-      final page = _pageController.page?.round() ?? 0;
-      if (page != _currentPage) {
-        setState(() => _currentPage = page);
+      final rawPage = _pageController.page ?? 0.0;
+      final page = rawPage.round();
+      if (mounted) {
+        setState(() {
+          _pageProgress = rawPage;
+          if (page != _currentPage) _currentPage = page;
+        });
       }
     });
   }
@@ -64,49 +71,91 @@ class _HomePageState extends State<HomePage> {
             physics: const _SnapPagePhysics(),
             children: [
               // Page 0: Hero — Typewriter
-              HeroSection(
-                isActive: _currentPage == 0,
-                onScrollDown: () => _goToPage(1),
+              RepaintBoundary(
+                child: HeroSection(
+                  isActive: _currentPage == 0,
+                  onScrollDown: () => _goToPage(1),
+                ),
               ),
 
               // Page 1: What is Visiaxx?
-              VisiaxxIntroSection(
-                isActive: _currentPage == 1,
+              RepaintBoundary(
+                child: VisiaxxIntroSection(
+                  isActive: _currentPage == 1,
+                ),
               ),
 
               // Page 2: 12 Clinical Tests
-              ClinicalTestsPage(
-                isActive: _currentPage == 2,
+              RepaintBoundary(
+                child: ClinicalTestsPage(
+                  isActive: _currentPage == 2,
+                ),
               ),
 
               // Page 3: PDF + Reels + Ocular Wellness
-              ReportsWellnessPage(
-                isActive: _currentPage == 3,
+              RepaintBoundary(
+                child: ReportsWellnessPage(
+                  isActive: _currentPage == 3,
+                ),
               ),
 
               // Page 4: Hybrid Consultations + Languages
-              ConsultationLanguagesPage(
-                isActive: _currentPage == 4,
+              RepaintBoundary(
+                child: ConsultationLanguagesPage(
+                  isActive: _currentPage == 4,
+                ),
               ),
 
               // Page 5: Philosophy
-              PhilosophySection(
-                isActive: _currentPage == 5,
+              RepaintBoundary(
+                child: PhilosophySection(
+                  isActive: _currentPage == 5,
+                ),
               ),
 
-              // Page 6: Founders
-              FoundersSection(
-                isActive: _currentPage == 6,
+              // Page 6: B2B — Practitioner Licensing
+              RepaintBoundary(
+                child: B2BPage(
+                  isActive: _currentPage == 6,
+                ),
               ),
 
-              // Page 7: Footer
-              FooterSection(),
+              // Page 7: Founders
+              RepaintBoundary(
+                child: FoundersSection(
+                  isActive: _currentPage == 7,
+                ),
+              ),
+
+              // Page 8: Footer
+              RepaintBoundary(
+                child: FooterSection(),
+              ),
             ],
           ),
 
+          // ── Snellen E → Iris Transition Overlay (Pages 0→1 only) ──
+          // Smooth bell-curve opacity: nothing at p<0.05, peak~0.4, gone by p=0.92
+          if (_pageProgress > 0.05 && _pageProgress < 0.92)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Opacity(
+                  opacity: _bellCurveOpacity(_pageProgress, 0.05, 0.92, 0.65),
+                  child: RepaintBoundary(
+                    child: HeroAnimationEngine(
+                      p: (_pageProgress).clamp(0.0, 1.0),
+                      isMob: isMob,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
           // ── Navbar (always on top) ──
           Positioned(
-            top: 0, left: 0, right: 0,
+            top: 0,
+            left: 0,
+            right: 0,
             child: NavbarSection(
               isScrolled: _currentPage > 0,
               currentPage: _currentPage,
@@ -132,6 +181,19 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  /// Smooth bell-curve opacity: rises from [start], peaks at midpoint, falls to 0 by [end].
+  double _bellCurveOpacity(double p, double start, double end, double maxOpacity) {
+    if (p <= start || p >= end) return 0.0;
+    final mid = (start + end) / 2;
+    if (p < mid) {
+      final t = (p - start) / (mid - start);
+      return maxOpacity * Curves.easeOutCubic.transform(t);
+    } else {
+      final t = (p - mid) / (end - mid);
+      return maxOpacity * (1.0 - Curves.easeInCubic.transform(t));
+    }
+  }
 }
 
 // ─────────────────────────────────────────────
@@ -147,10 +209,10 @@ class _SnapPagePhysics extends ScrollPhysics {
 
   @override
   SpringDescription get spring => const SpringDescription(
-    mass: 80,
-    stiffness: 100,
-    damping: 1,
-  );
+        mass: 1,
+        stiffness: 100,
+        damping: 20,
+      );
 }
 
 // ─────────────────────────────────────────────

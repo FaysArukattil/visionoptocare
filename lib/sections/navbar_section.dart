@@ -134,7 +134,7 @@ class _NavbarSectionState extends State<NavbarSection>
                           onTap: () => widget.onNavTap?.call(5),
                         ),
                         const SizedBox(width: 24),
-                        _buildExploreButton(),
+                        _buildDownloadButton(),
                       ],
                       // ── Hamburger (Mobile) ──
                       if (isMob) _buildMenuButton(),
@@ -175,7 +175,7 @@ class _NavbarSectionState extends State<NavbarSection>
                             onTap: () { setState(() => _menuOpen = false); widget.onNavTap?.call(5); },
                           ),
                           const SizedBox(height: 12),
-                          _buildExploreButton(),
+                          _buildDownloadButton(),
                         ],
                       ),
                     ),
@@ -198,11 +198,40 @@ class _NavbarSectionState extends State<NavbarSection>
     );
   }
 
-  // ── Explore CTA Button ──
-  Widget _buildExploreButton() {
+  // ── Download App CTA Button ──
+  Widget _buildDownloadButton() {
     return _GlowButton(
-      label: 'Explore',
-      onTap: () => widget.onNavTap?.call(2),
+      label: 'Download App',
+      icon: Icons.download_rounded,
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.surface,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            margin: EdgeInsets.symmetric(
+              horizontal: Responsive.isMobile(context) ? 24 : 200,
+              vertical: 20,
+            ),
+            duration: const Duration(seconds: 4),
+            content: Row(
+              children: [
+                Icon(Icons.rocket_launch_rounded, color: AppColors.accent2, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Coming Soon! Our developers are working hard to bring the app to you as fast as possible. Stay tuned!',
+                    style: AppFonts.bodySmall.copyWith(
+                      color: AppColors.white.withValues(alpha: 0.9),
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -345,8 +374,9 @@ class _NavLinkState extends State<_NavLink>
 // ══════════════════════════════════════════════
 class _GlowButton extends StatefulWidget {
   final String label;
+  final IconData? icon;
   final VoidCallback onTap;
-  const _GlowButton({required this.label, required this.onTap});
+  const _GlowButton({required this.label, this.icon, required this.onTap});
 
   @override
   State<_GlowButton> createState() => _GlowButtonState();
@@ -407,18 +437,35 @@ class _GlowButtonState extends State<_GlowButton>
                   ),
                 ],
               ),
-              child: Text(
-                widget.label,
-                style: AppFonts.body(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Color.lerp(
-                    AppColors.white.withValues(alpha: 0.85),
-                    AppColors.accent2,
-                    glowVal * 0.6,
-                  )!,
-                  letterSpacing: 0.6,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (widget.icon != null) ...[
+                    Icon(
+                      widget.icon,
+                      color: Color.lerp(
+                        AppColors.white.withValues(alpha: 0.85),
+                        AppColors.accent2,
+                        glowVal * 0.6,
+                      )!,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  Text(
+                    widget.label,
+                    style: AppFonts.body(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color.lerp(
+                        AppColors.white.withValues(alpha: 0.85),
+                        AppColors.accent2,
+                        glowVal * 0.6,
+                      )!,
+                      letterSpacing: 0.6,
+                    ),
+                  ),
+                ],
               ),
             );
           },
