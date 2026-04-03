@@ -164,43 +164,24 @@ class _PhilosophySectionState extends State<PhilosophySection>
 
   Widget _buildDesktopLayout() {
     final ctrls = [_card1Ctrl, _card2Ctrl, _card3Ctrl];
-    return Stack(
-      children: [
-        // Connecting gradient line between cards
-        Positioned(
-          left: 0, right: 0,
-          top: 0, bottom: 0,
-          child: AnimatedBuilder(
-            animation: _card3Ctrl,
-            builder: (context, _) {
-              final progress = _card3Ctrl.value;
-              return CustomPaint(
-                painter: _ConnectionLinePainter(progress: progress),
-              );
-            },
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: _steps.asMap().entries.map((entry) {
+        final i = entry.key;
+        final s = entry.value;
+        return Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: _AnimatedCard(
+              ctrl: ctrls[i],
+              floatCtrl: _floatCtrl,
+              pulseCtrl: _pulseCtrl,
+              step: s,
+              index: i,
+            ),
           ),
-        ),
-        // Cards
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: _steps.asMap().entries.map((entry) {
-            final i = entry.key;
-            final s = entry.value;
-            return Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: _AnimatedCard(
-                  ctrl: ctrls[i],
-                  floatCtrl: _floatCtrl,
-                  pulseCtrl: _pulseCtrl,
-                  step: s,
-                  index: i,
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
+        );
+      }).toList(),
     );
   }
 
@@ -414,36 +395,3 @@ class _AmbientGlowPainter extends CustomPainter {
       (oldDelegate.pulse - pulse).abs() > 0.05;
 }
 
-// Connection line between cards (desktop only)
-class _ConnectionLinePainter extends CustomPainter {
-  final double progress;
-  _ConnectionLinePainter({required this.progress});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (progress < 0.1) return;
-    final paint = Paint()
-      ..color = AppColors.accent2.withValues(alpha: 0.08 * progress)
-      ..strokeWidth = 1.5
-      ..style = PaintingStyle.stroke;
-
-    final y = size.height * 0.35;
-    final x1 = size.width * 0.33;
-    final x2 = size.width * 0.66;
-
-    final path = Path()
-      ..moveTo(x1, y)
-      ..cubicTo(x1 + 40, y - 20, x2 - 40, y + 20, x2, y);
-
-    canvas.drawPath(path, paint);
-
-    // Dots at endpoints
-    final dotPaint = Paint()..color = AppColors.accent2.withValues(alpha: 0.2 * progress);
-    canvas.drawCircle(Offset(x1, y), 3, dotPaint);
-    canvas.drawCircle(Offset(x2, y), 3, dotPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _ConnectionLinePainter oldDelegate) =>
-      oldDelegate.progress != progress;
-}

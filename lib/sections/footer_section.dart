@@ -37,75 +37,64 @@ class _FooterSectionState extends State<FooterSection> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isMob = Responsive.isMobile(context);
-    final topSpacer = isMob ? 50.0 : 60.0;
 
     return SizedBox(
       width: size.width,
       height: size.height,
-      child: Stack(
-        clipBehavior: Clip.none,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          // ── Scrollable Footer Body ──
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                SizedBox(height: topSpacer),
-                Container(
-                  width: double.infinity,
-                  color: const Color(0xFF050A18),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: isMob ? 40 : 60),
-                        child: Padding(
-                          padding: Responsive.padding(context),
-                          child: Column(
-                            children: [
-                              _buildBrandingHeader(context, isMob),
-                              const SizedBox(height: 40),
-                              isMob ? _buildMobileGrid() : _buildDesktopGrid(),
-                              AnimatedSize(
-                                duration: const Duration(milliseconds: 600),
-                                curve: Curves.fastOutSlowIn,
-                                child: _showLegal
-                                    ? Padding(
-                                        padding: const EdgeInsets.only(top: 60),
-                                        child: _buildLegalFramework(context, isMob),
-                                      )
-                                    : const SizedBox.shrink(),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      _buildSignatureBar(context, isMob),
-                    ],
-                  ),
+          // ── Eye Loader divider ──
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF050A18),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.accent2.withValues(alpha: 0.1),
+                  blurRadius: 40,
+                  spreadRadius: 10,
                 ),
               ],
             ),
+            child: EyeLoader(size: isMob ? 40 : 60),
           ),
-
-          // ── Floating Eye Loader (top) ──
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF050A18),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.accent2.withValues(alpha: 0.1),
-                      blurRadius: 40,
-                      spreadRadius: 10,
+          const SizedBox(height: 8),
+          // ── Footer Body ──
+          Flexible(
+            child: Container(
+              width: double.infinity,
+              color: const Color(0xFF050A18),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: isMob ? 30 : 48),
+                      child: Padding(
+                        padding: Responsive.padding(context),
+                        child: Column(
+                          children: [
+                            _buildBrandingHeader(context, isMob),
+                            const SizedBox(height: 32),
+                            isMob ? _buildMobileGrid() : _buildDesktopGrid(),
+                            AnimatedSize(
+                              duration: const Duration(milliseconds: 600),
+                              curve: Curves.fastOutSlowIn,
+                              child: _showLegal
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(top: 40),
+                                      child: _buildLegalFramework(context, isMob),
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
+                    _buildSignatureBar(context, isMob),
                   ],
                 ),
-                child: EyeLoader(size: isMob ? 50 : 80),
               ),
             ),
           ),

@@ -508,7 +508,7 @@ class _BentoCardState extends State<_BentoCard> {
 }
 
 // ─────────────────────────────────────────────
-// Animated: PDF Generator
+// Animated: PDF Report Pipeline
 // ─────────────────────────────────────────────
 class _AnimatedPdfGenerator extends StatefulWidget {
   final Color color;
@@ -524,7 +524,7 @@ class _AnimatedPdfGeneratorState extends State<_AnimatedPdfGenerator>
   void initState() {
     super.initState();
     _ctrl = AnimationController(
-        vsync: this, duration: const Duration(seconds: 4))
+        vsync: this, duration: const Duration(seconds: 5))
       ..repeat();
   }
 
@@ -536,109 +536,199 @@ class _AnimatedPdfGeneratorState extends State<_AnimatedPdfGenerator>
 
   @override
   Widget build(BuildContext context) {
+    final isMob = Responsive.isMobile(context);
     return RepaintBoundary(
       child: AnimatedBuilder(
         animation: _ctrl,
         builder: (context, _) {
           final p = _ctrl.value;
-          final isScanning = p < 0.7;
-          final scanPos = p / 0.7;
-          return Stack(
-            alignment: Alignment.center,
+          // Phase 1: 0-0.3 (scanning), Phase 2: 0.3-0.6 (processing), Phase 3: 0.6-1.0 (complete)
+          final phase1 = (p / 0.3).clamp(0.0, 1.0);
+          final phase2 = ((p - 0.3) / 0.3).clamp(0.0, 1.0);
+          final phase3 = ((p - 0.6) / 0.2).clamp(0.0, 1.0);
+          final isComplete = p > 0.8;
+
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Positioned(
-                  left: 20,
-                  top: 20,
-                  child: Icon(Icons.picture_as_pdf,
-                      color: widget.color.withValues(alpha: 0.1),
-                      size: 80)),
-              Container(
-                width: 130,
-                height: 170,
-                decoration: BoxDecoration(
-                  color: AppColors.background.withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                      color: widget.color.withValues(alpha: 0.4), width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                        color: widget.color.withValues(alpha: 0.2),
-                        blurRadius: 20,
-                        spreadRadius: 5)
+              // Left: Data metrics
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    _metricRow('Visual Acuity', phase1, widget.color, isMob),
+                    SizedBox(height: isMob ? 6 : 10),
+                    _metricRow('Color Vision', (phase1 * 0.8).clamp(0.0, 1.0), const Color(0xFF4F6AFF), isMob),
+                    SizedBox(height: isMob ? 6 : 10),
+                    _metricRow('Astigmatism', phase2, const Color(0xFF9D4EDD), isMob),
+                    SizedBox(height: isMob ? 6 : 10),
+                    _metricRow('Contrast', (phase2 * 0.7).clamp(0.0, 1.0), const Color(0xFFF5C842), isMob),
                   ],
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Stack(children: [
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                                width: 50,
-                                height: 7,
-                                color: widget.color
-                                    .withValues(alpha: 0.3)),
-                            const SizedBox(height: 12),
-                            Container(
-                                width: double.infinity,
-                                height: 3,
-                                color: widget.color
-                                    .withValues(alpha: 0.1)),
-                            const SizedBox(height: 6),
-                            Container(
-                                width: double.infinity,
-                                height: 3,
-                                color: widget.color
-                                    .withValues(alpha: 0.1)),
-                            const SizedBox(height: 6),
-                            Container(
-                                width: 70,
-                                height: 3,
-                                color: widget.color
-                                    .withValues(alpha: 0.1)),
-                            const Spacer(),
-                            Container(
-                                width: double.infinity,
-                                height: 14,
-                                color: widget.color.withValues(
-                                    alpha: p > 0.8 ? 0.8 : 0.1)),
-                          ]),
-                    ),
-                    if (isScanning)
-                      Positioned(
-                        top: scanPos * 170,
-                        left: 0,
-                        right: 0,
-                        child: Container(
-                            height: 2,
-                            decoration: BoxDecoration(
-                              color: widget.color,
-                              boxShadow: [
-                                BoxShadow(
-                                    color: widget.color,
-                                    blurRadius: 8,
-                                    spreadRadius: 2)
-                              ],
-                            )),
+              ),
+              SizedBox(width: isMob ? 12 : 24),
+              // Center: Document with progress
+              SizedBox(
+                width: isMob ? 70 : 100,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Document icon
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      width: isMob ? 50 : 70,
+                      height: isMob ? 60 : 85,
+                      decoration: BoxDecoration(
+                        color: isComplete
+                            ? widget.color.withValues(alpha: 0.15)
+                            : AppColors.background.withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isComplete
+                              ? widget.color.withValues(alpha: 0.6)
+                              : widget.color.withValues(alpha: 0.3),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: widget.color.withValues(alpha: isComplete ? 0.3 : 0.1),
+                            blurRadius: isComplete ? 20 : 10,
+                            spreadRadius: isComplete ? 2 : 0,
+                          ),
+                        ],
                       ),
-                    if (!isScanning)
-                      Positioned.fill(
+                      child: isComplete
+                          ? Center(
+                              child: Icon(Icons.check_circle_rounded,
+                                  color: widget.color, size: isMob ? 22 : 30),
+                            )
+                          : Padding(
+                              padding: EdgeInsets.all(isMob ? 6 : 10),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(width: isMob ? 20 : 28, height: 3, color: widget.color.withValues(alpha: 0.4)),
+                                  SizedBox(height: isMob ? 4 : 6),
+                                  Container(width: double.infinity, height: 2, color: widget.color.withValues(alpha: 0.15)),
+                                  SizedBox(height: isMob ? 3 : 4),
+                                  Container(width: double.infinity, height: 2, color: widget.color.withValues(alpha: 0.15)),
+                                  SizedBox(height: isMob ? 3 : 4),
+                                  Container(width: isMob ? 15 : 20, height: 2, color: widget.color.withValues(alpha: 0.15)),
+                                ],
+                              ),
+                            ),
+                    ),
+                    SizedBox(height: isMob ? 6 : 10),
+                    // Status label
+                    Text(
+                      isComplete ? 'READY' : p < 0.3 ? 'SCANNING...' : 'ANALYZING...',
+                      style: TextStyle(
+                        color: isComplete ? widget.color : widget.color.withValues(alpha: 0.6),
+                        fontSize: isMob ? 7 : 9,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                    SizedBox(height: isMob ? 4 : 6),
+                    // Progress bar
+                    Container(
+                      width: isMob ? 40 : 60,
+                      height: 3,
+                      decoration: BoxDecoration(
+                        color: widget.color.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                      child: FractionallySizedBox(
+                        alignment: Alignment.centerLeft,
+                        widthFactor: p.clamp(0.0, 1.0),
                         child: Container(
-                          color: AppColors.background
-                              .withValues(alpha: 0.8),
-                          child: Center(
-                              child: Icon(Icons.check_circle,
-                                  color: widget.color, size: 36)),
+                          decoration: BoxDecoration(
+                            color: widget.color,
+                            borderRadius: BorderRadius.circular(2),
+                            boxShadow: [
+                              BoxShadow(color: widget.color.withValues(alpha: 0.5), blurRadius: 4),
+                            ],
+                          ),
                         ),
                       ),
-                  ]),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: isMob ? 12 : 24),
+              // Right: Result scores
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _scoreChip('6/6', phase3, widget.color, isMob),
+                    SizedBox(height: isMob ? 6 : 10),
+                    _scoreChip('Normal', (phase3 * 0.9).clamp(0.0, 1.0), const Color(0xFF4F6AFF), isMob),
+                    SizedBox(height: isMob ? 6 : 10),
+                    _scoreChip('0.25D', (phase3 * 0.7).clamp(0.0, 1.0), const Color(0xFF9D4EDD), isMob),
+                    SizedBox(height: isMob ? 6 : 10),
+                    _scoreChip('High', (phase3 * 0.85).clamp(0.0, 1.0), const Color(0xFFF5C842), isMob),
+                  ],
                 ),
               ),
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _metricRow(String label, double progress, Color color, bool isMob) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.5),
+            fontSize: isMob ? 7 : 9,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        SizedBox(width: isMob ? 4 : 8),
+        SizedBox(
+          width: isMob ? 30 : 50,
+          height: 3,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: color.withValues(alpha: 0.1),
+              color: color.withValues(alpha: 0.7),
+              minHeight: 3,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _scoreChip(String label, double opacity, Color color, bool isMob) {
+    return Opacity(
+      opacity: opacity,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: isMob ? 6 : 10, vertical: isMob ? 2 : 4),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: isMob ? 7 : 9,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ),
     );
   }
@@ -709,6 +799,8 @@ class _AnimatedReelsFeedState extends State<_AnimatedReelsFeed>
         height: phoneH,
         tiltX: -0.02,
         tiltY: 0.03,
+        showNotch: false,
+        showHomeBar: false,
         screen: ClipRect(
           child: RepaintBoundary(
             child: Container(
@@ -966,7 +1058,7 @@ class _AnimatedOcularWellnessState extends State<_AnimatedOcularWellness>
 }
 
 // ─────────────────────────────────────────────
-// Animated: Consultation Network — slower dot
+// Animated: Consultation Network — enhanced
 // ─────────────────────────────────────────────
 class _AnimatedConsultationNetwork extends StatefulWidget {
   final Color color;
@@ -983,7 +1075,6 @@ class _AnimatedConsultationNetworkState
   @override
   void initState() {
     super.initState();
-    // Slowed from 2s to 3.5s
     _ctrl = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 3500))
       ..repeat();
@@ -995,7 +1086,7 @@ class _AnimatedConsultationNetworkState
     super.dispose();
   }
 
-  Widget _syncNode(IconData icon, Color color, String label) {
+  Widget _syncNode(IconData icon, Color color, String label, double pulse) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -1004,56 +1095,132 @@ class _AnimatedConsultationNetworkState
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: color.withValues(alpha: 0.12),
-            border: Border.all(color: color.withValues(alpha: 0.4)),
+            border: Border.all(color: color.withValues(alpha: 0.4 + pulse * 0.2)),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.15 * pulse),
+                blurRadius: 20,
+                spreadRadius: 2,
+              ),
+            ],
           ),
           child: Icon(icon, color: color, size: 28),
         ),
         const SizedBox(height: 8),
         Text(label,
-            style: const TextStyle(
-                color: Colors.white54, fontSize: 10, letterSpacing: 1)),
+            style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.6), fontSize: 10, letterSpacing: 1, fontWeight: FontWeight.w600)),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isMob = Responsive.isMobile(context);
     return RepaintBoundary(
       child: AnimatedBuilder(
         animation: _ctrl,
         builder: (context, _) {
           final val = _ctrl.value;
           final dotX = val;
+          final pulse = math.sin(val * math.pi * 2).abs();
+          // Mode alternates: first half = online, second half = home visit
+          final isOnline = val < 0.5;
+          
           return Center(
             child: SizedBox(
-              height: 120,
+              width: isMob ? 280 : 400,
+              height: 150,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
+                  // Connecting line
                   Positioned(
-                      left: 20,
-                      child:
-                          _syncNode(Icons.person, widget.color, 'DOCTOR')),
-                  Positioned(
-                      right: 20,
-                      child: _syncNode(
-                          Icons.face, Colors.white70, 'PATIENT')),
-                  // Moving dot
-                  Positioned(
-                    left: 80 + dotX * 120,
+                    left: isMob ? 55 : 75,
+                    right: isMob ? 55 : 75,
                     top: 30,
                     child: Container(
-                      width: 10,
-                      height: 10,
+                      height: 1.5,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            widget.color.withValues(alpha: 0.1),
+                            widget.color.withValues(alpha: 0.4),
+                            widget.color.withValues(alpha: 0.1),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Doctor node
+                  Positioned(
+                      left: isMob ? 10 : 20,
+                      child:
+                          _syncNode(Icons.person, widget.color, 'DOCTOR', pulse)),
+                  // Patient node
+                  Positioned(
+                      right: isMob ? 10 : 20,
+                      child: _syncNode(
+                          Icons.face, Colors.white70, 'PATIENT', pulse)),
+                  // Moving data packet
+                  Positioned(
+                    left: (isMob ? 55 : 75) + dotX * (isMob ? 160 : 240),
+                    top: 24,
+                    child: Container(
+                      width: 14,
+                      height: 14,
                       decoration: BoxDecoration(
                         color: widget.color,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                              color: widget.color,
-                              blurRadius: 8,
+                              color: widget.color.withValues(alpha: 0.6),
+                              blurRadius: 12,
                               spreadRadius: 2)
                         ],
+                      ),
+                      child: Center(
+                        child: Icon(
+                          isOnline ? Icons.videocam : Icons.home,
+                          color: Colors.white,
+                          size: 8,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Mode badge
+                  Positioned(
+                    bottom: 0,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 400),
+                      child: Container(
+                        key: ValueKey(isOnline),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: widget.color.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: widget.color.withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isOnline ? Icons.videocam : Icons.home_work,
+                              color: widget.color,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              isOnline ? 'ONLINE CONSULT' : 'HOME VISIT',
+                              style: TextStyle(
+                                color: widget.color,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

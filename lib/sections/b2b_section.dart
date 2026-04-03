@@ -128,9 +128,10 @@ class B2BSection extends StatelessWidget {
       'Best regards,\n'
       '[Your Name]',
     );
-    final uri = Uri.parse('mailto:contact@visionoptocare.co.in?subject=$subject&body=$body');
+    final gmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1&to=contact@visionoptocare.co.in&su=$subject&body=$body';
+    final uri = Uri.parse(gmailUrl);
     if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 

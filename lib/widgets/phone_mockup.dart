@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 
 /// A hyper-realistic 3D iPhone mockup with:
 /// - Titanium/aluminum side chassis with volume + power buttons
-/// - Dynamic Island at top
-/// - Action button on left
-/// - SIM tray on right
+/// - Optional Dynamic Island at top
 /// - Glass screen with reflection sweep
+/// - Optional home indicator bar
 /// - 3D perspective tilt via Matrix4
 class PhoneMockup extends StatelessWidget {
   final Widget screen;
@@ -14,6 +13,10 @@ class PhoneMockup extends StatelessWidget {
   /// Tilt angle in radians. Default: slight perspective tilt.
   final double tiltX;
   final double tiltY;
+  /// Whether to show the Dynamic Island notch
+  final bool showNotch;
+  /// Whether to show the home indicator bar
+  final bool showHomeBar;
 
   const PhoneMockup({
     super.key,
@@ -22,10 +25,28 @@ class PhoneMockup extends StatelessWidget {
     this.height = 580,
     this.tiltX = -0.08,
     this.tiltY = 0.12,
+    this.showNotch = true,
+    this.showHomeBar = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Proportional corner radius based on phone size
+    final outerR = width * 0.13; // ~13% of width
+    final innerR = outerR - 2.0;
+    final screenR = innerR - 1.5;
+    // Proportional notch dimensions
+    final notchW = width * 0.33;
+    final notchH = height * 0.04;
+    final notchTop = height * 0.02;
+    // Proportional home bar
+    final homeBarW = width * 0.35;
+    final homeBarH = height * 0.007;
+    final homeBarBottom = height * 0.015;
+    // Proportional camera lens
+    final lensSize = notchH * 0.38;
+    final innerLensSize = lensSize * 0.35;
+
     return Transform(
       transform: Matrix4.identity()
         ..setEntry(3, 2, 0.001)
@@ -41,7 +62,7 @@ class PhoneMockup extends StatelessWidget {
             width: width + 30,
             height: height + 50,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(56),
+              borderRadius: BorderRadius.circular(outerR + 4),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.8),
@@ -64,7 +85,7 @@ class PhoneMockup extends StatelessWidget {
             width: width,
             height: height,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(52),
+              borderRadius: BorderRadius.circular(outerR),
               border: Border.all(
                 color: Colors.white.withValues(alpha: 0.05),
                 width: 0.5,
@@ -73,11 +94,11 @@ class PhoneMockup extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFFEFEFF2), // Top edge highly polished highlight
-                  Color(0xFFB0B0BB), // Subtle titanium reflection
-                  Color(0xFF8A8A96), // Main titanium body
-                  Color(0xFFDEDEE2), // Bottom edge reflection
-                  Color(0xFF5A5A66), // Deep corner shadow
+                  Color(0xFFEFEFF2),
+                  Color(0xFFB0B0BB),
+                  Color(0xFF8A8A96),
+                  Color(0xFFDEDEE2),
+                  Color(0xFF5A5A66),
                 ],
                 stops: [0.0, 0.15, 0.5, 0.85, 1.0],
               ),
@@ -94,10 +115,10 @@ class PhoneMockup extends StatelessWidget {
                 ),
               ],
             ),
-            padding: const EdgeInsets.all(2.0), // Ultra-thin 2px metal edge
+            padding: const EdgeInsets.all(2.0),
             child: Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(50),
+                borderRadius: BorderRadius.circular(innerR),
                 color: Colors.black,
                 boxShadow: [
                   BoxShadow(
@@ -108,9 +129,9 @@ class PhoneMockup extends StatelessWidget {
                 ],
               ),
               child: Padding(
-                padding: const EdgeInsets.all(1.5), // Inner uniform bezel
+                padding: const EdgeInsets.all(1.5),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(48),
+                  borderRadius: BorderRadius.circular(screenR),
                   child: Stack(
                     children: [
                       // ── Screen Background ──
@@ -122,7 +143,7 @@ class PhoneMockup extends StatelessWidget {
                       Positioned.fill(
                         child: Container(
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(48),
+                            borderRadius: BorderRadius.circular(screenR),
                             border: Border.all(
                               color: Colors.white.withValues(alpha: 0.1),
                               width: 0.5,
@@ -131,65 +152,66 @@ class PhoneMockup extends StatelessWidget {
                         ),
                       ),
 
-                      // ── Dynamic Island ──
-                      Positioned(
-                        top: 14,
-                        left: 0,
-                        right: 0,
-                        child: Center(
-                          child: Container(
-                            width: 105,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: Colors.black,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const SizedBox(width: 50),
-                                // TrueDepth Camera Lens
-                                Container(
-                                  width: 12,
-                                  height: 12,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: RadialGradient(
-                                      colors: [
-                                        Colors.blueGrey.shade900,
-                                        Colors.black,
-                                      ],
-                                      stops: const [0.2, 1.0],
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.white.withValues(alpha: 0.05),
-                                        blurRadius: 1,
-                                        spreadRadius: 0.5,
+                      // ── Dynamic Island (conditional) ──
+                      if (showNotch)
+                        Positioned(
+                          top: notchTop,
+                          left: 0,
+                          right: 0,
+                          child: Center(
+                            child: Container(
+                              width: notchW,
+                              height: notchH,
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(notchH / 2),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(width: notchW * 0.45),
+                                  // TrueDepth Camera Lens
+                                  Container(
+                                    width: lensSize,
+                                    height: lensSize,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: RadialGradient(
+                                        colors: [
+                                          Colors.blueGrey.shade900,
+                                          Colors.black,
+                                        ],
+                                        stops: const [0.2, 1.0],
                                       ),
-                                    ],
-                                  ),
-                                  child: Center(
-                                    child: Container(
-                                      width: 4,
-                                      height: 4,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        gradient: RadialGradient(
-                                          colors: [
-                                            Colors.blueAccent.withValues(alpha: 0.4),
-                                            Colors.transparent,
-                                          ],
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.white.withValues(alpha: 0.05),
+                                          blurRadius: 1,
+                                          spreadRadius: 0.5,
+                                        ),
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: Container(
+                                        width: innerLensSize,
+                                        height: innerLensSize,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          gradient: RadialGradient(
+                                            colors: [
+                                              Colors.blueAccent.withValues(alpha: 0.4),
+                                              Colors.transparent,
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
 
                       // ── Glass Screen Reflection ──
                       Positioned.fill(
@@ -200,22 +222,23 @@ class PhoneMockup extends StatelessWidget {
                         ),
                       ),
 
-                      // ── Home Indicator Bar ──
-                      Positioned(
-                        bottom: 8,
-                        left: 0,
-                        right: 0,
-                        child: Center(
-                          child: Container(
-                            width: 120,
-                            height: 4.5,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.4),
-                              borderRadius: BorderRadius.circular(3),
+                      // ── Home Indicator Bar (conditional) ──
+                      if (showHomeBar)
+                        Positioned(
+                          bottom: homeBarBottom,
+                          left: 0,
+                          right: 0,
+                          child: Center(
+                            child: Container(
+                              width: homeBarW,
+                              height: homeBarH.clamp(2.5, 5.0),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.4),
+                                borderRadius: BorderRadius.circular(3),
+                              ),
                             ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ),
