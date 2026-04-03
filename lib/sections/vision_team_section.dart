@@ -63,26 +63,21 @@ class _VisionTeamSectionState extends State<VisionTeamSection>
             ),
           ),
 
-          // ── Scrollable Content ──
-          SingleChildScrollView(
-            physics: const NeverScrollableScrollPhysics(),
+          // ── Content ──
+          Padding(
+            padding: EdgeInsets.only(
+              top: isMob ? 70 : 90,
+              bottom: isMob ? 16 : 24,
+              left: isMob ? 16 : 40,
+              right: isMob ? 16 : 40,
+            ),
             child: Column(
               children: [
-                SizedBox(height: isMob ? 80 : 110),
-                
-                // ── 1. The Leadership (Large) ──
-                _buildHeader('THE LEADERSHIP', 'Visionaries Behind the Care', isMob),
-                SizedBox(height: isMob ? 40 : 60),
-                Center(child: _buildLeadershipRow(isMob)),
-                
-                SizedBox(height: isMob ? 80 : 120),
-                
-                // ── 2. The Engineering Team (Small) ──
-                _buildHeader('FOUNDING TEAM', 'Engineering the Future', isMob),
-                SizedBox(height: isMob ? 40 : 60),
-                Center(child: _buildEngineeringRow(isMob)),
-
-                SizedBox(height: isMob ? 100 : 150),
+                _buildHeader('OUR TEAM', 'The People Behind the Vision', isMob),
+                SizedBox(height: isMob ? 16 : 32),
+                Expanded(
+                  child: isMob ? _buildMobileGrid() : _buildDesktopGrid(),
+                ),
               ],
             ),
           ),
@@ -91,6 +86,133 @@ class _VisionTeamSectionState extends State<VisionTeamSection>
     );
   }
 
+  /// Desktop: 2×2 grid — leaders on top row, engineers on bottom row
+  Widget _buildDesktopGrid() {
+    return Column(
+      children: [
+        // ── Row 1: Leadership ──
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(
+                child: _CinematicProfile(
+                  ctrl: _ctrl, delay: 0.15,
+                  name: 'Aben Thomas Angadiyil',
+                  role: 'CHIEF EXECUTIVE OFFICER',
+                  imagePath: 'assets/images/Founders/Founder_1.jpeg',
+                  credential: 'B.Optom · BMS',
+                  experience: '14+ Years in Vision Care',
+                  bio: 'Driving global healthcare innovation and the product mission.',
+                  accent: AppColors.accent2,
+                  isLeader: true,
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: _CinematicProfile(
+                  ctrl: _ctrl, delay: 0.25,
+                  name: 'Thomas Angadiyil Philip',
+                  role: 'CO-FOUNDER & DIRECTOR',
+                  imagePath: 'assets/images/Founders/Founder_2.jpeg',
+                  credential: 'Rajan Optics',
+                  experience: '44+ Years Optical Expertise',
+                  bio: 'Legacy of trust and diagnostic precision at Rajan Optics.',
+                  accent: const Color(0xFF4F6AFF),
+                  isLeader: true,
+                  isReverse: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        // ── Row 2: Engineering ──
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(
+                child: _CinematicProfile(
+                  ctrl: _ctrl, delay: 0.35,
+                  name: 'Sherly Mary Daniel',
+                  role: 'CHIEF TECHNOLOGY OFFICER',
+                  imagePath: 'assets/images/Team_members/Cto.jpeg',
+                  credential: 'B.Tech ECE',
+                  experience: '9+ Years IT Expertise',
+                  bio: 'Scalable Software Ops.',
+                  accent: const Color(0xFF9D4EDD),
+                  isLeader: false,
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: _CinematicProfile(
+                  ctrl: _ctrl, delay: 0.45,
+                  name: 'Fays Arukattil',
+                  role: 'SOFTWARE DEVELOPER',
+                  imagePath: 'assets/images/Team_members/Software_Dev.jpeg',
+                  credential: 'Full-Stack Architect',
+                  experience: 'Product · R&D',
+                  bio: 'Architecting the Visiaxx core with Flutter.',
+                  accent: const Color(0xFFF5C842),
+                  isLeader: false,
+                  isReverse: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Mobile: compact vertical list of all 4 members
+  Widget _buildMobileGrid() {
+    final profiles = [
+      _CinematicProfile(
+        ctrl: _ctrl, delay: 0.15,
+        name: 'Aben Thomas Angadiyil', role: 'CEO',
+        imagePath: 'assets/images/Founders/Founder_1.jpeg',
+        credential: 'B.Optom · BMS', experience: '14+ Years',
+        bio: 'Driving global healthcare innovation.',
+        accent: AppColors.accent2, isLeader: true,
+      ),
+      _CinematicProfile(
+        ctrl: _ctrl, delay: 0.25,
+        name: 'Thomas Angadiyil Philip', role: 'CO-FOUNDER',
+        imagePath: 'assets/images/Founders/Founder_2.jpeg',
+        credential: 'Rajan Optics', experience: '44+ Years',
+        bio: 'Legacy of trust and diagnostic precision.',
+        accent: const Color(0xFF4F6AFF), isLeader: true,
+      ),
+      _CinematicProfile(
+        ctrl: _ctrl, delay: 0.35,
+        name: 'Sherly Mary Daniel', role: 'CTO',
+        imagePath: 'assets/images/Team_members/Cto.jpeg',
+        credential: 'B.Tech ECE', experience: '9+ Years',
+        bio: 'Scalable Software Ops.',
+        accent: const Color(0xFF9D4EDD), isLeader: false,
+      ),
+      _CinematicProfile(
+        ctrl: _ctrl, delay: 0.45,
+        name: 'Fays Arukattil', role: 'DEV',
+        imagePath: 'assets/images/Team_members/Software_Dev.jpeg',
+        credential: 'Full-Stack', experience: 'Product · R&D',
+        bio: 'Architecting the Visiaxx core.',
+        accent: const Color(0xFFF5C842), isLeader: false,
+      ),
+    ];
+
+    return Column(
+      children: profiles.asMap().entries.map((e) {
+        return Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: e.value,
+          ),
+        );
+      }).toList(),
+    );
+  }
   Widget _buildHeader(String caption, String title, bool isMob) {
     return _FadeIn(
       ctrl: _ctrl,
@@ -105,17 +227,17 @@ class _VisionTeamSectionState extends State<VisionTeamSection>
               fontWeight: FontWeight.w900,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
             title,
             style: AppFonts.h2.copyWith(
               color: AppColors.white,
-              fontSize: isMob ? 28 : 48,
+              fontSize: isMob ? 24 : 40,
               fontWeight: FontWeight.w800,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Container(
             width: 50,
             height: 2,
@@ -125,89 +247,14 @@ class _VisionTeamSectionState extends State<VisionTeamSection>
       ),
     );
   }
-
-  Widget _buildLeadershipRow(bool isMob) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Wrap(
-        spacing: 40,
-        runSpacing: 40,
-        alignment: WrapAlignment.center,
-        children: [
-          _CinematicProfile(
-            ctrl: _ctrl,
-            delay: 0.2,
-            name: 'Aben Thomas Angadiyil',
-            role: 'CHIEF EXECUTIVE OFFICER',
-            imagePath: 'assets/images/Founders/Founder_1.jpeg',
-            credential: 'B.Optom · BMS',
-            experience: '14+ Years in Vision Care',
-            bio: 'Driving global healthcare innovation and the product mission.',
-            accent: AppColors.accent2,
-            sizeScale: 1.3, // Size boost
-          ),
-          _CinematicProfile(
-            ctrl: _ctrl,
-            delay: 0.3,
-            name: 'Thomas Angadiyil Philip',
-            role: 'CO-FOUNDER & DIRECTOR',
-            imagePath: 'assets/images/Founders/Founder_2.jpeg',
-            credential: 'Rajan Optics',
-            experience: '44+ Years Optical Expertise',
-            bio: 'Legacy of trust and diagnostic precision at Rajan Optics.',
-            accent: const Color(0xFF4F6AFF),
-            sizeScale: 1.3, // Size boost
-            isReverse: !isMob,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEngineeringRow(bool isMob) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Wrap(
-        spacing: 32,
-        runSpacing: 32,
-        alignment: WrapAlignment.center,
-        children: [
-          _CinematicProfile(
-            ctrl: _ctrl,
-            delay: 0.4,
-            name: 'Sherly Mary Daniel',
-            role: 'CHIEF TECHNOLOGY OFFICER',
-            imagePath: 'assets/images/Team_members/Cto.jpeg',
-            credential: 'B.Tech ECE',
-            experience: '9+ Years IT Expertise',
-            bio: 'Scalable Software Ops.',
-            accent: const Color(0xFF9D4EDD),
-            sizeScale: 1.15, // Size boost (previously 0.95)
-          ),
-          _CinematicProfile(
-            ctrl: _ctrl,
-            delay: 0.5,
-            name: 'Fays Arukattil',
-            role: 'SOFTWARE DEVELOPER',
-            imagePath: 'assets/images/Team_members/Software_Dev.jpeg',
-            credential: 'Full-Stack Architect',
-            experience: 'Product · R&D',
-            bio: 'Architecting the Visiaxx core with Flutter.', // Refined text
-            accent: const Color(0xFFF5C842),
-            sizeScale: 1.15, // Size boost (previously 0.95)
-            isReverse: !isMob, // Symmetrical spread
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _CinematicProfile extends StatelessWidget {
   final AnimationController ctrl;
-  final double delay, sizeScale;
+  final double delay;
   final String name, role, imagePath, credential, experience, bio;
   final Color accent;
+  final bool isLeader;
   final bool isReverse;
 
   const _CinematicProfile({
@@ -220,112 +267,116 @@ class _CinematicProfile extends StatelessWidget {
     required this.experience,
     required this.bio,
     required this.accent,
-    required this.sizeScale,
+    required this.isLeader,
     this.isReverse = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final bool isSmall = sizeScale < 1.0;
+    final isMob = Responsive.isMobile(context);
     
     return _FadeIn(
       ctrl: ctrl,
       delay: delay,
       child: Container(
-        width: isSmall ? 520 : 680,
-        padding: EdgeInsets.all(isSmall ? 28 : 36),
+        padding: EdgeInsets.all(isMob ? 12 : 20),
         decoration: BoxDecoration(
           color: AppColors.surface.withValues(alpha: 0.03),
-          borderRadius: BorderRadius.circular(isSmall ? 32 : 40),
+          borderRadius: BorderRadius.circular(28),
           border: Border.all(color: AppColors.white.withValues(alpha: 0.06)),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            if (!isReverse) _buildImage(isSmall),
+            if (!isReverse) Expanded(flex: 2, child: _buildImage(isMob)),
             Expanded(
+              flex: 3,
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: isSmall ? 16 : 24),
+                padding: EdgeInsets.symmetric(horizontal: isMob ? 10 : 16),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    _Badge(text: role, accent: accent, isSmall: isSmall),
-                    const SizedBox(height: 12),
+                    _Badge(text: role, accent: accent, isSmall: !isLeader),
+                    const SizedBox(height: 6),
                     Text(
                       name,
                       style: AppFonts.h4.copyWith(
                         color: AppColors.white,
-                        fontSize: isSmall ? 20 : 28,
+                        fontSize: isMob ? 14 : (isLeader ? 20 : 17),
                         fontWeight: FontWeight.w900,
                         letterSpacing: -0.5,
                       ),
                       textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Text(
                       '$credential  ·  $experience',
                       style: AppFonts.caption.copyWith(
                         color: AppColors.muted,
-                        fontSize: isSmall ? 11 : 13,
+                        fontSize: isMob ? 8 : (isLeader ? 11 : 10),
                         fontWeight: FontWeight.w600,
                       ),
                       textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 6),
                     Text(
                       bio,
                       style: AppFonts.bodySmall.copyWith(
                         color: AppColors.muted,
-                        fontSize: isSmall ? 13 : 14,
-                        height: 1.5,
+                        fontSize: isMob ? 10 : 12,
+                        height: 1.4,
                       ),
                       textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
             ),
-            if (isReverse) _buildImage(isSmall),
+            if (isReverse) Expanded(flex: 2, child: _buildImage(isMob)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildImage(bool isSmall) {
-    final double w = isSmall ? 200 : 260; // Increased image size
-    final double h = isSmall ? 280 : 380; // Increased image size
-    
-    return Container(
-      width: w,
-      height: h,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(isSmall ? 24 : 32),
-        boxShadow: [
-          BoxShadow(
-            color: accent.withValues(alpha: 0.15),
-            blurRadius: 40,
-            spreadRadius: -10,
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(isSmall ? 22 : 30),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image.asset(imagePath, fit: BoxFit.cover, alignment: Alignment.topCenter),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, accent.withValues(alpha: 0.2)],
-                ),
-              ),
+  Widget _buildImage(bool isMob) {
+    return AspectRatio(
+      aspectRatio: 0.6,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: accent.withValues(alpha: 0.15),
+              blurRadius: 24,
+              spreadRadius: -6,
             ),
           ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.asset(imagePath, fit: BoxFit.cover, alignment: Alignment.center),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, accent.withValues(alpha: 0.2)],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
