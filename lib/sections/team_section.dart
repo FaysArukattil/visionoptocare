@@ -56,36 +56,27 @@ class _TeamSectionState extends State<TeamSection>
         physics: const ClampingScrollPhysics(),
         child: Column(
           children: [
-            SizedBox(height: isMob ? 90 : 120),
-            Padding(
-              padding: Responsive.padding(context),
-              child: _SlideHeader(
-                ctrl: _ctrl,
-                child: Column(
-                  children: [
-                     Text(
-                      'ENGINEERING EXCELLENCE',
-                      style: AppFonts.caption.copyWith(
-                        color: AppColors.accent2,
-                        letterSpacing: 4,
-                        fontWeight: FontWeight.w900,
-                      ),
-                      textAlign: TextAlign.center,
+            SizedBox(height: isMob ? 40 : 60),
+            _FadeSlide(
+              ctrl: _ctrl,
+              delay: 0.0,
+              child: Column(
+                children: [
+                  Text(
+                    'TEAM MEMBERS',
+                    style: AppFonts.caption.copyWith(
+                      color: AppColors.accent2,
+                      letterSpacing: 6,
+                      fontWeight: FontWeight.w900,
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'The Minds Behind\nthe Platform',
-                      style: AppFonts.h2.copyWith(
-                        color: AppColors.white,
-                        fontSize: isMob ? 32 : 56,
-                        height: 1.1,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -1,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: 40,
+                    height: 2,
+                    color: AppColors.accent2.withValues(alpha: 0.3),
+                  ),
+                ],
               ),
             ),
             SizedBox(height: isMob ? 40 : 80),
@@ -423,26 +414,6 @@ class _TitleChip extends StatelessWidget {
   }
 }
 
-class _SlideHeader extends StatelessWidget {
-  final AnimationController ctrl;
-  final Widget child;
-  const _SlideHeader({required this.ctrl, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    final anim = CurvedAnimation(parent: ctrl, curve: Curves.easeOutCubic);
-    return AnimatedBuilder(
-      animation: anim,
-      builder: (context, _) => Opacity(
-        opacity: anim.value,
-        child: Transform.translate(
-          offset: Offset(0, -20 * (1 - anim.value)),
-          child: child,
-        ),
-      ),
-    );
-  }
-}
 
 class _FadeSlide extends StatelessWidget {
   final AnimationController ctrl;
