@@ -151,38 +151,41 @@ class _FooterSectionState extends State<FooterSection> {
         ],
       );
     }
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            const EyeLogo(size: 100, showGlow: false),
-            const SizedBox(width: 24),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'VISION OPTOCARE',
-                  style: AppFonts.heading(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.white),
-                ),
-                Text(
-                  'ADVOCACY ECOSYSTEM',
-                  style: AppFonts.caption.copyWith(
-                    color: AppColors.white.withValues(alpha: 0.3),
-                    letterSpacing: 4,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 10,
+    return Padding(
+      padding: Responsive.padding(context),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              const EyeLogo(size: 100, showGlow: false),
+              const SizedBox(width: 24),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'VISION OPTOCARE',
+                    style: AppFonts.heading(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.white),
                   ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        const _SocialCluster(),
-      ],
+                  Text(
+                    'ADVOCACY ECOSYSTEM',
+                    style: AppFonts.caption.copyWith(
+                      color: AppColors.white.withValues(alpha: 0.3),
+                      letterSpacing: 4,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const _SocialCluster(),
+        ],
+      ),
     );
   }
 
@@ -256,12 +259,15 @@ class _FooterSectionState extends State<FooterSection> {
         child: Row(
           mainAxisAlignment: isMob ? MainAxisAlignment.center : MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              '© 2026 VISION OPTOCARE. ALL RIGHTS RESERVED.',
-              style: AppFonts.caption.copyWith(
-                color: AppColors.white.withValues(alpha: 0.2),
-                fontSize: 10,
-                letterSpacing: 1,
+            Flexible(
+              child: Text(
+                '© 2026 VISION OPTOCARE. ALL RIGHTS RESERVED.',
+                style: AppFonts.caption.copyWith(
+                  color: AppColors.white.withValues(alpha: 0.2),
+                  fontSize: 10,
+                  letterSpacing: 1,
+                ),
+                textAlign: isMob ? TextAlign.center : TextAlign.left,
               ),
             ),
           ],
@@ -353,7 +359,7 @@ class _GridCluster extends StatelessWidget {
             color: AppColors.white.withValues(alpha: 0.6),
             fontWeight: FontWeight.bold,
             letterSpacing: 2,
-            fontSize: 11,
+            fontSize: 13, // Increased for readability
           ),
         ),
         const SizedBox(height: 24),
@@ -367,7 +373,7 @@ class _GridCluster extends StatelessWidget {
               style: AppFonts.bodySmall.copyWith(
                 color: AppColors.white.withValues(alpha: 0.4),
                 height: 1.6,
-                fontSize: 13,
+                fontSize: 15, // Increased for readability
               ),
             ),
           ),
@@ -442,7 +448,7 @@ class _SocialNodeState extends State<_SocialNode> {
           child: Icon(
             widget.icon,
             color: _hov ? widget.baseColor : AppColors.white.withValues(alpha: 0.3),
-            size: 20,
+            size: 24, // Increased from 20
           ),
         ),
       ),

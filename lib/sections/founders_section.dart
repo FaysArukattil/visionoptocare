@@ -82,7 +82,7 @@ class _FoundersSectionState extends State<FoundersSection>
                             'Visionaries Behind\nVisiaxx',
                             style: AppFonts.h2.copyWith(
                               color: AppColors.white,
-                              fontSize: isMob ? 36 : 60, // Increased as requested
+                              fontSize: isMob ? 42 : 72, // Increased for 'Big'
                               height: 1.1,
                               fontWeight: FontWeight.w800,
                             ),

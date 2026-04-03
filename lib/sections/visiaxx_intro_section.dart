@@ -260,94 +260,99 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
   }
 
   Widget _buildIntroText(bool isMob) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: isMob ? CrossAxisAlignment.center : CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color: AppColors.accent2.withValues(alpha: 0.1),
-            border: Border.all(color: AppColors.accent2.withValues(alpha: 0.3)),
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment:
+            isMob ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: AppColors.accent2.withValues(alpha: 0.1),
+              border:
+                  Border.all(color: AppColors.accent2.withValues(alpha: 0.3)),
+            ),
+            child: Text(
+              'WHAT IS VISIAXX?',
+              style: AppFonts.caption.copyWith(
+                color: AppColors.accent2,
+                letterSpacing: 3,
+                fontWeight: FontWeight.w900,
+                fontSize: 11,
+              ),
+            ),
           ),
-          child: Text(
-            'WHAT IS VISIAXX?',
+          const SizedBox(height: 16),
+          Text(
+            'AN APP FOR STANDARDIZED VISION DISEASE DETECTION',
             style: AppFonts.caption.copyWith(
-              color: AppColors.accent2,
-              letterSpacing: 3,
-              fontWeight: FontWeight.w900,
-              fontSize: 11,
+              color: AppColors.white.withValues(alpha: 0.5),
+              letterSpacing: 1.5,
+              fontWeight: FontWeight.w700,
+              fontSize: isMob ? 9 : 11,
             ),
+            textAlign: isMob ? TextAlign.center : TextAlign.start,
           ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'AN APP FOR STANDARDIZED VISION DISEASE DETECTION',
-          style: AppFonts.caption.copyWith(
-            color: AppColors.white.withValues(alpha: 0.5),
-            letterSpacing: 1.5,
-            fontWeight: FontWeight.w700,
-            fontSize: isMob ? 9 : 11,
-          ),
-          textAlign: isMob ? TextAlign.center : TextAlign.start,
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'Pioneering Digital\nOptometry.',
-          style: AppFonts.h2.copyWith(
-            color: AppColors.white,
-            fontSize: isMob ? 32 : 52,
-            height: 1.1,
-            fontWeight: FontWeight.w800,
-          ),
-          textAlign: isMob ? TextAlign.center : TextAlign.start,
-        ),
-        const SizedBox(height: 28),
-        Text(
-          'We merge clinical-grade screening with AI-driven analytics to transform your smartphone into a powerful diagnostic tool. Vision Optocare empowers patients and practitioners with accessible, high-precision ocular health tracking.',
-          style: AppFonts.bodyLarge.copyWith(
-            color: AppColors.muted,
-            height: 1.7,
-            fontSize: isMob ? 15 : 17,
-          ),
-          textAlign: isMob ? TextAlign.center : TextAlign.start,
-        ),
-        const SizedBox(height: 36),
-        // Feature chips
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          alignment: isMob ? WrapAlignment.center : WrapAlignment.start,
-          children: [
-            _FeatureChip(icon: Icons.biotech, label: '12 Clinical Tests'),
-            _FeatureChip(icon: Icons.language, label: '13 Languages'),
-            _FeatureChip(icon: Icons.video_call, label: 'Hybrid Consults'),
-            _FeatureChip(icon: Icons.picture_as_pdf, label: 'PDF Reports'),
-          ],
-        ),
-        const SizedBox(height: 32),
-        // Store Buttons
-        Wrap(
-          spacing: 16,
-          runSpacing: 12,
-          alignment: isMob ? WrapAlignment.center : WrapAlignment.start,
-          children: [
-            _StoreButton(
-              storeName: 'Google Play',
-              label: 'GET IT ON',
-              icon: Icons.play_arrow_rounded,
-              onTap: () => _showComingSoon(context),
+          const SizedBox(height: 24),
+          Text(
+            'Pioneering Digital\nOptometry.',
+            style: AppFonts.h2.copyWith(
+              color: AppColors.white,
+              fontSize: isMob ? 38 : 64, // Increased for 'Big'
+              height: 1.1,
+              fontWeight: FontWeight.w800,
             ),
-            _StoreButton(
-              storeName: 'App Store',
-              label: 'DOWNLOAD ON THE',
-              icon: Icons.apple,
-              onTap: () => _showComingSoon(context),
+            textAlign: isMob ? TextAlign.center : TextAlign.start,
+          ),
+          const SizedBox(height: 28),
+          Text(
+            'We merge clinical-grade screening with AI-driven analytics to transform your smartphone into a powerful diagnostic tool. Vision Optocare empowers patients and practitioners with accessible, high-precision ocular health tracking.',
+            style: AppFonts.bodyLarge.copyWith(
+              color: AppColors.muted,
+              height: 1.7,
+              fontSize: isMob ? 16 : 19, // Increased for 'Readable'
             ),
-          ],
-        ),
-      ],
+            textAlign: isMob ? TextAlign.center : TextAlign.start,
+          ),
+          const SizedBox(height: 36),
+          // Feature chips
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            alignment: isMob ? WrapAlignment.center : WrapAlignment.start,
+            children: [
+              _FeatureChip(icon: Icons.biotech, label: '12 Clinical Tests'),
+              _FeatureChip(icon: Icons.language, label: '13 Languages'),
+              _FeatureChip(icon: Icons.video_call, label: 'Hybrid Consults'),
+              _FeatureChip(icon: Icons.picture_as_pdf, label: 'PDF Reports'),
+            ],
+          ),
+          const SizedBox(height: 32),
+          // Store Buttons
+          Wrap(
+            spacing: 16,
+            runSpacing: 12,
+            alignment: isMob ? WrapAlignment.center : WrapAlignment.start,
+            children: [
+              _StoreButton(
+                storeName: 'Google Play',
+                label: 'GET IT ON',
+                icon: Icons.play_arrow_rounded,
+                onTap: () => _showComingSoon(context),
+              ),
+              _StoreButton(
+                storeName: 'App Store',
+                label: 'DOWNLOAD ON THE',
+                icon: Icons.apple,
+                onTap: () => _showComingSoon(context),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 

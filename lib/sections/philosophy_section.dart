@@ -304,69 +304,73 @@ class _AnimatedCardState extends State<_AnimatedCard> {
                           ),
                         ],
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  widget.step.number,
-                                  style: AppFonts.h1.copyWith(
-                                    color: widget.step.color
-                                        .withValues(alpha: 0.15 + v * 0.1),
-                                    fontSize: 60,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: -2,
-                                  ),
-                                ),
-                                const SizedBox(width: 48), // Spacer inside FittedBox
-                                Transform.scale(
-                                  scale: iconScale,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    widget.step.number,
+                                    style: AppFonts.h1.copyWith(
                                       color: widget.step.color
-                                          .withValues(alpha: 0.08 + 0.08 * v),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: widget.step.color
-                                              .withValues(alpha: 0.2 * v),
-                                          blurRadius: 20,
-                                          spreadRadius: -5,
-                                        ),
-                                      ],
+                                          .withValues(alpha: 0.15 + v * 0.1),
+                                      fontSize: 60,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: -2,
                                     ),
-                                    child: Icon(widget.step.icon,
-                                        color: widget.step.color, size: 28),
                                   ),
+                                  Transform.scale(
+                                    scale: iconScale,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: widget.step.color
+                                            .withValues(alpha: 0.08 + 0.08 * v),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: widget.step.color
+                                                .withValues(alpha: 0.2 * v),
+                                            blurRadius: 20,
+                                            spreadRadius: -5,
+                                          ),
+                                        ],
+                                      ),
+                                      child: Icon(widget.step.icon,
+                                          color: widget.step.color, size: 28),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              Text(
+                                widget.step.title,
+                                style: AppFonts.h3.copyWith(
+                                  // Increased to h3 for 'Big'
+                                  color: AppColors.white,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                widget.step.subtitle,
+                                style: AppFonts.bodyLarge.copyWith(
+                                  color: AppColors.muted,
+                                  fontSize: 16, // Increased to 16 for 'Readable'
+                                  height: 1.7,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 24),
-                          Text(
-                            widget.step.title,
-                            style: AppFonts.h4.copyWith(
-                              color: AppColors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            widget.step.subtitle,
-                            style: AppFonts.bodyLarge.copyWith(
-                              color: AppColors.muted,
-                              fontSize: 14,
-                              height: 1.7,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   );

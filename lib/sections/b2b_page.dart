@@ -131,7 +131,7 @@ class _B2BPageState extends State<B2BPage> with TickerProviderStateMixin {
                               'Power Your Clinic\nwith Visiaxx Pro',
                               style: AppFonts.h2.copyWith(
                                 color: AppColors.white,
-                                fontSize: isMob ? 32 : 56, // Increased as requested
+                                fontSize: isMob ? 38 : 64, // Increased for 'Big'
                                 height: 1.1,
                                 fontWeight: FontWeight.w800,
                               ),
@@ -139,12 +139,12 @@ class _B2BPageState extends State<B2BPage> with TickerProviderStateMixin {
                             ),
                             const SizedBox(height: 20),
                             SizedBox(
-                              width: isMob ? double.infinity : 700,
+                              width: isMob ? double.infinity : 800,
                               child: Text(
                                 'Empower your practice with clinical-grade digital diagnostics. License Visiaxx Pro for your clinic, mobile eye camps, and telemedicine workflows.',
                                 style: AppFonts.bodyLarge.copyWith(
                                   color: AppColors.muted,
-                                  fontSize: isMob ? 15 : 18,
+                                  fontSize: isMob ? 16 : 20, // Increased for 'Readable'
                                   height: 1.7,
                                 ),
                                 textAlign: TextAlign.center,
