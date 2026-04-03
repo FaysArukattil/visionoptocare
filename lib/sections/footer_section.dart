@@ -151,45 +151,58 @@ class _FooterSectionState extends State<FooterSection> {
         ],
       );
     }
+    final size = MediaQuery.of(context).size;
+    final useStack = size.width < 1100;
+
     return Padding(
       padding: Responsive.padding(context),
-      child: Wrap(
-        spacing: 40,
-        runSpacing: 24,
-        alignment: WrapAlignment.spaceBetween,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const EyeLogo(size: 100, showGlow: false),
-              const SizedBox(width: 24),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'VISION OPTOCARE',
-                    style: AppFonts.heading(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.white),
-                  ),
-                  Text(
-                    'ADVOCACY ECOSYSTEM',
-                    style: AppFonts.caption.copyWith(
-                      color: AppColors.white.withValues(alpha: 0.3),
-                      letterSpacing: 4,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 10,
-                    ),
-                  ),
-                ],
+      child: useStack
+          ? Column(
+              children: [
+                _buildBranding(isMob: false),
+                const SizedBox(height: 32),
+                const _SocialCluster(),
+              ],
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildBranding(isMob: false),
+                const _SocialCluster(),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildBranding({required bool isMob}) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: isMob ? MainAxisAlignment.center : MainAxisAlignment.start,
+      children: [
+        EyeLogo(size: isMob ? 80 : 100, showGlow: false),
+        const SizedBox(width: 24),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'VISION OPTOCARE',
+              style: AppFonts.heading(
+                  fontSize: isMob ? 22 : 28,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.white),
+            ),
+            Text(
+              'ADVOCACY ECOSYSTEM',
+              style: AppFonts.caption.copyWith(
+                color: AppColors.white.withValues(alpha: 0.3),
+                letterSpacing: 4,
+                fontWeight: FontWeight.bold,
+                fontSize: 10,
               ),
-            ],
-          ),
-          const _SocialCluster(),
-        ],
-      ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

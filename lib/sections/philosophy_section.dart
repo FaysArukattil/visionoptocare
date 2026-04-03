@@ -169,24 +169,34 @@ class _PhilosophySectionState extends State<PhilosophySection>
 
   Widget _buildDesktopLayout() {
     final ctrls = [_card1Ctrl, _card2Ctrl, _card3Ctrl];
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: _steps.asMap().entries.map((entry) {
-        final i = entry.key;
-        final s = entry.value;
-        return Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: _AnimatedCard(
-              ctrl: ctrls[i],
-              floatCtrl: _floatCtrl,
-              pulseCtrl: _pulseCtrl,
-              step: s,
-              index: i,
-            ),
-          ),
-        );
-      }).toList(),
+    final size = MediaQuery.of(context).size;
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minWidth: size.width.clamp(1100, double.infinity),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: _steps.asMap().entries.map((entry) {
+            final i = entry.key;
+            final s = entry.value;
+            return Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: _AnimatedCard(
+                  ctrl: ctrls[i],
+                  floatCtrl: _floatCtrl,
+                  pulseCtrl: _pulseCtrl,
+                  step: s,
+                  index: i,
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
     );
   }
 
