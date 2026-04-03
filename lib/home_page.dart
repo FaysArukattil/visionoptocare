@@ -101,7 +101,7 @@ class _HomePageState extends State<HomePage> {
           PageView(
             controller: _pageController,
             scrollDirection: Axis.vertical,
-            physics: const _SnapPagePhysics(),
+
             children: List.generate(pages.length, (i) {
               return RepaintBoundary(
                 child: TickerMode(
@@ -177,25 +177,6 @@ class _HomePageState extends State<HomePage> {
       return maxOpacity * (1.0 - Curves.easeInCubic.transform(t));
     }
   }
-}
-
-// ─────────────────────────────────────────────
-// Snap Physics — buttery smooth with higher damping
-// ─────────────────────────────────────────────
-class _SnapPagePhysics extends PageScrollPhysics {
-  const _SnapPagePhysics({super.parent});
-
-  @override
-  _SnapPagePhysics applyTo(ScrollPhysics? ancestor) {
-    return _SnapPagePhysics(parent: buildParent(ancestor));
-  }
-
-  @override
-  SpringDescription get spring => const SpringDescription(
-        mass: 0.6,
-        stiffness: 100,
-        damping: 18,
-      );
 }
 
 // ─────────────────────────────────────────────
