@@ -182,7 +182,7 @@ class _HomePageState extends State<HomePage> {
 // ─────────────────────────────────────────────
 // Snap Physics — buttery smooth with higher damping
 // ─────────────────────────────────────────────
-class _SnapPagePhysics extends ScrollPhysics {
+class _SnapPagePhysics extends PageScrollPhysics {
   const _SnapPagePhysics({super.parent});
 
   @override
