@@ -44,58 +44,66 @@ class _FooterSectionState extends State<FooterSection> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          // ── Eye Loader divider ──
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF050A18),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.accent2.withValues(alpha: 0.1),
-                  blurRadius: 40,
-                  spreadRadius: 10,
+          // ── Footer Body (with Eye attached) ──
+          Flexible(
+            child: Stack(
+              alignment: Alignment.topCenter,
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: double.infinity,
+                  color: const Color(0xFF050A18),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.symmetric(vertical: isMob ? 30 : 48),
+                          child: Padding(
+                            padding: Responsive.padding(context),
+                            child: Column(
+                              children: [
+                                _buildBrandingHeader(context, isMob),
+                                const SizedBox(height: 32),
+                                isMob ? _buildMobileGrid() : _buildDesktopGrid(),
+                                AnimatedSize(
+                                  duration: const Duration(milliseconds: 600),
+                                  curve: Curves.fastOutSlowIn,
+                                  child: _showLegal
+                                      ? Padding(
+                                          padding: const EdgeInsets.only(top: 40),
+                                          child: _buildLegalFramework(context, isMob),
+                                        )
+                                      : const SizedBox.shrink(),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        _buildSignatureBar(context, isMob),
+                      ],
+                    ),
+                  ),
+                ),
+                // ── The Attached Eye (bridging the footer line) ──
+                Positioned(
+                  top: -25,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF050A18),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.accent2.withValues(alpha: 0.15),
+                          blurRadius: 30,
+                          spreadRadius: 5,
+                        ),
+                      ],
+                    ),
+                    child: const EyeLoader(size: 50),
+                  ),
                 ),
               ],
-            ),
-            child: EyeLoader(size: isMob ? 40 : 60),
-          ),
-          const SizedBox(height: 8),
-          // ── Footer Body ──
-          Flexible(
-            child: Container(
-              width: double.infinity,
-              color: const Color(0xFF050A18),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.symmetric(vertical: isMob ? 30 : 48),
-                      child: Padding(
-                        padding: Responsive.padding(context),
-                        child: Column(
-                          children: [
-                            _buildBrandingHeader(context, isMob),
-                            const SizedBox(height: 32),
-                            isMob ? _buildMobileGrid() : _buildDesktopGrid(),
-                            AnimatedSize(
-                              duration: const Duration(milliseconds: 600),
-                              curve: Curves.fastOutSlowIn,
-                              child: _showLegal
-                                  ? Padding(
-                                      padding: const EdgeInsets.only(top: 40),
-                                      child: _buildLegalFramework(context, isMob),
-                                    )
-                                  : const SizedBox.shrink(),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    _buildSignatureBar(context, isMob),
-                  ],
-                ),
-              ),
             ),
           ),
         ],
