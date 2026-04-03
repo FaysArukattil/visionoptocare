@@ -123,7 +123,7 @@ class _LeadershipSectionState extends State<LeadershipSection>
                 ctrl: _ctrl,
                 delay: 0.2,
                 name: 'Aben Thomas Angadiyil',
-                role: 'CHIEF EXECUTIVE OFFICER',
+                role: 'FOUNDER & CEO',
                 imagePath: 'assets/images/Founders/Founder_1.jpeg',
                 credential: 'B.Optom · BMS',
                 experience: '14+ Years in Vision Care',
@@ -144,6 +144,7 @@ class _LeadershipSectionState extends State<LeadershipSection>
                 tagline: 'Legacy of trust and diagnostic precision.',
                 accent: const Color(0xFF4F6AFF),
                 isReverse: true,
+                alignment: Alignment.center,
               ),
             ),
           ],
@@ -162,7 +163,7 @@ class _LeadershipSectionState extends State<LeadershipSection>
             ctrl: _ctrl,
             delay: 0.2,
             name: 'Aben Thomas Angadiyil',
-            role: 'CHIEF EXECUTIVE OFFICER',
+            role: 'FOUNDER & CEO',
             imagePath: 'assets/images/Founders/Founder_1.jpeg',
             credential: 'B.Optom · BMS',
             experience: '14+ Years in Vision Care',
@@ -182,6 +183,7 @@ class _LeadershipSectionState extends State<LeadershipSection>
             tagline: 'Legacy of Precision',
             accent: const Color(0xFF4F6AFF),
             isMobile: true,
+            alignment: Alignment.center,
           ),
         ],
       ),
@@ -195,6 +197,7 @@ class _CinematicProfile extends StatelessWidget {
   final String name, role, imagePath, credential, experience, tagline;
   final Color accent;
   final bool isReverse, isMobile;
+  final AlignmentGeometry alignment;
 
   const _CinematicProfile({
     required this.ctrl,
@@ -208,6 +211,7 @@ class _CinematicProfile extends StatelessWidget {
     required this.accent,
     this.isReverse = false,
     this.isMobile = false,
+    this.alignment = Alignment.topCenter,
   });
 
   @override
@@ -309,7 +313,7 @@ class _CinematicProfile extends StatelessWidget {
             Image.asset(
               imagePath,
               fit: BoxFit.cover,
-              alignment: Alignment.topCenter,
+              alignment: alignment,
             ),
             // Accent gradient
             Container(
@@ -346,7 +350,7 @@ class _CinematicProfile extends StatelessWidget {
                 child: Image.asset(
                   imagePath,
                   fit: BoxFit.cover,
-                  alignment: Alignment.topCenter,
+                  alignment: alignment,
                 ),
               ),
             ),

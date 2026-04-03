@@ -7,7 +7,8 @@ import 'sections/clinical_tests_page.dart';
 import 'sections/reports_wellness_page.dart';
 import 'sections/philosophy_section.dart';
 import 'sections/b2b_page.dart';
-import 'sections/vision_team_section.dart';
+import 'sections/leadership_section.dart';
+import 'sections/team_section.dart';
 import 'sections/footer_section.dart';
 import 'sections/hero_animation_engine.dart';
 
@@ -25,7 +26,7 @@ class _HomePageState extends State<HomePage> {
   final ValueNotifier<int> _currentPage = ValueNotifier(0);
   final ValueNotifier<double> _scrollProgress = ValueNotifier(0.0);
 
-  static const int _totalPages = 9;
+  static const int _totalPages = 10;
 
   @override
   void initState() {
@@ -169,8 +170,10 @@ class _HomePageState extends State<HomePage> {
       case 6:
         return B2BPage(isActive: isActive);
       case 7:
-        return VisionTeamSection(isActive: isActive);
+        return LeadershipSection(isActive: isActive);
       case 8:
+        return TeamSection(isActive: isActive);
+      case 9:
         return const FooterSection();
       default:
         return const SizedBox.shrink();
