@@ -5,10 +5,10 @@ import 'sections/hero_section.dart';
 import 'sections/visiaxx_intro_section.dart';
 import 'sections/clinical_tests_page.dart';
 import 'sections/reports_wellness_page.dart';
+import 'sections/consultation_languages_page.dart';
 import 'sections/philosophy_section.dart';
-import 'sections/leadership_section.dart';
-import 'sections/team_section.dart';
 import 'sections/b2b_page.dart';
+import 'sections/vision_team_section.dart';
 import 'sections/footer_section.dart';
 import 'sections/hero_animation_engine.dart';
 
@@ -22,12 +22,11 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late final ScrollController _scrollController;
 
-  // Use ValueNotifiers instead of setState to avoid full-tree rebuilds
-  // during scrolling — this is the key to smooth performance.
+  // Track page indices separately to avoid full-tree rebuilds.
   final ValueNotifier<int> _currentPage = ValueNotifier(0);
   final ValueNotifier<double> _scrollProgress = ValueNotifier(0.0);
 
-  static const int _totalPages = 10;
+  static const int _totalPages = 9;
 
   @override
   void initState() {
@@ -44,7 +43,11 @@ class _HomePageState extends State<HomePage> {
 
     final rawPage = offset / vh;
     _scrollProgress.value = rawPage;
-    _currentPage.value = rawPage.round().clamp(0, _totalPages - 1);
+    
+    final page = rawPage.round().clamp(0, _totalPages - 1);
+    if (page != _currentPage.value) {
+      _currentPage.value = page;
+    }
   }
 
   @override
@@ -72,62 +75,68 @@ class _HomePageState extends State<HomePage> {
     final size = MediaQuery.of(context).size;
     final isMob = size.width < 768;
 
-    // Build pages once — they don't depend on _currentPage anymore.
-    // Section entry animations use their own internal visibility detection.
-    final pages = <Widget>[
-      HeroSection(isActive: true, onScrollDown: () => _goToPage(1)),
-      const VisiaxxIntroSection(isActive: true),
-      const ClinicalTestsPage(isActive: true),
-      const ReportsWellnessPage(isActive: true),
-      const ConsultationLanguagesPage(isActive: true),
-      const PhilosophySection(isActive: true),
-      const B2BPage(isActive: true),
-      const LeadershipSection(isActive: true),
-      const TeamSection(isActive: true),
-      const FooterSection(),
-    ];
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          // ── Buttery smooth continuous scroll ──
-          CustomScrollView(
-            controller: _scrollController,
-            // Default physics — let the platform decide (smooth on web)
-            slivers: [
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, i) {
-                    return RepaintBoundary(
-                      child: SizedBox(
-                        height: size.height,
-                        child: pages[i],
-                      ),
-                    );
-                  },
-                  childCount: pages.length,
-                  addAutomaticKeepAlives: false,
-                  addRepaintBoundaries: false, // We add our own above
+          // ── Continuous Scroll with optimized Performance ──
+          ScrollConfiguration(
+            // Use smooth scrolling behavior on web
+            behavior: ScrollConfiguration.of(context).copyWith(
+              scrollbars: false,
+              overscroll: false,
+            ),
+            child: CustomScrollView(
+              controller: _scrollController,
+              physics: const ClampingScrollPhysics(), // Prevent bouncy jitter on web
+              cacheExtent: size.height * 2,
+              slivers: [
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, i) {
+                      // Define the pages list inside to avoid pre-building all
+                      return RepaintBoundary(
+                        child: SizedBox(
+                          height: size.height,
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: _currentPage,
+                            builder: (context, activeIdx, child) {
+                              // Only activate tickers if the page is visible or adjacent
+                              final bool isActive = (activeIdx - i).abs() <= 1;
+                              return TickerMode(
+                                enabled: isActive,
+                                child: _buildSection(i, isActive),
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    childCount: _totalPages,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
 
-          // ── Hero Transition Overlay (Pages 0→1) ──
+          // ── Hero IRIS Transition (Pages 0→1) ──
           ValueListenableBuilder<double>(
             valueListenable: _scrollProgress,
             builder: (context, progress, _) {
-              if (progress <= 0.05 || progress >= 0.92) {
-                return const SizedBox.shrink();
-              }
+              // Strictly limit transition rendering to range [0.0, 1.0]
+              if (progress < -0.1 || progress > 1.1) return const SizedBox.shrink();
+              
+              // Only show transition in the first section change
+              final double t = progress.clamp(0.0, 1.0);
+              if (t <= 0.01 || t >= 0.99) return const SizedBox.shrink();
+
               return Positioned.fill(
                 child: IgnorePointer(
                   child: RepaintBoundary(
                     child: Opacity(
-                      opacity: _bellCurveOpacity(progress, 0.05, 0.92, 0.65),
+                      opacity: _bellCurveOpacity(t, 0.05, 0.95, 0.6),
                       child: HeroAnimationEngine(
-                        p: progress.clamp(0.0, 1.0),
+                        p: t,
                         isMob: isMob,
                       ),
                     ),
@@ -137,45 +146,65 @@ class _HomePageState extends State<HomePage> {
             },
           ),
 
-          // ── Navbar — rebuilds only when currentPage changes ──
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: ValueListenableBuilder<int>(
-              valueListenable: _currentPage,
-              builder: (context, page, _) => NavbarSection(
-                isScrolled: page > 0,
-                currentPage: page,
-                onNavTap: _goToPage,
-              ),
-            ),
-          ),
-
-          // ── Page Indicator (desktop) ──
-          if (!isMob)
-            Positioned(
-              right: 24,
-              top: 0,
-              bottom: 0,
-              child: Center(
-                child: ValueListenableBuilder<int>(
-                  valueListenable: _currentPage,
-                  builder: (context, page, _) => _PageIndicator(
-                    total: _totalPages,
-                    current: page,
-                    onTap: _goToPage,
-                  ),
-                ),
-              ),
-            ),
+          // ── Overlay UI (Navbar & Indicators) ──
+          _buildOverlays(isMob),
         ],
       ),
     );
   }
 
-  double _bellCurveOpacity(
-      double p, double start, double end, double maxOpacity) {
+  Widget _buildSection(int index, bool isActive) {
+    switch (index) {
+      case 0: return HeroSection(isActive: isActive, onScrollDown: () => _goToPage(1));
+      case 1: return VisiaxxIntroSection(isActive: isActive);
+      case 2: return ClinicalTestsPage(isActive: isActive);
+      case 3: return ReportsWellnessPage(isActive: isActive);
+      case 4: return ConsultationLanguagesPage(isActive: isActive);
+      case 5: return PhilosophySection(isActive: isActive);
+      case 6: return B2BPage(isActive: isActive);
+      case 7: return VisionTeamSection(isActive: isActive);
+      case 8: return const FooterSection();
+      default: return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildOverlays(bool isMob) {
+    return Stack(
+      children: [
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: ValueListenableBuilder<int>(
+            valueListenable: _currentPage,
+            builder: (context, page, _) => NavbarSection(
+              isScrolled: page > 0,
+              currentPage: page,
+              onNavTap: _goToPage,
+            ),
+          ),
+        ),
+        if (!isMob)
+          Positioned(
+            right: 24,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: ValueListenableBuilder<int>(
+                valueListenable: _currentPage,
+                builder: (context, page, _) => _PageIndicator(
+                  total: _totalPages,
+                  current: page,
+                  onTap: _goToPage,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  double _bellCurveOpacity(double p, double start, double end, double maxOpacity) {
     if (p <= start || p >= end) return 0.0;
     final mid = (start + end) / 2;
     if (p < mid) {
@@ -214,9 +243,7 @@ class _PageIndicator extends StatelessWidget {
             height: isActive ? 24 : 5,
             margin: const EdgeInsets.symmetric(vertical: 4),
             decoration: BoxDecoration(
-              color: isActive
-                  ? AppColors.accent2
-                  : AppColors.white.withValues(alpha: 0.2),
+              color: isActive ? AppColors.accent2 : AppColors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(4),
             ),
           ),

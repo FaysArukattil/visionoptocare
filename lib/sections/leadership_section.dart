@@ -3,7 +3,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../utils/responsive.dart';
 
-/// Page 7: Leadership — The two founders with large portrait images.
+/// Page 7: Leadership — Cinematic showcase of the visionaries.
 class LeadershipSection extends StatefulWidget {
   final bool isActive;
   const LeadershipSection({super.key, this.isActive = false});
@@ -21,7 +21,7 @@ class _LeadershipSectionState extends State<LeadershipSection>
   void initState() {
     super.initState();
     _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 900));
+        vsync: this, duration: const Duration(milliseconds: 1200));
     if (widget.isActive) _start();
   }
 
@@ -33,7 +33,7 @@ class _LeadershipSectionState extends State<LeadershipSection>
 
   void _start() async {
     _hasStarted = true;
-    await Future.delayed(const Duration(milliseconds: 200));
+    await Future.delayed(const Duration(milliseconds: 300));
     if (mounted) _ctrl.forward();
   }
 
@@ -48,96 +48,102 @@ class _LeadershipSectionState extends State<LeadershipSection>
     final size = MediaQuery.of(context).size;
     final isMob = Responsive.isMobile(context);
 
-    return AnimatedBuilder(
-      animation: _ctrl,
-      builder: (context, _) {
-        final t =
-            CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic).value;
-        return Opacity(
-          opacity: t.clamp(0.0, 1.0),
-          child: Transform.translate(
-            offset: Offset(0, 15 * (1 - t)),
-            child: Container(
-              width: size.width,
-              height: size.height,
-              color: AppColors.background,
-              child: Column(
-                children: [
-                  SizedBox(height: isMob ? 90 : 110),
-                  Padding(
-                    padding: Responsive.padding(context),
-                    child: Column(
-                      children: [
-                        Text(
-                          'THE LEADERSHIP',
-                          style: AppFonts.caption.copyWith(
-                            color: AppColors.accent2,
-                            letterSpacing: 4,
-                            fontWeight: FontWeight.w900,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Visionaries Behind\nVision Optocare',
-                          style: AppFonts.h2.copyWith(
-                            color: AppColors.white,
-                            fontSize: isMob ? 28 : 52,
-                            height: 1.1,
-                            fontWeight: FontWeight.w800,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: isMob ? 24 : 48),
-                  Expanded(
-                    child: Padding(
-                      padding: Responsive.padding(context),
-                      child: isMob
-                          ? _buildMobileLayout()
-                          : _buildDesktopLayout(),
-                    ),
-                  ),
-                  SizedBox(height: isMob ? 16 : 32),
-                ],
+    return Container(
+      width: size.width,
+      height: size.height,
+      color: AppColors.background,
+      child: Stack(
+        children: [
+          // ── Background Accent ──
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.05,
+              child: CustomPaint(
+                painter: _GridPainter(),
               ),
             ),
           ),
-        );
-      },
+
+          // ── Content ──
+          SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
+            child: Column(
+              children: [
+                // Header
+                SizedBox(height: isMob ? 80 : 100),
+                _FadeSlide(
+                  ctrl: _ctrl,
+                  delay: 0.0,
+                  child: Column(
+                    children: [
+                      Text(
+                        'THE LEADERSHIP',
+                        style: AppFonts.caption.copyWith(
+                          color: AppColors.accent2,
+                          letterSpacing: 6,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: 40,
+                        height: 2,
+                        color: AppColors.accent2.withValues(alpha: 0.3),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Profiles
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 40),
+                  child: isMob ? _buildMobileLayout() : _buildDesktopLayout(),
+                ),
+                SizedBox(height: isMob ? 40 : 80),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildDesktopLayout() {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1100),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 40),
+      child: Center(
+        child: Wrap(
+          spacing: 40,
+          runSpacing: 40,
+          alignment: WrapAlignment.center,
           children: [
-            Expanded(
-              child: _FounderCard(
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 580),
+              child: _CinematicProfile(
+                ctrl: _ctrl,
+                delay: 0.2,
                 name: 'Aben Thomas Angadiyil',
-                role: 'CEO & FOUNDER',
+                role: 'CHIEF EXECUTIVE OFFICER',
                 imagePath: 'assets/images/Founders/Founder_1.jpeg',
                 credential: 'B.Optom · BMS',
-                experience: '14 Years in Vision Care',
-                tagline: 'Healthcare Innovator · Mastermind behind Visiaxx',
-                accentColor: AppColors.accent2,
+                experience: '14+ Years in Vision Care',
+                tagline: 'Driving global healthcare innovation.',
+                accent: AppColors.accent2,
               ),
             ),
-            const SizedBox(width: 32),
-            Expanded(
-              child: _FounderCard(
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 580),
+              child: _CinematicProfile(
+                ctrl: _ctrl,
+                delay: 0.4,
                 name: 'Thomas Angadiyil Philip',
-                role: 'CO-FOUNDER',
+                role: 'CO-FOUNDER & DIRECTOR',
                 imagePath: 'assets/images/Founders/Founder_2.jpeg',
                 credential: 'Rajan Optics',
-                experience: '44+ Years in Optical Industry',
-                tagline: 'Legacy of Trust & Precision in Eye Care',
-                accentColor: const Color(0xFF4F6AFF),
+                experience: '44+ Years Optical Expertise',
+                tagline: 'Legacy of trust and diagnostic precision.',
+                accent: const Color(0xFF4F6AFF),
+                isReverse: true,
               ),
             ),
           ],
@@ -149,27 +155,32 @@ class _LeadershipSectionState extends State<LeadershipSection>
   Widget _buildMobileLayout() {
     return SingleChildScrollView(
       physics: const ClampingScrollPhysics(),
+      padding: const EdgeInsets.only(top: 24, bottom: 40),
       child: Column(
         children: [
-          _FounderCard(
+          _CinematicProfile(
+            ctrl: _ctrl,
+            delay: 0.2,
             name: 'Aben Thomas Angadiyil',
-            role: 'CEO & FOUNDER',
+            role: 'CHIEF EXECUTIVE OFFICER',
             imagePath: 'assets/images/Founders/Founder_1.jpeg',
             credential: 'B.Optom · BMS',
-            experience: '14 Years in Vision Care',
-            tagline: 'Healthcare Innovator · Mastermind behind Visiaxx',
-            accentColor: AppColors.accent2,
+            experience: '14+ Years in Vision Care',
+            tagline: 'Healthcare Innovation',
+            accent: AppColors.accent2,
             isMobile: true,
           ),
-          const SizedBox(height: 16),
-          _FounderCard(
+          const SizedBox(height: 32),
+          _CinematicProfile(
+            ctrl: _ctrl,
+            delay: 0.4,
             name: 'Thomas Angadiyil Philip',
-            role: 'CO-FOUNDER',
+            role: 'CO-FOUNDER & DIRECTOR',
             imagePath: 'assets/images/Founders/Founder_2.jpeg',
             credential: 'Rajan Optics',
-            experience: '44+ Years in Optical Industry',
-            tagline: 'Legacy of Trust & Precision in Eye Care',
-            accentColor: const Color(0xFF4F6AFF),
+            experience: '44+ Years Optical Expertise',
+            tagline: 'Legacy of Precision',
+            accent: const Color(0xFF4F6AFF),
             isMobile: true,
           ),
         ],
@@ -178,187 +189,265 @@ class _LeadershipSectionState extends State<LeadershipSection>
   }
 }
 
-class _FounderCard extends StatefulWidget {
+class _CinematicProfile extends StatelessWidget {
+  final AnimationController ctrl;
+  final double delay;
   final String name, role, imagePath, credential, experience, tagline;
-  final Color accentColor;
-  final bool isMobile;
+  final Color accent;
+  final bool isReverse, isMobile;
 
-  const _FounderCard({
+  const _CinematicProfile({
+    required this.ctrl,
+    required this.delay,
     required this.name,
     required this.role,
     required this.imagePath,
     required this.credential,
     required this.experience,
     required this.tagline,
-    required this.accentColor,
+    required this.accent,
+    this.isReverse = false,
     this.isMobile = false,
   });
 
   @override
-  State<_FounderCard> createState() => _FounderCardState();
-}
-
-class _FounderCardState extends State<_FounderCard> {
-  bool _hov = false;
-
-  @override
   Widget build(BuildContext context) {
-    final isMob = widget.isMobile;
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hov = true),
-      onExit: (_) => setState(() => _hov = false),
-      child: TweenAnimationBuilder<double>(
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeOutCubic,
-        tween: Tween(begin: 0.0, end: _hov ? 1.0 : 0.0),
-        builder: (context, v, _) => Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface.withValues(alpha: 0.04 + 0.04 * v),
-            borderRadius: BorderRadius.circular(isMob ? 24 : 32),
-            border: Border.all(
-              color: Color.lerp(
-                AppColors.white.withValues(alpha: 0.06),
-                widget.accentColor.withValues(alpha: 0.35),
-                v,
-              )!,
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: widget.accentColor
-                    .withValues(alpha: 0.05 + 0.08 * v),
-                blurRadius: 40,
-                spreadRadius: -5,
+    if (isMobile) return _buildMobileCard(context);
+
+    return _FadeSlide(
+      ctrl: ctrl,
+      delay: delay,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: AppColors.surface.withValues(alpha: 0.03),
+          borderRadius: BorderRadius.circular(40),
+          border: Border.all(
+            color: AppColors.white.withValues(alpha: 0.05),
+          ),
+        ),
+        child: Row(
+          children: [
+            if (!isReverse) _buildImage(),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment:
+                      isReverse ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                  children: [
+                    _TitleChip(role: role, accent: accent),
+                    const SizedBox(height: 16),
+                    Text(
+                      name,
+                      style: AppFonts.h3.copyWith(
+                        color: AppColors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                      ),
+                      textAlign: isReverse ? TextAlign.right : TextAlign.left,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '$credential  ·  $experience',
+                      style: AppFonts.bodySmall.copyWith(
+                        color: AppColors.muted,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: isReverse ? TextAlign.right : TextAlign.left,
+                    ),
+                    const SizedBox(height: 20),
+                    Container(
+                      width: 30,
+                      height: 2,
+                      color: accent.withValues(alpha: 0.4),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      tagline,
+                      style: AppFonts.bodyLarge.copyWith(
+                        color: AppColors.white.withValues(alpha: 0.8),
+                        fontSize: 16,
+                        height: 1.5,
+                        fontStyle: FontStyle.italic,
+                      ),
+                      textAlign: isReverse ? TextAlign.right : TextAlign.left,
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(isMob ? 24 : 32),
-            child: Column(
-              children: [
-                // ── Large Portrait ──
-                Expanded(
-                  flex: isMob ? 4 : 6,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Image.asset(
-                        widget.imagePath,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          color: widget.accentColor.withValues(alpha: 0.1),
-                          child: Icon(Icons.person,
-                              color: widget.accentColor, size: 80),
-                        ),
-                      ),
-                      // Bottom gradient for text readability
-                      Positioned(
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: 100,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                AppColors.background.withValues(alpha: 0.95),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      // Experience badge
-                      Positioned(
-                        top: isMob ? 12 : 20,
-                        right: isMob ? 12 : 20,
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: isMob ? 10 : 14,
-                            vertical: isMob ? 5 : 7,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.background.withValues(alpha: 0.8),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: widget.accentColor.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Text(
-                            widget.experience,
-                            style: AppFonts.caption.copyWith(
-                              color: widget.accentColor,
-                              fontSize: isMob ? 8 : 10,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // ── Info ──
-                Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(isMob ? 16 : 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Role pill
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: widget.accentColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: widget.accentColor.withValues(alpha: 0.25),
-                          ),
-                        ),
-                        child: Text(
-                          widget.role,
-                          style: AppFonts.caption.copyWith(
-                            color: widget.accentColor,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1.5,
-                            fontSize: isMob ? 8 : 10,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: isMob ? 8 : 12),
-                      // Name
-                      Text(
-                        widget.name,
-                        style: AppFonts.h4.copyWith(
-                          color: AppColors.white,
-                          fontSize: isMob ? 18 : 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: isMob ? 4 : 6),
-                      // Credential + Tagline
-                      Text(
-                        '${widget.credential}  ·  ${widget.tagline}',
-                        style: AppFonts.bodySmall.copyWith(
-                          color: AppColors.muted,
-                          fontSize: isMob ? 11 : 13,
-                          height: 1.4,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
             ),
-          ),
+            if (isReverse) _buildImage(),
+          ],
         ),
       ),
     );
   }
+
+  Widget _buildImage() {
+    return Container(
+      width: 260,
+      height: 380,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: 0.15),
+            blurRadius: 40,
+            spreadRadius: -10,
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(30),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset(
+              imagePath,
+              fit: BoxFit.cover,
+              alignment: Alignment.topCenter,
+            ),
+            // Accent gradient
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    accent.withValues(alpha: 0.2),
+                    AppColors.background.withValues(alpha: 0.7),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileCard(BuildContext context) {
+    return _FadeSlide(
+      ctrl: ctrl,
+      delay: delay,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: Image.asset(
+                  imagePath,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            _TitleChip(role: role, accent: accent),
+            const SizedBox(height: 12),
+            Text(
+              name,
+              style: AppFonts.h4.copyWith(
+                color: AppColors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 22,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '$credential  ·  $experience',
+              style: AppFonts.caption.copyWith(
+                color: AppColors.muted,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TitleChip extends StatelessWidget {
+  final String role;
+  final Color accent;
+  const _TitleChip({required this.role, required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: accent.withValues(alpha: 0.25)),
+      ),
+      child: Text(
+        role,
+        style: AppFonts.caption.copyWith(
+          color: accent,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 1.5,
+          fontSize: 9,
+        ),
+      ),
+    );
+  }
+}
+
+class _FadeSlide extends StatelessWidget {
+  final AnimationController ctrl;
+  final double delay;
+  final Widget child;
+
+  const _FadeSlide(
+      {required this.ctrl, required this.delay, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final anim = CurvedAnimation(
+      parent: ctrl,
+      curve: Interval(delay, (delay + 0.5).clamp(0, 1), curve: Curves.easeOutCubic),
+    );
+
+    return AnimatedBuilder(
+      animation: anim,
+      builder: (context, _) => Opacity(
+        opacity: anim.value,
+        child: Transform.translate(
+          offset: Offset(0, 20 * (1 - anim.value)),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
+class _GridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = AppColors.white.withValues(alpha: 0.1)
+      ..strokeWidth = 0.5;
+
+    for (double i = 0; i < size.width; i += 40) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
+    }
+    for (double i = 0; i < size.height; i += 40) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
