@@ -57,7 +57,10 @@ class _FooterSectionState extends State<FooterSection> {
                     child: Column(
                       children: [
                         Padding(
-                          padding: EdgeInsets.symmetric(vertical: isMob ? 30 : 48),
+                          padding: EdgeInsets.only(
+                            top: isMob ? 70 : 90,
+                            bottom: isMob ? 30 : 48,
+                          ),
                           child: Padding(
                             padding: Responsive.padding(context),
                             child: Column(
