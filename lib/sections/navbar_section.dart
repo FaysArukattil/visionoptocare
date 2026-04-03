@@ -115,27 +115,38 @@ class _NavbarSectionState extends State<NavbarSection>
                       ),
                       const Spacer(),
                       // ── Nav Links (Desktop) ──
-                      if (!isMob) ...[
-                        _NavLink(
-                          label: 'Home',
-                          isActive: widget.currentPage == 0,
-                          onTap: () => widget.onNavTap?.call(0),
+                      if (!isMob)
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _NavLink(
+                                  label: 'Home',
+                                  isActive: widget.currentPage == 0,
+                                  onTap: () => widget.onNavTap?.call(0),
+                                ),
+                                const SizedBox(width: 32),
+                                _NavLink(
+                                  label: 'Services',
+                                  isActive: widget.currentPage >= 2 &&
+                                      widget.currentPage <= 4,
+                                  onTap: () => widget.onNavTap?.call(2),
+                                ),
+                                const SizedBox(width: 32),
+                                _NavLink(
+                                  label: 'About Us',
+                                  isActive: widget.currentPage >= 5,
+                                  onTap: () => widget.onNavTap?.call(5),
+                                ),
+                                const SizedBox(width: 24),
+                                _buildDownloadButton(),
+                              ],
+                            ),
+                          ),
                         ),
-                        const SizedBox(width: 32),
-                        _NavLink(
-                          label: 'Services',
-                          isActive: widget.currentPage >= 2 && widget.currentPage <= 4,
-                          onTap: () => widget.onNavTap?.call(2),
-                        ),
-                        const SizedBox(width: 32),
-                        _NavLink(
-                          label: 'About Us',
-                          isActive: widget.currentPage >= 5,
-                          onTap: () => widget.onNavTap?.call(5),
-                        ),
-                        const SizedBox(width: 24),
-                        _buildDownloadButton(),
-                      ],
                       // ── Hamburger (Mobile) ──
                       if (isMob) _buildMenuButton(),
                     ],
@@ -201,7 +212,7 @@ class _NavbarSectionState extends State<NavbarSection>
   // ── Download App CTA Button ──
   Widget _buildDownloadButton() {
     return _GlowButton(
-      label: 'Download App',
+      label: 'Download',
       icon: Icons.download_rounded,
       onTap: () {
         ScaffoldMessenger.of(context).showSnackBar(

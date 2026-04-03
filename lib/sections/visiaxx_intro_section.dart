@@ -467,37 +467,41 @@ class _StoreButtonState extends State<_StoreButton> {
                   ]
                 : [],
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(widget.icon, color: AppColors.white, size: 28),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    widget.label,
-                    style: AppFonts.caption.copyWith(
-                      color: AppColors.white.withValues(alpha: 0.6),
-                      fontSize: 8,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.2,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(widget.icon, color: AppColors.white, size: 28),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      widget.label,
+                      style: AppFonts.caption.copyWith(
+                        color: AppColors.white.withValues(alpha: 0.6),
+                        fontSize: 8,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.2,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    widget.storeName,
-                    style: AppFonts.bodyLarge.copyWith(
-                      color: AppColors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.3,
+                    const SizedBox(height: 2),
+                    Text(
+                      widget.storeName,
+                      style: AppFonts.bodyLarge.copyWith(
+                        color: AppColors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.3,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

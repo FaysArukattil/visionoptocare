@@ -385,16 +385,24 @@ class _SocialCluster extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 16,
+      runSpacing: 16,
       children: [
         _SocialNode(icon: Icons.close, label: 'X', baseColor: AppColors.white),
-        const SizedBox(width: 24),
-        _SocialNode(icon: Icons.email_outlined, label: 'GMAIL', baseColor: Colors.red.shade400),
-        const SizedBox(width: 24),
-        _SocialNode(icon: Icons.link, label: 'LINKEDIN', baseColor: Colors.blue.shade600),
-        const SizedBox(width: 24),
-        _SocialNode(icon: Icons.chat_bubble_outline, label: 'WHATSAPP', baseColor: Colors.green.shade400),
+        _SocialNode(
+            icon: Icons.email_outlined,
+            label: 'GMAIL',
+            baseColor: Colors.red.shade400),
+        _SocialNode(
+            icon: Icons.link,
+            label: 'LINKEDIN',
+            baseColor: Colors.blue.shade600),
+        _SocialNode(
+            icon: Icons.chat_bubble_outline,
+            label: 'WHATSAPP',
+            baseColor: Colors.green.shade400),
       ],
     );
   }

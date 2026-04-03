@@ -284,7 +284,7 @@ class _AnimatedCardState extends State<_AnimatedCard> {
                       ..rotateY(0.02 * v),
                     alignment: Alignment.center,
                     child: Container(
-                      padding: const EdgeInsets.all(40),
+                      padding: EdgeInsets.all(Responsive.isMobile(context) ? 20 : 32),
                       decoration: BoxDecoration(
                         color: AppColors.surface.withValues(alpha: 0.05 + 0.03 * v),
                         borderRadius: BorderRadius.circular(36),
@@ -307,37 +307,46 @@ class _AnimatedCardState extends State<_AnimatedCard> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                widget.step.number,
-                                style: AppFonts.h1.copyWith(
-                                  color: widget.step.color.withValues(alpha: 0.15 + v * 0.1),
-                                  fontSize: 60,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: -2,
-                                ),
-                              ),
-                              Transform.scale(
-                                scale: iconScale,
-                                child: Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: widget.step.color.withValues(alpha: 0.08 + 0.08 * v),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: widget.step.color.withValues(alpha: 0.2 * v),
-                                        blurRadius: 20,
-                                        spreadRadius: -5,
-                                      ),
-                                    ],
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  widget.step.number,
+                                  style: AppFonts.h1.copyWith(
+                                    color: widget.step.color
+                                        .withValues(alpha: 0.15 + v * 0.1),
+                                    fontSize: 60,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: -2,
                                   ),
-                                  child: Icon(widget.step.icon, color: widget.step.color, size: 28),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 48), // Spacer inside FittedBox
+                                Transform.scale(
+                                  scale: iconScale,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: widget.step.color
+                                          .withValues(alpha: 0.08 + 0.08 * v),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: widget.step.color
+                                              .withValues(alpha: 0.2 * v),
+                                          blurRadius: 20,
+                                          spreadRadius: -5,
+                                        ),
+                                      ],
+                                    ),
+                                    child: Icon(widget.step.icon,
+                                        color: widget.step.color, size: 28),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 24),
                           Text(
