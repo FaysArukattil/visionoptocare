@@ -553,125 +553,139 @@ class _AnimatedPdfGeneratorState extends State<_AnimatedPdfGenerator>
             children: [
               // Left: Data metrics
               Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    _metricRow('Visual Acuity', phase1, widget.color, isMob),
-                    SizedBox(height: isMob ? 6 : 10),
-                    _metricRow('Color Vision', (phase1 * 0.8).clamp(0.0, 1.0), const Color(0xFF4F6AFF), isMob),
-                    SizedBox(height: isMob ? 6 : 10),
-                    _metricRow('Astigmatism', phase2, const Color(0xFF9D4EDD), isMob),
-                    SizedBox(height: isMob ? 6 : 10),
-                    _metricRow('Contrast', (phase2 * 0.7).clamp(0.0, 1.0), const Color(0xFFF5C842), isMob),
-                  ],
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      _metricRow('Visual Acuity', phase1, widget.color, isMob),
+                      SizedBox(height: isMob ? 6 : 10),
+                      _metricRow('Color Vision', (phase1 * 0.8).clamp(0.0, 1.0), const Color(0xFF4F6AFF), isMob),
+                      SizedBox(height: isMob ? 6 : 10),
+                      _metricRow('Astigmatism', phase2, const Color(0xFF9D4EDD), isMob),
+                      SizedBox(height: isMob ? 6 : 10),
+                      _metricRow('Contrast', (phase2 * 0.7).clamp(0.0, 1.0), const Color(0xFFF5C842), isMob),
+                    ],
+                  ),
                 ),
               ),
               SizedBox(width: isMob ? 12 : 24),
               // Center: Document with progress
               SizedBox(
                 width: isMob ? 70 : 100,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Document icon
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      width: isMob ? 50 : 70,
-                      height: isMob ? 60 : 85,
-                      decoration: BoxDecoration(
-                        color: isComplete
-                            ? widget.color.withValues(alpha: 0.15)
-                            : AppColors.background.withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: isComplete
-                              ? widget.color.withValues(alpha: 0.6)
-                              : widget.color.withValues(alpha: 0.3),
-                          width: 1.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: widget.color.withValues(alpha: isComplete ? 0.3 : 0.1),
-                            blurRadius: isComplete ? 20 : 10,
-                            spreadRadius: isComplete ? 2 : 0,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: SizedBox(
+                    width: isMob ? 70 : 100,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Document icon
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          width: isMob ? 50 : 70,
+                          height: isMob ? 60 : 85,
+                          decoration: BoxDecoration(
+                            color: isComplete
+                                ? widget.color.withValues(alpha: 0.15)
+                                : AppColors.background.withValues(alpha: 0.9),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isComplete
+                                  ? widget.color.withValues(alpha: 0.6)
+                                  : widget.color.withValues(alpha: 0.3),
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: widget.color.withValues(alpha: isComplete ? 0.3 : 0.1),
+                                blurRadius: isComplete ? 20 : 10,
+                                spreadRadius: isComplete ? 2 : 0,
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: isComplete
-                          ? Center(
-                              child: Icon(Icons.check_circle_rounded,
-                                  color: widget.color, size: isMob ? 22 : 30),
-                            )
-                          : Padding(
-                              padding: EdgeInsets.all(isMob ? 6 : 10),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(width: isMob ? 20 : 28, height: 3, color: widget.color.withValues(alpha: 0.4)),
-                                  SizedBox(height: isMob ? 4 : 6),
-                                  Container(width: double.infinity, height: 2, color: widget.color.withValues(alpha: 0.15)),
-                                  SizedBox(height: isMob ? 3 : 4),
-                                  Container(width: double.infinity, height: 2, color: widget.color.withValues(alpha: 0.15)),
-                                  SizedBox(height: isMob ? 3 : 4),
-                                  Container(width: isMob ? 15 : 20, height: 2, color: widget.color.withValues(alpha: 0.15)),
+                          child: isComplete
+                              ? Center(
+                                  child: Icon(Icons.check_circle_rounded,
+                                      color: widget.color, size: isMob ? 22 : 30),
+                                )
+                              : Padding(
+                                  padding: EdgeInsets.all(isMob ? 6 : 10),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(width: isMob ? 20 : 28, height: 3, color: widget.color.withValues(alpha: 0.4)),
+                                      SizedBox(height: isMob ? 4 : 6),
+                                      Container(width: double.infinity, height: 2, color: widget.color.withValues(alpha: 0.15)),
+                                      SizedBox(height: isMob ? 3 : 4),
+                                      Container(width: double.infinity, height: 2, color: widget.color.withValues(alpha: 0.15)),
+                                      SizedBox(height: isMob ? 3 : 4),
+                                      Container(width: isMob ? 15 : 20, height: 2, color: widget.color.withValues(alpha: 0.15)),
+                                    ],
+                                  ),
+                                ),
+                        ),
+                        SizedBox(height: isMob ? 6 : 10),
+                        // Status label
+                        Text(
+                          isComplete ? 'READY' : p < 0.3 ? 'SCANNING...' : 'ANALYZING...',
+                          style: TextStyle(
+                            color: isComplete ? widget.color : widget.color.withValues(alpha: 0.6),
+                            fontSize: isMob ? 7 : 9,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                        SizedBox(height: isMob ? 4 : 6),
+                        // Progress bar
+                        Container(
+                          width: isMob ? 40 : 60,
+                          height: 3,
+                          decoration: BoxDecoration(
+                            color: widget.color.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                          child: FractionallySizedBox(
+                            alignment: Alignment.centerLeft,
+                            widthFactor: p.clamp(0.0, 1.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: widget.color,
+                                borderRadius: BorderRadius.circular(2),
+                                boxShadow: [
+                                  BoxShadow(color: widget.color.withValues(alpha: 0.5), blurRadius: 4),
                                 ],
                               ),
                             ),
-                    ),
-                    SizedBox(height: isMob ? 6 : 10),
-                    // Status label
-                    Text(
-                      isComplete ? 'READY' : p < 0.3 ? 'SCANNING...' : 'ANALYZING...',
-                      style: TextStyle(
-                        color: isComplete ? widget.color : widget.color.withValues(alpha: 0.6),
-                        fontSize: isMob ? 7 : 9,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                    SizedBox(height: isMob ? 4 : 6),
-                    // Progress bar
-                    Container(
-                      width: isMob ? 40 : 60,
-                      height: 3,
-                      decoration: BoxDecoration(
-                        color: widget.color.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                      child: FractionallySizedBox(
-                        alignment: Alignment.centerLeft,
-                        widthFactor: p.clamp(0.0, 1.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: widget.color,
-                            borderRadius: BorderRadius.circular(2),
-                            boxShadow: [
-                              BoxShadow(color: widget.color.withValues(alpha: 0.5), blurRadius: 4),
-                            ],
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
               SizedBox(width: isMob ? 12 : 24),
               // Right: Result scores
               Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _scoreChip('6/6', phase3, widget.color, isMob),
-                    SizedBox(height: isMob ? 6 : 10),
-                    _scoreChip('Normal', (phase3 * 0.9).clamp(0.0, 1.0), const Color(0xFF4F6AFF), isMob),
-                    SizedBox(height: isMob ? 6 : 10),
-                    _scoreChip('0.25D', (phase3 * 0.7).clamp(0.0, 1.0), const Color(0xFF9D4EDD), isMob),
-                    SizedBox(height: isMob ? 6 : 10),
-                    _scoreChip('High', (phase3 * 0.85).clamp(0.0, 1.0), const Color(0xFFF5C842), isMob),
-                  ],
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _scoreChip('6/6', phase3, widget.color, isMob),
+                      SizedBox(height: isMob ? 6 : 10),
+                      _scoreChip('Normal', (phase3 * 0.9).clamp(0.0, 1.0), const Color(0xFF4F6AFF), isMob),
+                      SizedBox(height: isMob ? 6 : 10),
+                      _scoreChip('0.25D', (phase3 * 0.7).clamp(0.0, 1.0), const Color(0xFF9D4EDD), isMob),
+                      SizedBox(height: isMob ? 6 : 10),
+                      _scoreChip('High', (phase3 * 0.85).clamp(0.0, 1.0), const Color(0xFFF5C842), isMob),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -794,12 +808,14 @@ class _AnimatedReelsFeedState extends State<_AnimatedReelsFeed>
     final phoneH = isMob ? 220.0 : 310.0;
 
     return Center(
-      child: PhoneMockup(
-        width: phoneW,
-        height: phoneH,
-        tiltX: -0.02,
-        tiltY: 0.03,
-        showNotch: false,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: PhoneMockup(
+          width: phoneW,
+          height: phoneH,
+          tiltX: -0.02,
+          tiltY: 0.03,
+          showNotch: false,
         showHomeBar: false,
         screen: ClipRect(
           child: RepaintBoundary(
@@ -969,6 +985,7 @@ class _AnimatedReelsFeedState extends State<_AnimatedReelsFeed>
                 },
               ),
             ),
+          ),
           ),
         ),
       ),

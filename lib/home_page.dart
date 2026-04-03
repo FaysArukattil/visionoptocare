@@ -21,7 +21,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late final PageController _pageController;
   int _currentPage = 0;
-  double _pageProgress = 0.0;
+  final ValueNotifier<double> _scrollProgress = ValueNotifier(0.0);
 
   static const int _totalPages = 9;
 
@@ -29,20 +29,22 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _pageController = PageController();
-    _pageController.addListener(() {
-      final rawPage = _pageController.page ?? 0.0;
-      final page = rawPage.round();
-      if (mounted) {
-        setState(() {
-          _pageProgress = rawPage;
-          if (page != _currentPage) _currentPage = page;
-        });
-      }
-    });
+    _pageController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    final rawPage = _pageController.page ?? 0.0;
+    _scrollProgress.value = rawPage; // No setState — only hero overlay listens
+    final page = rawPage.round();
+    if (page != _currentPage && mounted) {
+      setState(() => _currentPage = page); // Only rebuild on actual page change
+    }
   }
 
   @override
   void dispose() {
+    _pageController.removeListener(_onScroll);
+    _scrollProgress.dispose();
     _pageController.dispose();
     super.dispose();
   }
@@ -135,21 +137,28 @@ class _HomePageState extends State<HomePage> {
           ),
 
           // ── Snellen E → Iris Transition Overlay (Pages 0→1 only) ──
-          // Smooth bell-curve opacity: nothing at p<0.05, peak~0.4, gone by p=0.92
-          if (_pageProgress > 0.05 && _pageProgress < 0.92)
-            Positioned.fill(
-              child: IgnorePointer(
-                child: Opacity(
-                  opacity: _bellCurveOpacity(_pageProgress, 0.05, 0.92, 0.65),
-                  child: RepaintBoundary(
-                    child: HeroAnimationEngine(
-                      p: (_pageProgress).clamp(0.0, 1.0),
-                      isMob: isMob,
+          // Uses ValueListenableBuilder to avoid rebuilding entire page tree
+          ValueListenableBuilder<double>(
+            valueListenable: _scrollProgress,
+            builder: (context, progress, _) {
+              if (progress <= 0.05 || progress >= 0.92) {
+                return const SizedBox.shrink();
+              }
+              return Positioned.fill(
+                child: IgnorePointer(
+                  child: Opacity(
+                    opacity: _bellCurveOpacity(progress, 0.05, 0.92, 0.65),
+                    child: RepaintBoundary(
+                      child: HeroAnimationEngine(
+                        p: progress.clamp(0.0, 1.0),
+                        isMob: isMob,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
+              );
+            },
+          ),
 
           // ── Navbar (always on top) ──
           Positioned(
@@ -209,9 +218,9 @@ class _SnapPagePhysics extends ScrollPhysics {
 
   @override
   SpringDescription get spring => const SpringDescription(
-        mass: 1,
-        stiffness: 100,
-        damping: 20,
+        mass: 0.8,
+        stiffness: 80,
+        damping: 16,
       );
 }
 

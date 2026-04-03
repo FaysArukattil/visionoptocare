@@ -304,8 +304,8 @@ class _IrisPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
-    final breath =
-        math.sin(DateTime.now().millisecondsSinceEpoch / 500) * 0.05 + 1.0;
+    // Derive breath from scroll progress — no DateTime.now() which bypasses vsync
+    final breath = math.sin(p * math.pi * 6) * 0.05 + 1.0;
 
     for (int i = 0; i < 5; i++) {
       final radius = (40 + i * 30) * breath;
