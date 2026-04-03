@@ -42,7 +42,8 @@ class _B2BPageState extends State<B2BPage> with TickerProviderStateMixin {
 
   void _start() async {
     _hasStarted = true;
-    await Future.delayed(const Duration(milliseconds: 200));
+    // Increased delay for 'Settle Gate' — ensures PageView swipe is done before firing animations.
+    await Future.delayed(const Duration(milliseconds: 400));
     if (!mounted) return;
     _enterCtrl.forward();
     await Future.delayed(const Duration(milliseconds: 300));
@@ -94,76 +95,89 @@ class _B2BPageState extends State<B2BPage> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
-                // Main content
-                SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      SizedBox(height: isMob ? 80 : 100),
-                      // Header
-                      Padding(
-                        padding: Responsive.padding(context),
+                // Main content with vertical scaling to fit viewport
+                Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: size.height - (isMob ? 20 : 0), // Slight inset for mobile
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Container(
+                        width: size.width,
+                        constraints: BoxConstraints(maxWidth: size.width),
                         child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: AppColors.gold.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                    color:
-                                        AppColors.gold.withValues(alpha: 0.3)),
-                              ),
-                              child: Text(
-                                'FOR CLINICS & HOSPITALS',
-                                style: AppFonts.caption.copyWith(
-                                  color: AppColors.gold,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 3,
-                                  fontSize: 10,
-                                ),
+                            SizedBox(height: isMob ? 110 : 140),
+                            // Header
+                            Padding(
+                              padding: Responsive.padding(context),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.gold.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                          color:
+                                              AppColors.gold.withValues(alpha: 0.3)),
+                                    ),
+                                    child: Text(
+                                      'FOR CLINICS & HOSPITALS',
+                                      style: AppFonts.caption.copyWith(
+                                        color: AppColors.gold,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 3,
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Text(
+                                    'Power Your Clinic\nwith Visiaxx Pro',
+                                    style: AppFonts.h2.copyWith(
+                                      color: AppColors.white,
+                                      fontSize: isMob ? 28 : 52,
+                                      height: 1.1,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  SizedBox(
+                                    width: isMob ? double.infinity : 600,
+                                    child: Text(
+                                      'Empower your practice with clinical-grade digital diagnostics. License Visiaxx Pro for your clinic, mobile eye camps, and telemedicine workflows.',
+                                      style: AppFonts.bodyLarge.copyWith(
+                                        color: AppColors.muted,
+                                        fontSize: isMob ? 14 : 17,
+                                        height: 1.7,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 20),
-                            Text(
-                              'Power Your Clinic\nwith Visiaxx Pro',
-                              style: AppFonts.h2.copyWith(
-                                color: AppColors.white,
-                                fontSize: isMob ? 28 : 52,
-                                height: 1.1,
-                                fontWeight: FontWeight.w800,
-                              ),
-                              textAlign: TextAlign.center,
+                            SizedBox(height: isMob ? 24 : 48), // Smoothed spacing
+                            // Feature Cards
+                            Padding(
+                              padding: Responsive.padding(context),
+                              child: isMob
+                                  ? _buildMobileCards()
+                                  : _buildDesktopCards(),
                             ),
-                            const SizedBox(height: 16),
-                            SizedBox(
-                              width: isMob ? double.infinity : 600,
-                              child: Text(
-                                'Empower your practice with clinical-grade digital diagnostics. License Visiaxx Pro for your clinic, mobile eye camps, and telemedicine workflows.',
-                                style: AppFonts.bodyLarge.copyWith(
-                                  color: AppColors.muted,
-                                  fontSize: isMob ? 14 : 17,
-                                  height: 1.7,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
+                            SizedBox(height: isMob ? 24 : 48),
+                            // CTA Button
+                            _buildCTA(isMob),
+                            const SizedBox(height: 40),
                           ],
                         ),
                       ),
-                      SizedBox(height: isMob ? 32 : 56),
-                      // Feature Cards
-                      Padding(
-                        padding: Responsive.padding(context),
-                        child: isMob
-                            ? _buildMobileCards()
-                            : _buildDesktopCards(),
-                      ),
-                      SizedBox(height: isMob ? 32 : 56),
-                      // CTA Button
-                      _buildCTA(isMob),
-                      SizedBox(height: isMob ? 40 : 60),
-                    ],
+                    ),
                   ),
                 ),
               ],

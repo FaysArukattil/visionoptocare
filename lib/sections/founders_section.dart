@@ -59,46 +59,60 @@ class _FoundersSectionState extends State<FoundersSection>
               height: size.height,
               color: AppColors.background,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(height: isMob ? 80 : 90),
-                  // Header
-                  Padding(
-                    padding: Responsive.padding(context),
-                    child: Column(
-                      children: [
-                        Text(
-                          'THE LEADERSHIP',
-                          style: AppFonts.caption.copyWith(
-                            color: AppColors.accent2,
-                            letterSpacing: 4,
-                            fontWeight: FontWeight.w900,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          'Visionaries Behind\nVisiaxx',
-                          style: AppFonts.h2.copyWith(
-                            color: AppColors.white,
-                            fontSize: isMob ? 30 : 52,
-                            height: 1.1,
-                            fontWeight: FontWeight.w800,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 48),
-                  // Cards
+                  // Main content scaling to fit viewport below navbar
                   Flexible(
-                    child: Padding(
-                      padding: Responsive.padding(context),
-                      child: isMob ? _buildMobileLayout() : _buildDesktopLayout(isMob),
+                    child: Center(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Container(
+                          width: size.width,
+                          constraints: BoxConstraints(maxWidth: size.width),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(height: isMob ? 110 : 140),
+                              // Header
+                              Padding(
+                                padding: Responsive.padding(context),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      'THE LEADERSHIP',
+                                      style: AppFonts.caption.copyWith(
+                                        color: AppColors.accent2,
+                                        letterSpacing: 4,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 20),
+                                    Text(
+                                      'Visionaries Behind\nVisiaxx',
+                                      style: AppFonts.h2.copyWith(
+                                        color: AppColors.white,
+                                        fontSize: isMob ? 30 : 52,
+                                        height: 1.1,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 48),
+                              // Cards
+                              Padding(
+                                padding: Responsive.padding(context),
+                                child: isMob ? _buildMobileLayout() : _buildDesktopLayout(isMob),
+                              ),
+                              SizedBox(height: isMob ? 20 : 40),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                  SizedBox(height: isMob ? 20 : 40),
                 ],
               ),
             ),

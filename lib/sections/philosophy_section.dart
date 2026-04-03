@@ -99,60 +99,65 @@ class _PhilosophySectionState extends State<PhilosophySection>
                   ),
                 ),
                 // Main content
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(height: isMob ? 100 : 120),
-                    // Header with float animation
-                    Padding(
-                      padding: Responsive.padding(context),
-                      child: AnimatedBuilder(
-                        animation: _floatCtrl,
-                        builder: (context, child) {
-                          final y = math.sin(_floatCtrl.value * math.pi) * 0.4;
-                          return Transform.translate(
-                            offset: Offset(0, y),
-                            child: child,
-                          );
-                        },
-                        child: Column(
-                          children: [
-                            Text(
-                              'OUR PHILOSOPHY',
-                              style: AppFonts.caption.copyWith(
-                                color: AppColors.accent2,
-                                letterSpacing: 4,
-                                fontWeight: FontWeight.w900,
+                // Main content
+                RepaintBoundary(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(height: isMob ? 100 : 120),
+                      // Header with float animation (RepaintBoundary helps here)
+                      Padding(
+                        padding: Responsive.padding(context),
+                        child: AnimatedBuilder(
+                          animation: _floatCtrl,
+                          builder: (context, child) {
+                            final y = math.sin(_floatCtrl.value * math.pi) * 0.4;
+                            return Transform.translate(
+                              offset: Offset(0, y),
+                              child: child,
+                            );
+                          },
+                          child: Column(
+                            children: [
+                              Text(
+                                'OUR PHILOSOPHY',
+                                style: AppFonts.caption.copyWith(
+                                  color: AppColors.accent2,
+                                  letterSpacing: 4,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                                textAlign: TextAlign.center,
+                                ),
+                              const SizedBox(height: 20),
+                              Text(
+                                'The Vision Behind\nVision Optocare',
+                                style: AppFonts.h2.copyWith(
+                                  color: AppColors.white,
+                                  fontSize: isMob ? 30 : 52,
+                                  height: 1.1,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 20),
-                            Text(
-                              'The Vision Behind\nVision Optocare',
-                              style: AppFonts.h2.copyWith(
-                                color: AppColors.white,
-                                fontSize: isMob ? 30 : 52,
-                                height: 1.1,
-                                fontWeight: FontWeight.w800,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 48),
-                    // Cards with staggered animation
-                    Flexible(
-                      child: Padding(
-                        padding: Responsive.padding(context),
-                        child: isMob
-                            ? _buildMobileLayout()
-                            : _buildDesktopLayout(),
+                      const SizedBox(height: 48),
+                      // Cards with staggered animation
+                      Flexible(
+                        child: RepaintBoundary(
+                          child: Padding(
+                            padding: Responsive.padding(context),
+                            child: isMob
+                                ? _buildMobileLayout()
+                                : _buildDesktopLayout(),
+                          ),
+                        ),
                       ),
-                    ),
-                    SizedBox(height: isMob ? 20 : 40),
-                  ],
+                      SizedBox(height: isMob ? 20 : 40),
+                    ],
+                  ),
                 ),
               ],
             ),
