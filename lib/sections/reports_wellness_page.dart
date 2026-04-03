@@ -8,7 +8,7 @@ import '../widgets/globe_painter.dart';
 import '../widgets/animated_counter.dart';
 
 // ─────────────────────────────────────────────
-// Page 3: PDF Reports + Education Reels + Ocular Wellness
+// Page 3: Education Reels + PDF Reports + Ocular Wellness
 // ─────────────────────────────────────────────
 class ReportsWellnessPage extends StatefulWidget {
   final bool isActive;
@@ -69,13 +69,13 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage>
               color: AppColors.background,
               child: Column(
                 children: [
-                  SizedBox(height: isMob ? 80 : 90),
+                  SizedBox(height: isMob ? 100 : 120),
                   Padding(
                     padding: Responsive.padding(context),
                     child: Column(
                       children: [
                         Text(
-                          'CLINICAL INTELLIGENCE',
+                          'INSIGHT ENGINE',
                           style: AppFonts.caption.copyWith(
                             color: AppColors.accent2,
                             letterSpacing: 4,
@@ -85,10 +85,10 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage>
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Reports, Reels & Ocular Wellness',
+                          'Smart Reports, Eye Education & Wellness',
                           style: AppFonts.h2.copyWith(
                             color: AppColors.white,
-                            fontSize: isMob ? 22 : 42,
+                            fontSize: isMob ? 20 : 38,
                             fontWeight: FontWeight.w800,
                             height: 1.1,
                           ),
@@ -97,7 +97,7 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                   Expanded(
                     child: Padding(
                       padding: Responsive.padding(context).copyWith(top: 0),
@@ -106,7 +106,7 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage>
                           : _buildDesktopLayout(),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
@@ -120,32 +120,33 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage>
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // PDF Reports — wider card
+        // ── Left: Education Reels (phone mockup) ──
         Expanded(
-          flex: 4,
+          flex: 3,
           child: _BentoCard(
-            title: 'Smart Clinical PDF Reports',
+            title: 'Education Reels',
             subtitle:
-                'Auto-generate comprehensive, shareable PDF reports featuring detailed diagnostic breakdowns, prescription data, and clinical risk analysis.',
-            icon: Icons.picture_as_pdf_outlined,
-            color: const Color(0xFF00D4C8),
-            child: const _AnimatedPdfGenerator(color: Color(0xFF00D4C8)),
+                'Watch and learn with short, TikTok-style eye care video tips — curated to educate patients on vision health.',
+            icon: Icons.play_circle_outline,
+            color: const Color(0xFF4F6AFF),
+            child:
+                const _AnimatedReelsFeed(color: Color(0xFF4F6AFF)),
           ),
         ),
         const SizedBox(width: 20),
-        // Reels + Ocular stacked vertically
+        // ── Right: PDF Reports + Ocular Wellness stacked ──
         Expanded(
-          flex: 3,
+          flex: 4,
           child: Column(
             children: [
               Expanded(
                 child: _BentoCard(
-                  title: 'Education Reels',
-                  subtitle: 'Eye care video tips in a TikTok-style feed.',
-                  icon: Icons.play_circle_outline,
-                  color: const Color(0xFF4F6AFF),
-                  child:
-                      const _AnimatedReelsFeed(color: Color(0xFF4F6AFF)),
+                  title: 'Smart Clinical PDF Reports',
+                  subtitle:
+                      'Auto-generate comprehensive, shareable PDF reports featuring detailed diagnostic breakdowns, prescription data, and clinical risk analysis.',
+                  icon: Icons.picture_as_pdf_outlined,
+                  color: const Color(0xFF00D4C8),
+                  child: const _AnimatedPdfGenerator(color: Color(0xFF00D4C8)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -153,7 +154,7 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage>
                 child: _BentoCard(
                   title: 'Ocular Wellness',
                   subtitle:
-                      'Interactive eye therapy games with AI-generated therapeutic music.',
+                      'Interactive eye therapy games with AI-generated therapeutic music for relaxation and rehabilitation.',
                   icon: Icons.headphones_outlined,
                   color: const Color(0xFF9D4EDD),
                   child: const _AnimatedOcularWellness(
@@ -173,20 +174,6 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage>
       child: Column(
         children: [
           SizedBox(
-            height: 280,
-            child: _BentoCard(
-              title: 'Smart Clinical PDF Reports',
-              subtitle: 'Auto-generate comprehensive, shareable PDF reports.',
-              icon: Icons.picture_as_pdf_outlined,
-              color: const Color(0xFF00D4C8),
-              child: const SizedBox(
-                height: 120,
-                child: _AnimatedPdfGenerator(color: Color(0xFF00D4C8)),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
             height: 300,
             child: _BentoCard(
               title: 'Education Reels',
@@ -196,6 +183,20 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage>
               child: const SizedBox(
                 height: 160,
                 child: _AnimatedReelsFeed(color: Color(0xFF4F6AFF)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 280,
+            child: _BentoCard(
+              title: 'Smart Clinical PDF Reports',
+              subtitle: 'Auto-generate comprehensive, shareable PDF reports.',
+              icon: Icons.picture_as_pdf_outlined,
+              color: const Color(0xFF00D4C8),
+              child: const SizedBox(
+                height: 120,
+                child: _AnimatedPdfGenerator(color: Color(0xFF00D4C8)),
               ),
             ),
           ),
@@ -283,7 +284,7 @@ class _ConsultationLanguagesPageState extends State<ConsultationLanguagesPage>
               color: AppColors.background,
               child: Column(
                 children: [
-                  SizedBox(height: isMob ? 80 : 90),
+                  SizedBox(height: isMob ? 100 : 120),
                   Padding(
                     padding: Responsive.padding(context),
                     child: Column(
@@ -302,7 +303,7 @@ class _ConsultationLanguagesPageState extends State<ConsultationLanguagesPage>
                           'Hybrid Consultations & Global Languages',
                           style: AppFonts.h2.copyWith(
                             color: AppColors.white,
-                            fontSize: isMob ? 20 : 40,
+                            fontSize: isMob ? 20 : 38,
                             fontWeight: FontWeight.w800,
                             height: 1.1,
                           ),
@@ -311,7 +312,7 @@ class _ConsultationLanguagesPageState extends State<ConsultationLanguagesPage>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                   Expanded(
                     child: Padding(
                       padding: Responsive.padding(context).copyWith(top: 0),
@@ -320,7 +321,7 @@ class _ConsultationLanguagesPageState extends State<ConsultationLanguagesPage>
                           : _buildDesktopLayout(),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
@@ -644,7 +645,7 @@ class _AnimatedPdfGeneratorState extends State<_AnimatedPdfGenerator>
 }
 
 // ─────────────────────────────────────────────
-// Animated: Reels Feed — Fixed smooth stepping
+// Animated: Reels Feed — Distinct thumbnails per reel
 // ─────────────────────────────────────────────
 class _AnimatedReelsFeed extends StatefulWidget {
   final Color color;
@@ -673,12 +674,20 @@ class _AnimatedReelsFeedState extends State<_AnimatedReelsFeed>
     Icons.medical_services,
   ];
 
+  // Distinct gradient color pairs for each thumbnail
+  static const _reelGradients = [
+    [Color(0xFF1A237E), Color(0xFF4F6AFF)],  // Deep blue → Indigo
+    [Color(0xFF880E4F), Color(0xFFE91E63)],  // Berry → Pink
+    [Color(0xFF004D40), Color(0xFF00BFA5)],  // Teal dark → Teal bright
+    [Color(0xFFE65100), Color(0xFFFFB74D)],  // Orange → Amber
+    [Color(0xFF4A148C), Color(0xFFAB47BC)],  // Deep purple → Lilac
+  ];
+
   @override
   void initState() {
     super.initState();
-    // Slower scroll for less aggressive feel
     _ctrl = AnimationController(
-        vsync: this, duration: const Duration(seconds: 10))
+        vsync: this, duration: const Duration(seconds: 12))
       ..repeat();
   }
 
@@ -691,8 +700,8 @@ class _AnimatedReelsFeedState extends State<_AnimatedReelsFeed>
   @override
   Widget build(BuildContext context) {
     final isMob = Responsive.isMobile(context);
-    final phoneW = isMob ? 100.0 : 140.0;
-    final phoneH = isMob ? 200.0 : 280.0;
+    final phoneW = isMob ? 110.0 : 150.0;
+    final phoneH = isMob ? 220.0 : 310.0;
 
     return Center(
       child: PhoneMockup(
@@ -707,12 +716,11 @@ class _AnimatedReelsFeedState extends State<_AnimatedReelsFeed>
               child: AnimatedBuilder(
                 animation: _ctrl,
                 builder: (context, _) {
-                  final reelH = phoneH * 0.8;
+                  final reelH = phoneH * 0.85;
                   final gap = 4.0;
                   final totalContentH =
                       reelH * _reelTitles.length +
                           gap * (_reelTitles.length - 1);
-                  // Slow smooth scroll — one full cycle through all reels
                   final dy = -(_ctrl.value * (totalContentH - phoneH))
                       .clamp(0.0, totalContentH);
 
@@ -730,48 +738,57 @@ class _AnimatedReelsFeedState extends State<_AnimatedReelsFeed>
                             mainAxisSize: MainAxisSize.min,
                             children: List.generate(_reelTitles.length,
                                 (i) {
+                              final gradColors = _reelGradients[i];
                               return Container(
                                 width: double.infinity,
                                 height: reelH,
                                 margin: EdgeInsets.only(bottom: gap),
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
                                     colors: [
-                                      widget.color
-                                          .withValues(alpha: 0.25),
-                                      widget.color
-                                          .withValues(alpha: 0.08),
+                                      gradColors[0],
+                                      gradColors[1].withValues(alpha: 0.7),
                                     ],
                                   ),
                                 ),
                                 child: Stack(
                                   children: [
+                                    // Large background icon for visual variety
+                                    Positioned(
+                                      right: -10,
+                                      top: -10,
+                                      child: Icon(
+                                        _reelIcons[i],
+                                        size: isMob ? 60 : 80,
+                                        color: Colors.white.withValues(alpha: 0.08),
+                                      ),
+                                    ),
                                     Center(
                                       child: Container(
                                         padding: EdgeInsets.all(
-                                            isMob ? 6 : 10),
+                                            isMob ? 8 : 12),
                                         decoration: BoxDecoration(
                                           color: Colors.black
-                                              .withValues(alpha: 0.5),
+                                              .withValues(alpha: 0.45),
                                           shape: BoxShape.circle,
                                           border: Border.all(
                                               color: Colors.white
                                                   .withValues(
-                                                      alpha: 0.2)),
+                                                      alpha: 0.3)),
                                         ),
                                         child: Icon(
                                             Icons
                                                 .play_arrow_rounded,
                                             color: Colors.white,
-                                            size: isMob ? 16 : 24),
+                                            size: isMob ? 18 : 26),
                                       ),
                                     ),
                                     Positioned(
-                                      bottom: 6,
-                                      left: 6,
-                                      right: 6,
+                                      bottom: 8,
+                                      left: 8,
+                                      right: 8,
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
@@ -781,12 +798,12 @@ class _AnimatedReelsFeedState extends State<_AnimatedReelsFeed>
                                               Icon(_reelIcons[i],
                                                   color: Colors.white
                                                       .withValues(
-                                                          alpha: 0.8),
+                                                          alpha: 0.9),
                                                   size: isMob
-                                                      ? 8
-                                                      : 10),
+                                                      ? 9
+                                                      : 12),
                                               const SizedBox(
-                                                  width: 3),
+                                                  width: 4),
                                               Expanded(
                                                 child: Text(
                                                   _reelTitles[i],
@@ -794,10 +811,10 @@ class _AnimatedReelsFeedState extends State<_AnimatedReelsFeed>
                                                     color: Colors.white
                                                         .withValues(
                                                             alpha:
-                                                                0.9),
+                                                                0.95),
                                                     fontSize: isMob
-                                                        ? 6
-                                                        : 8,
+                                                        ? 7
+                                                        : 9,
                                                     fontWeight:
                                                         FontWeight
                                                             .w600,
@@ -810,41 +827,41 @@ class _AnimatedReelsFeedState extends State<_AnimatedReelsFeed>
                                               ),
                                             ],
                                           ),
-                                          const SizedBox(height: 2),
+                                          const SizedBox(height: 3),
                                           Container(
                                             height: 2,
                                             decoration: BoxDecoration(
                                               borderRadius:
                                                   BorderRadius
                                                       .circular(1),
-                                              color: widget.color
+                                              color: Colors.white
                                                   .withValues(
-                                                      alpha: 0.6),
+                                                      alpha: 0.5),
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
                                     Positioned(
-                                      top: 6,
-                                      right: 4,
+                                      top: 8,
+                                      right: 6,
                                       child: Column(
                                         children: [
                                           Icon(
                                               Icons.favorite_border,
                                               color: Colors.white
                                                   .withValues(
-                                                      alpha: 0.6),
-                                              size: isMob ? 8 : 12),
+                                                      alpha: 0.7),
+                                              size: isMob ? 10 : 14),
                                           SizedBox(
                                               height:
-                                                  isMob ? 3 : 6),
+                                                  isMob ? 4 : 8),
                                           Icon(
                                               Icons.share_outlined,
                                               color: Colors.white
                                                   .withValues(
-                                                      alpha: 0.6),
-                                              size: isMob ? 8 : 12),
+                                                      alpha: 0.7),
+                                              size: isMob ? 10 : 14),
                                         ],
                                       ),
                                     ),

@@ -306,15 +306,15 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
         final isSelected = absDiff < 0.5;
         
         // 3D Perspective Mapping
-        final double z = absDiff * 100; // Depth
-        final double y = diff * 120; // Vertical spread
+        final double z = absDiff * 80; // Depth
+        final double y = diff * 100; // Vertical spread
         final double scale = (1.0 - (absDiff * 0.15)).clamp(0.5, 1.0);
         final double opacity = (1.0 - (absDiff * 0.25)).clamp(0.0, 1.0);
 
         if (opacity < 0.1) return const SizedBox.shrink();
 
         return Positioned(
-          top: (isMob ? 80 : 250) + y,
+          top: (isMob ? 60 : 200) + y,
           child: Transform(
             transform: Matrix4.identity()
               ..setEntry(3, 2, 0.001)
@@ -354,8 +354,8 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
         return Transform.translate(
           offset: Offset(0, floatY),
           child: PhoneMockup(
-            width: isMob ? 200 : 260,
-            height: isMob ? 420 : 560,
+            width: isMob ? 170 : 220,
+            height: isMob ? 350 : 470,
             tiltX: 0.0,
             tiltY: 0.0,
             screen: _TestSimulationEngine(test: test, themeColor: themeColor),
@@ -367,8 +367,8 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
 
   Widget _buildDetailCard(TestData test, Color themeColor, bool isMob) {
     return Container(
-      width: isMob ? double.infinity : 380,
-      padding: EdgeInsets.all(isMob ? 16 : 32),
+      width: isMob ? double.infinity : 340,
+      padding: EdgeInsets.all(isMob ? 14 : 28),
       decoration: BoxDecoration(
         color: AppColors.background.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(isMob ? 16 : 24),
@@ -433,7 +433,7 @@ class _HUDItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: isMob ? 200 : 300,
+      width: isMob ? 180 : 260,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
         color: isSelected ? themeColor.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.02),

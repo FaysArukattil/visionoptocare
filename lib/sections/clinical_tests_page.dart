@@ -62,7 +62,7 @@ class _ClinicalTestsPageState extends State<ClinicalTestsPage>
                 // ── Main Content ──
                 Column(
                   children: [
-                    SizedBox(height: isMob ? 60 : 80), // Reduced header gap
+                    SizedBox(height: isMob ? 100 : 120), // Clear navbar
                     
                     // Compact Header
                     Padding(
@@ -70,7 +70,7 @@ class _ClinicalTestsPageState extends State<ClinicalTestsPage>
                       child: Column(
                         children: [
                           Text(
-                            'TECHNICAL EXCELLENCE',
+                            'VISION TEST SUITE',
                             style: AppFonts.caption.copyWith(
                               color: AppColors.accent2,
                               letterSpacing: 4,
@@ -81,10 +81,10 @@ class _ClinicalTestsPageState extends State<ClinicalTestsPage>
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '12 Precision Diagnostics',
+                            '12 Clinical-Grade Diagnostics',
                             style: AppFonts.h2.copyWith(
                               color: AppColors.white,
-                              fontSize: isMob ? 24 : 40,
+                              fontSize: isMob ? 22 : 36,
                               height: 1.1,
                             ),
                             textAlign: TextAlign.center,
@@ -96,7 +96,7 @@ class _ClinicalTestsPageState extends State<ClinicalTestsPage>
                     // ── The Suite (Full Expansion) ──
                     Expanded(
                       child: Container(
-                        margin: EdgeInsets.only(top: isMob ? 10 : 30),
+                        margin: EdgeInsets.only(top: isMob ? 4 : 12),
                         child: TestsSection(isActive: widget.isActive),
                       ),
                     ),

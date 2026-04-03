@@ -37,7 +37,7 @@ class _FooterSectionState extends State<FooterSection> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isMob = Responsive.isMobile(context);
-    final topSpacer = isMob ? 70.0 : 90.0;
+    final topSpacer = isMob ? 50.0 : 60.0;
 
     return SizedBox(
       width: size.width,
@@ -56,13 +56,13 @@ class _FooterSectionState extends State<FooterSection> {
                   child: Column(
                     children: [
                       Padding(
-                        padding: EdgeInsets.symmetric(vertical: isMob ? 80 : 120),
+                        padding: EdgeInsets.symmetric(vertical: isMob ? 40 : 60),
                         child: Padding(
                           padding: Responsive.padding(context),
                           child: Column(
                             children: [
                               _buildBrandingHeader(context, isMob),
-                              const SizedBox(height: 80),
+                              const SizedBox(height: 40),
                               isMob ? _buildMobileGrid() : _buildDesktopGrid(),
                               AnimatedSize(
                                 duration: const Duration(milliseconds: 600),
@@ -105,7 +105,7 @@ class _FooterSectionState extends State<FooterSection> {
                     ),
                   ],
                 ),
-                child: EyeLoader(size: isMob ? 80 : 150),
+                child: EyeLoader(size: isMob ? 50 : 80),
               ),
             ),
           ),
@@ -250,7 +250,7 @@ class _FooterSectionState extends State<FooterSection> {
     return Container(
       width: double.infinity,
       color: Colors.black.withValues(alpha: 0.2),
-      padding: const EdgeInsets.symmetric(vertical: 40),
+      padding: const EdgeInsets.symmetric(vertical: 20),
       child: Padding(
         padding: Responsive.padding(context),
         child: Row(

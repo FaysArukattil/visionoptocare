@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../utils/responsive.dart';
@@ -213,41 +214,69 @@ class _B2BPageState extends State<B2BPage> with TickerProviderStateMixin {
           opacity: t.clamp(0.0, 1.0),
           child: Transform.translate(
             offset: Offset(0, 15 * (1 - t)),
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                  horizontal: isMob ? 32 : 40, vertical: isMob ? 14 : 18),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(50),
-                gradient: AppColors.goldGradient,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.gold.withValues(alpha: 0.3),
-                    blurRadius: 30,
-                    offset: const Offset(0, 10),
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: _launchEnterpriseEmail,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: isMob ? 32 : 40, vertical: isMob ? 14 : 18),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(50),
+                    gradient: AppColors.goldGradient,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.gold.withValues(alpha: 0.3),
+                        blurRadius: 30,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.workspace_premium,
-                      color: AppColors.background, size: isMob ? 18 : 22),
-                  SizedBox(width: isMob ? 10 : 14),
-                  Text(
-                    'Get Practitioner License',
-                    style: AppFonts.body(
-                      fontSize: isMob ? 14 : 17,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.background,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.business_center,
+                          color: AppColors.background, size: isMob ? 18 : 22),
+                      SizedBox(width: isMob ? 10 : 14),
+                      Text(
+                        'Request Enterprise Access',
+                        style: AppFonts.body(
+                          fontSize: isMob ? 14 : 17,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.background,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
         );
       },
     );
+  }
+
+  void _launchEnterpriseEmail() async {
+    final subject = Uri.encodeComponent('Business Software License Inquiry — Visiaxx Pro');
+    final body = Uri.encodeComponent(
+      'Dear Visiaxx Team,\n\n'
+      'I am interested in purchasing the Visiaxx Pro business software license.\n\n'
+      'Full Name: [Your Full Name]\n'
+      'Phone Number: [Your Phone Number]\n'
+      'Clinic/Business Address: [Your Complete Address]\n'
+      'Qualification/Designation: [e.g., Optometrist, Ophthalmologist, Clinic Owner]\n'
+      'Workplace/Clinic Name: [Your Workplace Name]\n\n'
+      'Additional Notes:\n'
+      '[Any additional information or requirements]\n\n'
+      'Looking forward to hearing from you.\n\n'
+      'Best regards,\n'
+      '[Your Name]',
+    );
+    final uri = Uri.parse('mailto:contact@visionoptocare.co.in?subject=$subject&body=$body');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    }
   }
 
   static final _features = [

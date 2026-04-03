@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../widgets/gradient_button.dart';
@@ -102,13 +103,35 @@ class B2BSection extends StatelessWidget {
         _featurePoint(Icons.campaign, 'Run mobile eye camps with B2B license'),
         const SizedBox(height: 56),
         GradientButton(
-          text: 'Get Practitioner License',
+          text: 'Request Enterprise Access',
           gradient: AppColors.goldGradient,
-          icon: Icons.workspace_premium,
-          onTap: () {},
+          icon: Icons.business_center,
+          onTap: () => _launchEnterpriseEmail(),
         ),
       ],
     );
+  }
+
+  static void _launchEnterpriseEmail() async {
+    final subject = Uri.encodeComponent('Business Software License Inquiry — Visiaxx Pro');
+    final body = Uri.encodeComponent(
+      'Dear Visiaxx Team,\n\n'
+      'I am interested in purchasing the Visiaxx Pro business software license.\n\n'
+      'Full Name: [Your Full Name]\n'
+      'Phone Number: [Your Phone Number]\n'
+      'Clinic/Business Address: [Your Complete Address]\n'
+      'Qualification/Designation: [e.g., Optometrist, Ophthalmologist, Clinic Owner]\n'
+      'Workplace/Clinic Name: [Your Workplace Name]\n\n'
+      'Additional Notes:\n'
+      '[Any additional information or requirements]\n\n'
+      'Looking forward to hearing from you.\n\n'
+      'Best regards,\n'
+      '[Your Name]',
+    );
+    final uri = Uri.parse('mailto:contact@visionoptocare.co.in?subject=$subject&body=$body');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    }
   }
 
   Widget _featurePoint(IconData icon, String text) {

@@ -6,6 +6,7 @@ import '../widgets/eye_loader.dart';
 import '../widgets/eye_logo.dart';
 import '../widgets/phone_mockup.dart';
 
+
 class VisiaxxIntroSection extends StatefulWidget {
   final bool isActive;
 
@@ -325,7 +326,58 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
             _FeatureChip(icon: Icons.picture_as_pdf, label: 'PDF Reports'),
           ],
         ),
+        const SizedBox(height: 32),
+        // Store Buttons
+        Wrap(
+          spacing: 16,
+          runSpacing: 12,
+          alignment: isMob ? WrapAlignment.center : WrapAlignment.start,
+          children: [
+            _StoreButton(
+              storeName: 'Google Play',
+              label: 'GET IT ON',
+              icon: Icons.play_arrow_rounded,
+              onTap: () => _showComingSoon(context),
+            ),
+            _StoreButton(
+              storeName: 'App Store',
+              label: 'DOWNLOAD ON THE',
+              icon: Icons.apple,
+              onTap: () => _showComingSoon(context),
+            ),
+          ],
+        ),
       ],
+    );
+  }
+
+  void _showComingSoon(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        margin: EdgeInsets.symmetric(
+          horizontal: Responsive.isMobile(context) ? 24 : 200,
+          vertical: 20,
+        ),
+        duration: const Duration(seconds: 4),
+        content: Row(
+          children: [
+            Icon(Icons.rocket_launch_rounded, color: AppColors.accent2, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Coming Soon! Our developers are working hard to bring the app to you as fast as possible. Stay tuned!',
+                style: AppFonts.bodySmall.copyWith(
+                  color: AppColors.white.withValues(alpha: 0.9),
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -358,6 +410,96 @@ class _FeatureChip extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _StoreButton extends StatefulWidget {
+  final String storeName;
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _StoreButton({
+    required this.storeName,
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  State<_StoreButton> createState() => _StoreButtonState();
+}
+
+class _StoreButtonState extends State<_StoreButton> {
+  bool _hov = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hov = true),
+      onExit: (_) => setState(() => _hov = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            color: _hov
+                ? AppColors.white.withValues(alpha: 0.1)
+                : AppColors.white.withValues(alpha: 0.04),
+            border: Border.all(
+              color: _hov
+                  ? AppColors.accent2.withValues(alpha: 0.5)
+                  : AppColors.white.withValues(alpha: 0.15),
+              width: 1.5,
+            ),
+            boxShadow: _hov
+                ? [
+                    BoxShadow(
+                      color: AppColors.accent2.withValues(alpha: 0.15),
+                      blurRadius: 20,
+                      offset: const Offset(0, 4),
+                    )
+                  ]
+                : [],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(widget.icon, color: AppColors.white, size: 28),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.label,
+                    style: AppFonts.caption.copyWith(
+                      color: AppColors.white.withValues(alpha: 0.6),
+                      fontSize: 8,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    widget.storeName,
+                    style: AppFonts.bodyLarge.copyWith(
+                      color: AppColors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

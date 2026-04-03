@@ -102,7 +102,7 @@ class _PhilosophySectionState extends State<PhilosophySection>
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(height: isMob ? 80 : 90),
+                    SizedBox(height: isMob ? 100 : 120),
                     // Header with float animation
                     Padding(
                       padding: Responsive.padding(context),
