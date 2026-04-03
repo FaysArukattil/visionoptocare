@@ -153,10 +153,14 @@ class _FooterSectionState extends State<FooterSection> {
     }
     return Padding(
       padding: Responsive.padding(context),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Wrap(
+        spacing: 40,
+        runSpacing: 24,
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               const EyeLogo(size: 100, showGlow: false),
               const SizedBox(width: 24),

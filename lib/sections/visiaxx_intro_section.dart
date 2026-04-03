@@ -101,8 +101,8 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                       ..setTranslationRaw(0.0, 15.0 * (1 - t), 0.0),
                     alignment: Alignment.center,
                     child: PhoneMockup(
-                      width: 280,
-                      height: 550,
+                      width: 260,
+                      height: 500,
                       tiltX: 0.0,
                       tiltY: 0.0,
                       screen: _buildPhoneScreen(),
@@ -301,19 +301,19 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
             'Pioneering Digital\nOptometry.',
             style: AppFonts.h2.copyWith(
               color: AppColors.white,
-              fontSize: isMob ? 38 : 64, // Increased for 'Big'
+              fontSize: isMob ? 32 : 52, // Refined scaling
               height: 1.1,
               fontWeight: FontWeight.w800,
             ),
             textAlign: isMob ? TextAlign.center : TextAlign.start,
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 20),
           Text(
             'We merge clinical-grade screening with AI-driven analytics to transform your smartphone into a powerful diagnostic tool. Vision Optocare empowers patients and practitioners with accessible, high-precision ocular health tracking.',
             style: AppFonts.bodyLarge.copyWith(
               color: AppColors.muted,
               height: 1.7,
-              fontSize: isMob ? 16 : 19, // Increased for 'Readable'
+              fontSize: isMob ? 15 : 18, // Refined scaling
             ),
             textAlign: isMob ? TextAlign.center : TextAlign.start,
           ),
