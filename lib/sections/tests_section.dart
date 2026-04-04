@@ -429,7 +429,6 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   }
 
   Widget _buildMobileLayout(TestData test, Color themeColor, int selectedIndex, double scrollPos, ValueNotifier<double>? scrollProgress) {
-    const isMob = true; // Hardcoded scope for mobile layout method
     Widget phoneObj = _buildFloatingPhone(test, themeColor, scrollProgress, isMob: true);
 
     if (widget.scrollProgress != null) {
@@ -485,36 +484,43 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
           ),
           const SizedBox(height: 8), // Reduced from 16
           Text(
-            '12 Precision Diagnostics',
+            '12 PRECISION DIAGNOSTICS',
             style: AppFonts.h2.copyWith(
-              color: AppColors.white,
-            fontSize: 24, // Optimized for mobile
+              color: AppColors.white.withValues(alpha: 0.9),
+              fontSize: 16, // Optimized for single row on mobile
               height: 1.1,
               fontWeight: FontWeight.w800,
+              letterSpacing: 1.5,
             ),
             textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 10), // Reduced from 30
-          Expanded(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                _buildTacticalHUD(true, scrollPos),
-                // Restore the interactive scroll bar for mobile
-                Positioned(
-                  right: 10, top: 40, bottom: 40,
-                  width: 4,
-                  child: _buildVerticalScrollIndicator(scrollPos, themeColor, isHUDCentered: true),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
+          // The Tactical HUD is now combined with the detail card below for mobile
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: _buildDetailCard(test, themeColor, true),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 12),
+          // Progress Dots for Mobile
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(_tests.length, (i) {
+              final isCurrent = i == (scrollPos.round() % _tests.length).abs();
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                width: isCurrent ? 12 : 5,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: isCurrent ? themeColor : Colors.white24,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 10),
         ],
       ),
     );
@@ -626,10 +632,10 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   Widget _buildDetailCard(TestData test, Color themeColor, bool isMob) {
     return Container(
       width: isMob ? double.infinity : 340,
-      padding: EdgeInsets.all(isMob ? 14 : 28),
+      padding: EdgeInsets.all(isMob ? 16 : 28),
       decoration: BoxDecoration(
         color: AppColors.background.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(isMob ? 16 : 24),
+        borderRadius: BorderRadius.circular(isMob ? 20 : 24),
         border: Border.all(color: themeColor.withValues(alpha: 0.2), width: 1.5),
         boxShadow: [
           BoxShadow(
@@ -643,35 +649,57 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 8, height: 8,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: themeColor),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                test.tier.name.toUpperCase(),
-                style: AppFonts.caption.copyWith(
-                  color: themeColor,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 2,
-                  fontSize: isMob ? 9 : 12,
+          // Consolidating Header into card for Mobile
+          if (isMob) ...[
+            Row(
+              children: [
+                Icon(test.icon, color: themeColor, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    test.name.toUpperCase(),
+                    style: AppFonts.heading(fontSize: 16, color: Colors.white, letterSpacing: 2),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: isMob ? 8 : 16),
-          Text(test.name, style: AppFonts.h3.copyWith(color: Colors.white, fontSize: isMob ? 18 : 24)),
-          SizedBox(height: isMob ? 6 : 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(color: themeColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                  child: Text(test.tier.name.toUpperCase(), style: TextStyle(color: themeColor, fontSize: 8, fontWeight: FontWeight.w900)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ] else ...[
+            Row(
+              children: [
+                Container(
+                  width: 8, height: 8,
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: themeColor),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  test.tier.name.toUpperCase(),
+                  style: AppFonts.caption.copyWith(
+                    color: themeColor,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          if (!isMob) SizedBox(height: 16),
+          if (!isMob) Text(test.name, style: AppFonts.h3.copyWith(color: Colors.white, fontSize: 24)),
+          if (!isMob) SizedBox(height: 12),
           Text(
             test.desc,
             style: AppFonts.bodyLarge.copyWith(
               color: AppColors.muted,
               height: 1.5,
-              fontSize: isMob ? 12 : 16,
+              fontSize: isMob ? 13 : 16,
             ),
-            maxLines: isMob ? 1 : 4,
+            maxLines: isMob ? 2 : 4,
             overflow: TextOverflow.ellipsis,
           ),
         ],
