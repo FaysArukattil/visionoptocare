@@ -66,7 +66,9 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
       _scrollPos.value = _scrollCtrl.value;
     });
     
-    if (widget.isActive) _startAutoCycle();
+    if (widget.isActive) {
+      _startAutoCycle();
+    }
   }
 
   @override
@@ -82,7 +84,9 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
 
   void _startAutoCycle() {
     _stopAutoCycle();
-    if (_userIntervened) return;
+    if (_userIntervened) {
+      return;
+    }
 
     // Use a Ticker for buttery smooth per-frame constant motion
     _ticker = createTicker((elapsed) {
@@ -105,7 +109,9 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   void _resumeAfterDelay() {
     _userIntervened = false;
     Future.delayed(const Duration(seconds: 3), () {
-      if (mounted && !_userIntervened) _startAutoCycle();
+      if (mounted && !_userIntervened) {
+        _startAutoCycle();
+      }
     });
   }
 
@@ -129,8 +135,12 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     double target = index.toDouble();
     
     double diff = target - (current % _tests.length);
-    if (diff > _tests.length / 2) diff -= _tests.length;
-    if (diff < -_tests.length / 2) diff += _tests.length;
+    if (diff > _tests.length / 2) {
+      diff -= _tests.length;
+    }
+    if (diff < -_tests.length / 2) {
+      diff += _tests.length;
+    }
 
     _scrollCtrl.animateTo(_scrollPos.value + diff, curve: Curves.easeOutBack, duration: const Duration(milliseconds: 600));
     _resumeAfterDelay();
@@ -216,10 +226,14 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
           ValueListenableBuilder<double>(
             valueListenable: _scrollPos,
             builder: (context, pos, child) {
-              if (!pos.isFinite) return const SizedBox.shrink();
+              if (!pos.isFinite) {
+                return const SizedBox.shrink();
+              }
               
               int sIdx = (pos.round() % _tests.length);
-              if (sIdx < 0) sIdx += _tests.length;
+              if (sIdx < 0) {
+                sIdx += _tests.length;
+              }
 
               final test = _tests[sIdx];
               final themeColor = _getTierColor(test.tier);
@@ -521,8 +535,8 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
                     alignment: Alignment.center,
                     child: Transform.scale(
                       scale: scale,
-                      child: Opacity(
-                        opacity: opacity.clamp(0.0, 1.0),
+                        child: Opacity(
+                          opacity: opacity.clamp(0.01, 1.0),
                         child: GestureDetector(
                           onTap: () => _onTapItem(i),
                           behavior: HitTestBehavior.opaque,
@@ -680,7 +694,7 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
   bool? _amslerHasDistortions;
 
   // Pelli-Robson Mock State
-  final int _pelliTripletIndex = 0;
+  late final int _pelliTripletIndex = 0;
   
   // Shadow Test (Cataract) Mock State
   bool _shadowFlashOn = false;
@@ -1839,7 +1853,9 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
                           next = math.Random().nextInt(5) + 1;
                         } while (next == _stereoRound);
                         _stereoRound = next;
-                        if (_stereoScore < 100) _stereoScore += 4;
+                        if (_stereoScore < 100) {
+                          _stereoScore += 4;
+                        }
                       });
                     },
                   ),
@@ -1922,9 +1938,13 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
                       final show = (_anim.value * 9) % 3 > 0.5 && (_anim.value * 9) % 3 < 1.5;
                       
                       Offset pos;
-                      if (phase == 0) pos = const Offset(-50, -40);
-                      else if (phase == 1) pos = const Offset(60, 30);
-                      else pos = const Offset(-20, 70);
+                      if (phase == 0) {
+                        pos = const Offset(-50, -40);
+                      } else if (phase == 1) {
+                        pos = const Offset(60, 30);
+                      } else {
+                        pos = const Offset(-20, 70);
+                      }
 
                       return Opacity(
                         opacity: show ? 1.0 : 0.0,

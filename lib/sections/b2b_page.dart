@@ -59,7 +59,7 @@ class _B2BPageState extends State<B2BPage> {
                       children: [
                         // Header
                         Opacity(
-                          opacity: (tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit),
+                          opacity: ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0),
                           child: Padding(
                             padding: Responsive.padding(context),
                             child: Column(
@@ -151,8 +151,14 @@ class _B2BPageState extends State<B2BPage> {
         Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Transform.scale(
-              scale: (Curves.easeOutBack.transform(tEntry) * (1.0 - Curves.easeInCubic.transform(tExit))),
+            child: Transform(
+              transform: Matrix4.identity()
+                ..scale(
+                  (Curves.easeOutBack.transform(tEntry) * (1.0 - Curves.easeInCubic.transform(tExit))).clamp(0.01, 2.0),
+                  (Curves.easeOutBack.transform(tEntry) * (1.0 - Curves.easeInCubic.transform(tExit))).clamp(0.01, 2.0),
+                  1.0,
+                ),
+              alignment: Alignment.center,
               child: _AnimatedFeatureCard(
                   progress: tEntry,
                   exitProgress: tExit,
@@ -194,7 +200,7 @@ class _B2BPageState extends State<B2BPage> {
   Widget _buildCTA(bool isMob, double tEntry, double tExit) {
     final enterT = (tEntry * 2 - 1).clamp(0.0, 1.0);
     return Opacity(
-      opacity: enterT * (1.0 - tExit),
+      opacity: (enterT * (1.0 - tExit)).clamp(0.0, 1.0),
       child: Transform.translate(
         offset: Offset(0, 15 * (1 - enterT)),
         child: MouseRegion(
@@ -313,7 +319,7 @@ class _AnimatedFeatureCardState extends State<_AnimatedFeatureCard> {
     final enter = Curves.easeOutBack.transform(widget.progress);
 
     return Opacity(
-      opacity: enter * (1.0 - widget.exitProgress),
+      opacity: (enter * (1.0 - widget.exitProgress)).clamp(0.0, 1.0),
       child: Transform.translate(
         offset: Offset(0, widget.isMiddle ? 0 : 30 * (1 - enter)),
         child: MouseRegion(

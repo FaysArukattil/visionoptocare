@@ -47,7 +47,7 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage> {
                 SizedBox(height: isMob ? 100 : 120),
                 // Title Area (Delayed fade in/out)
                 Opacity(
-                  opacity: (tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit),
+                  opacity: ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0),
                   child: Padding(
                     padding: Responsive.padding(context),
                     child: Column(
@@ -167,7 +167,7 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage> {
     return SingleChildScrollView(
       physics: const NeverScrollableScrollPhysics(),
       child: Opacity(
-        opacity: tEntry * (1.0 - tExit),
+        opacity: (tEntry * (1.0 - tExit)).clamp(0.0, 1.0),
         child: Transform.translate(
           offset: Offset(0, entrySY + exitSY),
           child: Column(
@@ -261,7 +261,7 @@ class _ConsultationLanguagesPageState extends State<ConsultationLanguagesPage> {
                 SizedBox(height: isMob ? 100 : 120),
                 // Title Area (Delayed fade in/out)
                 Opacity(
-                  opacity: (tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit),
+                  opacity: ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0),
                   child: Padding(
                     padding: Responsive.padding(context),
                     child: Column(
@@ -724,7 +724,7 @@ class _AnimatedPdfGeneratorState extends State<_AnimatedPdfGenerator>
 
   Widget _scoreChip(String label, double opacity, Color color, bool isMob) {
     return Opacity(
-      opacity: opacity,
+      opacity: opacity.clamp(0.0, 1.0),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: isMob ? 6 : 10, vertical: isMob ? 2 : 4),
         decoration: BoxDecoration(

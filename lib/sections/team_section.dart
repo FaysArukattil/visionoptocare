@@ -60,7 +60,7 @@ class _TeamSectionState extends State<TeamSection> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Opacity(
-                            opacity: (tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit),
+                            opacity: ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0),
                             child: Column(
                               children: [
                                 Text(

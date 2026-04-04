@@ -77,7 +77,7 @@ class _LeadershipSectionState extends State<LeadershipSection> {
                               children: [
                                 // Header
                                 Opacity(
-                                  opacity: (tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit),
+                                  opacity: ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0),
                                   child: Column(
                                     children: [
                                       Text(

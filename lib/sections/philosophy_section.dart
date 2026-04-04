@@ -79,7 +79,7 @@ class _PhilosophySectionState extends State<PhilosophySection>
                         children: [
                           // Header with float animation
                           Opacity(
-                            opacity: (tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit),
+                          opacity: ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0),
                             child: Padding(
                               padding: Responsive.padding(context),
                               child: AnimatedBuilder(
