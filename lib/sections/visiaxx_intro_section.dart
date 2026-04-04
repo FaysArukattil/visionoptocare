@@ -267,30 +267,34 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
             left: 0,
             right: 0,
             bottom: taglineBottom,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Your Vision,\nOur Priority',
-                  style: TextStyle(
-                    fontSize: isMini ? 16 : 18,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white.withValues(alpha: 0.8),
-                    letterSpacing: 0.5,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: isMini ? 12 : 0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Your Vision,\nOur Priority',
+                    style: TextStyle(
+                      fontSize: isMini ? 16 : 18,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white.withValues(alpha: 0.8),
+                      letterSpacing: 0.5,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Pioneering Digital Optometry',
-                  style: TextStyle(
-                    fontSize: isMini ? 10 : 11,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.white.withValues(alpha: 0.6),
-                    letterSpacing: 1.0,
+                  const SizedBox(height: 6),
+                  Text(
+                    'Pioneering Digital Optometry',
+                    style: TextStyle(
+                      fontSize: isMini ? 8.5 : 11, // Reduced for mobile
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white.withValues(alpha: 0.6),
+                      letterSpacing: 1.0,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
