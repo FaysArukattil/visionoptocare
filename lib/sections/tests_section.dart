@@ -262,7 +262,9 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
 
           // Exit (2.0 -> 3.0)
           final t23 = (v - 2.0).clamp(0.0, 1.0);
-          final exitTx = t23 * width * 1.2; // Glide completely out to the right
+          // Use a smooth curve for a more premium "glide"
+          final glideProgress = Curves.easeInOutCubic.transform(t23);
+          final exitTx = glideProgress * width * 1.0; 
 
           return Transform.translate(
             offset: Offset(entryTx + exitTx, entryTy),
@@ -407,7 +409,8 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
 
           // Exit (2.0 -> 3.0)
           final t23 = (v - 2.0).clamp(0.0, 1.0);
-          final exitTx = t23 * width * 1.2;
+          final glideProgress = Curves.easeInOutCubic.transform(t23);
+          final exitTx = glideProgress * width * 1.0;
 
           return Transform.translate(
             offset: Offset(exitTx, entryTy),
