@@ -187,7 +187,10 @@ class _HomePageState extends State<HomePage> {
           scrollProgress: _rawScrollProgress,
         );
       case 2:
-        return ClinicalTestsPage(isActive: isActive);
+        return ClinicalTestsPage(
+          isActive: isActive,
+          scrollProgress: _rawScrollProgress,
+        );
       case 3:
         return ReportsWellnessPage(isActive: isActive);
       case 4:

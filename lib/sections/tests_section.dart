@@ -33,7 +33,8 @@ const _tests = [
 
 class TestsSection extends StatefulWidget {
   final bool isActive;
-  const TestsSection({super.key, required this.isActive});
+  final ValueNotifier<double>? scrollProgress;
+  const TestsSection({super.key, required this.isActive, this.scrollProgress});
 
   @override
   State<TestsSection> createState() => _TestsSectionState();
@@ -237,36 +238,109 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   }
 
   Widget _buildDesktopLayout(TestData test, Color themeColor, int selectedIndex, double scrollPos) {
-    return Stack(
-      children: [
-        // ── Left: Interactive 3D HUD ──
-        Positioned(
-          left: 60,
-          top: 0,
-          bottom: 0,
-          width: 500,
-          child: _buildTacticalHUD(false, scrollPos),
-        ),
+    Widget phoneObj = _buildFloatingPhone(test, themeColor);
+    
+    if (widget.scrollProgress != null) {
+      phoneObj = ValueListenableBuilder<double>(
+        valueListenable: widget.scrollProgress!,
+        builder: (context, v, child) {
+          final t12 = (v - 1.0).clamp(0.0, 1.0);
+          final translateY = -(1.0 - t12) * MediaQuery.of(context).size.height;
+          return Transform.translate(
+            offset: Offset(0, translateY),
+            child: child,
+          );
+        },
+        child: phoneObj,
+      );
+    }
 
-        // ── Center: Floating Phone Simulation ──
-        Center(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 100), // Offset from HUD
-            child: _buildFloatingPhone(test, themeColor),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // ── Left: Interactive 3D Phone ──
+        Expanded(
+          flex: 5,
+          child: Center(
+            child: phoneObj,
           ),
         ),
 
-        // ── Right: Elevated Data Card ──
-        Positioned(
-          right: 60,
-          bottom: 60,
-          child: _buildDetailCard(test, themeColor, false),
+        const SizedBox(width: 80),
+
+        // ── Right: Elevated Data Card & HUD ──
+        Expanded(
+          flex: 5,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Header
+              Text(
+                'VISION TEST SUITE',
+                style: AppFonts.caption.copyWith(
+                  color: AppColors.accent2,
+                  letterSpacing: 3,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 11,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '12 Clinical-Grade\nDiagnostics',
+                style: AppFonts.h2.copyWith(
+                  color: AppColors.white,
+                  fontSize: 48,
+                  height: 1.1,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 40),
+              
+              // HUD & Card Stack
+              Expanded(
+                child: Stack(
+                  children: [
+                    Positioned(
+                      left: 0,
+                      top: 0,
+                      bottom: 250,
+                      width: 500,
+                      child: _buildTacticalHUD(false, scrollPos),
+                    ),
+                    Positioned(
+                      left: 0,
+                      bottom: 60,
+                      child: _buildDetailCard(test, themeColor, false),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
 
   Widget _buildMobileLayout(TestData test, Color themeColor, int selectedIndex, double scrollPos) {
+    Widget phoneObj = _buildFloatingPhone(test, themeColor, isMob: true);
+
+    if (widget.scrollProgress != null) {
+      phoneObj = ValueListenableBuilder<double>(
+        valueListenable: widget.scrollProgress!,
+        builder: (context, v, child) {
+          final t12 = (v - 1.0).clamp(0.0, 1.0);
+          final translateY = -(1.0 - t12) * MediaQuery.of(context).size.height;
+          return Transform.translate(
+            offset: Offset(0, translateY),
+            child: child,
+          );
+        },
+        child: phoneObj,
+      );
+    }
+
     return GestureDetector(
       onHorizontalDragUpdate: (d) {
         _userIntervened = true;
@@ -276,19 +350,40 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
       onHorizontalDragEnd: (_) => _snapToNearest(),
       child: Column(
         children: [
-          Expanded(
-            flex: 3,
-            child: _buildTacticalHUD(true, scrollPos),
+          const SizedBox(height: 20),
+          phoneObj,
+          const SizedBox(height: 40),
+          // Header
+          Text(
+            'VISION TEST SUITE',
+            style: AppFonts.caption.copyWith(
+              color: AppColors.accent2,
+              letterSpacing: 3,
+              fontWeight: FontWeight.w900,
+              fontSize: 11,
+            ),
+            textAlign: TextAlign.center,
           ),
+          const SizedBox(height: 16),
+          Text(
+            '12 Clinical-Grade Diagnostics',
+            style: AppFonts.h2.copyWith(
+              color: AppColors.white,
+              fontSize: 32,
+              height: 1.1,
+              fontWeight: FontWeight.w800,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 30),
           Expanded(
-            flex: 5,
-            child: _buildFloatingPhone(test, themeColor, isMob: true),
+            child: _buildTacticalHUD(true, scrollPos),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: _buildDetailCard(test, themeColor, true),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 20),
         ],
       ),
     );
@@ -314,7 +409,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
         if (opacity < 0.1) return const SizedBox.shrink();
 
         return Positioned(
-          top: (isMob ? 60 : 200) + y,
+          top: (isMob ? 60 : 120) + y,
           child: Transform(
             transform: Matrix4.identity()
               ..setEntry(3, 2, 0.001)
@@ -348,8 +443,8 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     // Only animate float when active to save GPU cycles
     return RepaintBoundary(
       child: PhoneMockup(
-        width: isMob ? 170 : 220,
-        height: isMob ? 350 : 470,
+        width: isMob ? 230 : 260,
+        height: isMob ? 450 : 500,
         tiltX: 0.0,
         tiltY: 0.0,
         screen: _TestSimulationEngine(test: test, themeColor: themeColor),
