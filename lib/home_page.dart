@@ -21,7 +21,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late final PageController _pageController;
+  late final ScrollController _scrollController;
 
   // Track page indices separately to avoid full-tree rebuilds.
   final ValueNotifier<int> _currentPage = ValueNotifier(0);
@@ -32,19 +32,22 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
-    _pageController.addListener(_onScroll);
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
   }
 
   void _onScroll() {
-    if (!_pageController.hasClients) return;
-    final pageValue = _pageController.page ?? 0.0;
-    
-    if (pageValue <= 1.2 || _scrollProgress.value <= 1.2) {
-      _scrollProgress.value = pageValue;
+    if (!_scrollController.hasClients) return;
+    final offset = _scrollController.offset;
+    final vh = _scrollController.position.viewportDimension;
+    if (vh <= 0) return;
+
+    final rawPage = offset / vh;
+    if (rawPage <= 1.2 || _scrollProgress.value <= 1.2) {
+      _scrollProgress.value = rawPage;
     }
 
-    final page = pageValue.round().clamp(0, _totalPages - 1);
+    final page = rawPage.round().clamp(0, _totalPages - 1);
     if (page != _currentPage.value) {
       _currentPage.value = page;
     }
@@ -52,8 +55,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    _pageController.removeListener(_onScroll);
-    _pageController.dispose();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     _currentPage.dispose();
     _scrollProgress.dispose();
     super.dispose();
@@ -61,9 +64,10 @@ class _HomePageState extends State<HomePage> {
 
   void _goToPage(int index) {
     if (index < 0 || index >= _totalPages) return;
-    if (!_pageController.hasClients) return;
-    _pageController.animateToPage(
-      index,
+    if (!_scrollController.hasClients) return;
+    final vh = _scrollController.position.viewportDimension;
+    _scrollController.animateTo(
+      index * vh,
       duration: const Duration(milliseconds: 600),
       curve: Curves.easeInOutCubic,
     );
@@ -84,27 +88,32 @@ class _HomePageState extends State<HomePage> {
             behavior: ScrollConfiguration.of(
               context,
             ).copyWith(scrollbars: false, overscroll: false),
-            child: PageView.builder(
-              controller: _pageController,
-              scrollDirection: Axis.vertical,
-              pageSnapping: true,
-              physics: const PageScrollPhysics(parent: BouncingScrollPhysics()),
-              itemCount: _totalPages,
-              itemBuilder: (context, i) {
-                return RepaintBoundary(
-                  child: ValueListenableBuilder<int>(
-                    valueListenable: _currentPage,
-                    builder: (context, activeIdx, child) {
-                      // Only activate tickers if the page is visible or adjacent
-                      final bool isActive = (activeIdx - i).abs() <= 1;
-                      return TickerMode(
-                        enabled: isActive,
-                        child: _buildSection(i, isActive),
-                      );
-                    },
-                  ),
-                );
-              },
+            child: CustomScrollView(
+              controller: _scrollController,
+              physics: const PageScrollPhysics(parent: ClampingScrollPhysics()),
+              cacheExtent: size.height * 2, // Keeps adjacent pages alive, fixing lag
+              slivers: [
+                SliverList(
+                  delegate: SliverChildBuilderDelegate((context, i) {
+                    return SizedBox(
+                      height: size.height,
+                      child: RepaintBoundary(
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: _currentPage,
+                          builder: (context, activeIdx, child) {
+                            // Only activate tickers if the page is visible or adjacent
+                            final bool isActive = (activeIdx - i).abs() <= 1;
+                            return TickerMode(
+                              enabled: isActive,
+                              child: _buildSection(i, isActive),
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  }, childCount: _totalPages),
+                ),
+              ],
             ),
           ),
 

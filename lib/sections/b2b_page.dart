@@ -275,10 +275,10 @@ class _B2BPageState extends State<B2BPage> with TickerProviderStateMixin {
       'Best regards,\n'
       '[Your Name]',
     );
-    final gmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1&to=contact@visionoptocare.co.in&su=$subject&body=$body';
-    final uri = Uri.parse(gmailUrl);
+    final mailtoUrl = 'mailto:contact@visionoptocare.co.in?subject=$subject&body=$body';
+    final uri = Uri.parse(mailtoUrl);
     if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      await launchUrl(uri);
     }
   }
 
