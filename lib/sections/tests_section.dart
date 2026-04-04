@@ -245,9 +245,11 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
         valueListenable: widget.scrollProgress!,
         builder: (context, v, child) {
           final t12 = (v - 1.0).clamp(0.0, 1.0);
+          final distanceX = (MediaQuery.of(context).size.width / 2) - 20;
+          final translateX = -distanceX * (1.0 - t12);
           final translateY = -(1.0 - t12) * MediaQuery.of(context).size.height;
           return Transform.translate(
-            offset: Offset(0, translateY),
+            offset: Offset(translateX, translateY),
             child: child,
           );
         },
@@ -258,17 +260,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // ── Left: Interactive 3D Phone ──
-        Expanded(
-          flex: 5,
-          child: Center(
-            child: phoneObj,
-          ),
-        ),
-
-        const SizedBox(width: 80),
-
-        // ── Right: Elevated Data Card & HUD ──
+        // ── Left: Elevated Data Card & HUD ──
         Expanded(
           flex: 5,
           child: Column(
@@ -317,6 +309,16 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
                 ),
               ),
             ],
+          ),
+        ),
+
+        const SizedBox(width: 80),
+
+        // ── Right: Interactive 3D Phone ──
+        Expanded(
+          flex: 5,
+          child: Center(
+            child: phoneObj,
           ),
         ),
       ],
