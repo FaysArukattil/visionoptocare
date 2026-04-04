@@ -270,7 +270,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
 
           // Entry (1.0 -> 2.0)
           final t12 = (v - 1.0).clamp(0.0, 1.0);
-          final distanceX = width * 0.6;
+          final distanceX = width * 0.62;
           final entryTx = -distanceX * (1.0 - t12);
           final entryTy = -(1.0 - t12) * height;
 
@@ -304,9 +304,9 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
                 flex: 3,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 100), 
+                    const SizedBox(height: 140), 
                     Text(
                       'VISION TEST SUITE',
                       style: AppFonts.caption.copyWith(
@@ -353,7 +353,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
               Expanded(
                 flex: 3,
                 child: Container(
-                  alignment: Alignment.center,
+                  alignment: Alignment.centerRight,
                   child: phoneObj,
                 ),
               ),
@@ -379,31 +379,50 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
       width: 4,
       child: Container(
         decoration: BoxDecoration(
-          color: themeColor.withValues(alpha: 0.1),
+          color: themeColor.withValues(alpha: 0.05), // Ghost track
           borderRadius: BorderRadius.circular(2),
         ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final h = constraints.maxHeight;
-            // Modulo it for the periodic list logic
-            final progress = (scrollPos % _tests.length) / _tests.length;
-            return Stack(
-              children: [
-                Positioned(
-                  top: progress.clamp(0.0, 1.0) * h,
-                  left: 0,
-                  child: Container(
-                    width: 4, height: h / _tests.length,
-                    decoration: BoxDecoration(
-                      color: themeColor,
-                      borderRadius: BorderRadius.circular(2),
-                      boxShadow: [BoxShadow(color: themeColor.withValues(alpha: 0.5), blurRadius: 10)],
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onVerticalDragUpdate: (details) {
+            final box = context.findRenderObject() as RenderBox?;
+            if (box != null) {
+              final localOffset = box.globalToLocal(details.globalPosition);
+              // Calculate progress within the track area
+              final trackHeight = box.size.height;
+              if (trackHeight > 0) {
+                final progress = (localOffset.dy / trackHeight).clamp(0.0, 1.0);
+                // Map progress to the range of tests
+                _scrollCtrl.value = progress * (_tests.length - 1);
+                _userIntervened = true;
+                _stopAutoCycle();
+                _resumeAfterDelay();
+              }
+            }
+          },
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final h = constraints.maxHeight;
+              // Modulo it for the periodic list logic if needed, but for the scrollbar we map 0.0 to 1.0
+              final progress = (_scrollCtrl.value / (_tests.length - 1)).clamp(0.0, 1.0);
+              return Stack(
+                children: [
+                  Positioned(
+                    top: progress * (h - (h / _tests.length)),
+                    left: 0,
+                    child: Container(
+                      width: 4, height: h / _tests.length,
+                      decoration: BoxDecoration(
+                        color: themeColor,
+                        borderRadius: BorderRadius.circular(2),
+                        boxShadow: [BoxShadow(color: themeColor.withValues(alpha: 0.5), blurRadius: 10)],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
       ),
     );

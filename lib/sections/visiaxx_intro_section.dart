@@ -104,9 +104,9 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                       final t01 = (1.0 - scrollVal).clamp(0.0, 1.0);
                       final t12 = (scrollVal - 1.0).clamp(0.0, 1.0);
                       
-                      // Moves from Center of Left Half (0.25w) to Center of Right Flex (0.85w approx)
-                      // Target: 0.85w - 0.25w = 0.6w
-                      final distanceX = width * 0.6;
+                      // Moves from Center of Left Half (0.25w) to Center of Right Flex (0.87w approx)
+                      // Target: 0.87w - 0.25w = 0.62w
+                      final distanceX = width * 0.62;
                       final translateX = -800.0 * Curves.easeIn.transform(t01) + distanceX * t12;
                       final translateY = MediaQuery.of(context).size.height * t12;
                       
