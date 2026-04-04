@@ -613,8 +613,8 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     // Only animate float when active to save GPU cycles
     return RepaintBoundary(
       child: PhoneMockup(
-        width: isMob ? 230 : 260,
-        height: isMob ? 450 : 500,
+        width: isMob ? 150 : 260,
+        height: isMob ? 300 : 500,
         tiltX: 0.0,
         tiltY: 0.0,
         screen: _TestSimulationEngine(test: test, themeColor: themeColor, scrollProgress: scrollProgress),
@@ -771,18 +771,25 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
   Widget build(BuildContext context) {
     return Container(
       color: Colors.black,
-      child: Stack(
-        children: [
-          // Basic grid background
-          Positioned.fill(
-            child: CustomPaint(painter: _DiagnosticGridPainter(color: widget.themeColor.withValues(alpha: 0.1))),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.center,
+        child: SizedBox(
+          width: 260, // Reference width for simulation design
+          height: 500, // Reference height for simulation design
+          child: Stack(
+            children: [
+              // Basic grid background
+              Positioned.fill(
+                child: CustomPaint(painter: _DiagnosticGridPainter(color: widget.themeColor.withValues(alpha: 0.1))),
+              ),
+              
+              Center(
+                child: _buildSimulation(widget.test.number),
+              ),
+            ],
           ),
-          
-          Center(
-            child: _buildSimulation(widget.test.number),
-          ),
-
-        ],
+        ),
       ),
     );
   }
