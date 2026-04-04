@@ -483,20 +483,22 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8), // Reduced from 16
-          Text(
-            '12 PRECISION DIAGNOSTICS',
-            style: AppFonts.h2.copyWith(
-              color: AppColors.white.withValues(alpha: 0.9),
-              fontSize: 16, // Optimized for single row on mobile
-              height: 1.1,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.5,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              '12 PRECISION DIAGNOSTICS',
+              style: AppFonts.h2.copyWith(
+                color: AppColors.white.withValues(alpha: 0.9),
+                fontSize: 18, 
+                height: 1.2,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.5,
+              ),
+              textAlign: TextAlign.center,
+              // Removed maxLines: 1 to allow complete text wrap
             ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 10), // Reduced from 30
+          const SizedBox(height: 10), 
           // The Tactical HUD is now combined with the detail card below for mobile
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -699,8 +701,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
               height: 1.5,
               fontSize: isMob ? 13 : 16,
             ),
-            maxLines: null, // Removed limit to see completely
-            overflow: TextOverflow.ellipsis,
+            // No maxLines or overflow defined: allows the text to naturally expand and show completely.
           ),
         ],
       ),
