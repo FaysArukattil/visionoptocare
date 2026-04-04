@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/scheduler.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../widgets/phone_mockup.dart';
@@ -45,7 +48,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   final ValueNotifier<double> _scrollPos = ValueNotifier<double>(0.0);
   final FocusNode _focusNode = FocusNode();
   
-  Timer? _autoTimer;
+  Ticker? _ticker;
   bool _userIntervened = false;
 
   @override
@@ -80,19 +83,22 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     _stopAutoCycle();
     if (_userIntervened) return;
 
-    // Continuous infinite smooth scroll
-    _autoTimer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
+    // Use a Ticker for buttery smooth per-frame constant motion
+    _ticker = createTicker((elapsed) {
       if (!mounted || _userIntervened) {
-        timer.cancel();
+        _stopAutoCycle();
         return;
       }
-      _scrollCtrl.value += 0.01; // smooth constant pace
+      // constant smooth increment (0.6 units per second approx)
+      _scrollCtrl.value += 0.008; 
     });
+    _ticker!.start();
   }
 
   void _stopAutoCycle() {
-    _autoTimer?.cancel();
-    _autoTimer = null;
+    _ticker?.stop();
+    _ticker?.dispose();
+    _ticker = null;
   }
 
   void _resumeAfterDelay() {
@@ -156,10 +162,19 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   Widget build(BuildContext context) {
     final isMob = Responsive.isMobile(context);
 
-    return KeyboardListener(
-      focusNode: _focusNode,
-      autofocus: true,
-      onKeyEvent: _onKey,
+    return Listener(
+      onPointerSignal: (event) {
+        if (event is PointerScrollEvent) {
+          _userIntervened = true;
+          _stopAutoCycle();
+          _scrollCtrl.value += event.scrollDelta.dy / 1000.0;
+          _resumeAfterDelay();
+        }
+      },
+      child: KeyboardListener(
+        focusNode: _focusNode,
+        autofocus: true,
+        onKeyEvent: _onKey,
       child: Stack(
         children: [
           // 1. Dynamic 'Neural' Background 
@@ -208,22 +223,13 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
               final test = _tests[sIdx];
               final themeColor = _getTierColor(test.tier);
 
-              return MouseRegion(
-                onEnter: (_) {
-                  _userIntervened = true;
-                  _stopAutoCycle();
-                },
-                onExit: (_) {
-                  _userIntervened = false;
-                  _resumeAfterDelay();
-                },
-                child: isMob 
-                    ? _buildMobileLayout(test, themeColor, sIdx, pos) 
-                    : _buildDesktopLayout(test, themeColor, sIdx, pos),
-              );
+              return isMob 
+                  ? _buildMobileLayout(test, themeColor, sIdx, pos) 
+                  : _buildDesktopLayout(test, themeColor, sIdx, pos);
             },
           ),
         ],
+        ),
       ),
     );
   }
@@ -257,72 +263,115 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
       );
     }
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+    return Stack(
       children: [
-        // ── Left: Elevated Data Card & HUD ──
-        Expanded(
-          flex: 5,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
+        Padding(
+          padding: const EdgeInsets.only(left: 40, right: 20), // Essential for scroll track visibility
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 100), // Clears the navbar completely
-              // Header
-              Text(
-                'VISION TEST SUITE',
-                style: AppFonts.caption.copyWith(
-                  color: AppColors.accent2,
-                  letterSpacing: 3,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 11,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '12 Clinical-Grade\nDiagnostics',
-                style: AppFonts.h2.copyWith(
-                  color: AppColors.white,
-                  fontSize: 38,
-                  height: 1.1,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 40),
-              
-              // HUD & Card Stack
-              Expanded(
-                child: Stack(
-                  children: [
-                    Positioned(
-                      left: 0,
-                      top: 0,
-                      bottom: 0,
-                      width: 500,
-                      child: _buildTacticalHUD(false, scrollPos),
+            // ── Left: Elevated Data Card & HUD ──
+            Expanded(
+              flex: 5,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 100), // Clears the navbar completely
+                  // Header
+                  Text(
+                    'VISION TEST SUITE',
+                    style: AppFonts.caption.copyWith(
+                      color: AppColors.accent2,
+                      letterSpacing: 3,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 11,
                     ),
-                    Positioned(
-                      right: 0, // Anchored to right boundary so it doesn't overflow
-                      top: 100, // Elevated near center
-                      child: _buildDetailCard(test, themeColor, false),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '12 Clinical-Grade\nDiagnostics',
+                    style: AppFonts.h2.copyWith(
+                      color: AppColors.white,
+                      fontSize: 38,
+                      height: 1.1,
+                      fontWeight: FontWeight.w800,
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 40),
+                  
+                  // HUD Indicator & HUD Stack
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        // The Tactical HUD
+                        _buildTacticalHUD(false, scrollPos),
+
+                        // Scroll Indicator Track (Fixed Progress Bar)
+                        _buildVerticalScrollIndicator(scrollPos, themeColor),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+
+            const SizedBox(width: 80),
+
+            // ── Right: Interactive 3D Phone ──
+            Expanded(
+              flex: 5,
+              child: Center(
+                child: phoneObj,
+              ),
+            ),
+          ],
         ),
+      ),
 
-        const SizedBox(width: 80),
-
-        // ── Right: Interactive 3D Phone ──
-        Expanded(
-          flex: 5,
-          child: Center(
-            child: phoneObj,
-          ),
+        // 🟢 Top-Layer Detail Card: Absolute Positioned
+        Positioned(
+          right: 40, // More to the right, clear of the phone and HUD
+          top: 120,
+          child: _buildDetailCard(test, themeColor, false),
         ),
       ],
+    );
+  }
+
+  Widget _buildVerticalScrollIndicator(double scrollPos, Color themeColor) {
+    return Positioned(
+      left: 0, top: 40, bottom: 40,
+      width: 4,
+      child: Container(
+        decoration: BoxDecoration(
+          color: themeColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(2),
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final h = constraints.maxHeight;
+            // Modulo it for the periodic list logic
+            final progress = (scrollPos % _tests.length) / _tests.length;
+            return Stack(
+              children: [
+                Positioned(
+                  top: progress * h,
+                  left: 0,
+                  child: Container(
+                    width: 4, height: h / _tests.length,
+                    decoration: BoxDecoration(
+                      color: themeColor,
+                      borderRadius: BorderRadius.circular(2),
+                      boxShadow: [BoxShadow(color: themeColor.withValues(alpha: 0.5), blurRadius: 10)],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -393,52 +442,77 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   }
 
   Widget _buildTacticalHUD(bool isMob, double scrollPos) {
-    return Stack(
-      alignment: Alignment.center,
-      children: List.generate(_tests.length, (i) {
-        double diff = i - scrollPos;
-        while (diff > 6.0) { diff -= 12.0; }
-        while (diff < -6.0) { diff += 12.0; }
-
-        final absDiff = diff.abs();
-        final isSelected = absDiff < 0.5;
-        
-        // 3D Perspective Mapping
-        final double z = absDiff * 80; // Depth
-        final double y = diff * 100; // Vertical spread
-        final double scale = (1.0 - (absDiff * 0.15)).clamp(0.5, 1.0);
-        final double opacity = (1.0 - (absDiff * 0.25)).clamp(0.0, 1.0);
-
-        if (opacity < 0.1) return const SizedBox.shrink();
-
-        return Positioned(
-          top: (isMob ? 60 : 120) + y,
-          child: Transform(
-            transform: Matrix4.identity()
-              ..setEntry(3, 2, 0.001)
-              ..setTranslationRaw(0.0, 0.0, -z),
-            alignment: Alignment.center,
-            child: Transform.scale(
-              scale: scale,
-              child: Opacity(
-                opacity: opacity,
-                child: GestureDetector(
-                  onTap: () => _onTapItem(i),
-                  child: MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: _HUDItem(
-                      test: _tests[i],
-                      isSelected: isSelected,
-                      themeColor: _getTierColor(_tests[i].tier),
-                      isMob: isMob,
+    return Listener(
+      onPointerSignal: (event) {
+        if (event is PointerScrollEvent) {
+          _userIntervened = true;
+          _stopAutoCycle();
+          _scrollCtrl.value += event.scrollDelta.dy / 1000.0;
+          _resumeAfterDelay();
+        }
+      },
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final centerY = constraints.maxHeight / 2;
+          
+        return Stack(
+          alignment: Alignment.center,
+          children: (_tests.asMap().entries.map((entry) {
+            final int i = entry.key;
+            double diff = i - scrollPos;
+            while (diff > 6.0) { diff -= 12.0; }
+            while (diff < -6.0) { diff += 12.0; }
+  
+            final absDiff = diff.abs();
+            final isSelected = absDiff < 0.5;
+            
+            // 3D Perspective Mapping
+            final double z = absDiff * 80; // Depth
+            final double y = diff * 110; // Vertical spread
+            final double scale = (1.0 - (absDiff * 0.15)).clamp(0.5, 1.0);
+            final double opacity = (1.0 - (absDiff * 0.25)).clamp(0.0, 1.0);
+  
+            return MapEntry(
+              absDiff,
+              Positioned(
+                top: centerY + y - 40,
+                width: isMob ? 180 : 260,
+                child: Opacity(
+                  opacity: opacity < 0.1 ? 0.0 : 1.0,
+                  child: Transform(
+                    transform: Matrix4.identity()
+                      ..setEntry(3, 2, 0.001)
+                      ..setTranslationRaw(0.0, 0.0, -z),
+                    alignment: Alignment.center,
+                    child: Transform.scale(
+                      scale: scale,
+                      child: Opacity(
+                        opacity: opacity.clamp(0.0, 1.0),
+                        child: GestureDetector(
+                          onTap: () => _onTapItem(i),
+                          behavior: HitTestBehavior.opaque,
+                          child: MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: _HUDItem(
+                              test: _tests[i],
+                              isSelected: isSelected,
+                              themeColor: _getTierColor(_tests[i].tier),
+                              isMob: isMob,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
+            );
+          }).toList()
+            ..sort((a, b) => b.key.compareTo(a.key)))
+            .map((e) => e.value).toList(),
         );
-      }),
+        },
+      ),
     );
   }
 
@@ -526,9 +600,10 @@ class _HUDItem extends StatelessWidget {
       width: isMob ? 180 : 260,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: isSelected ? themeColor.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.02),
+        color: isSelected ? themeColor.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.02),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isSelected ? themeColor : Colors.white10),
+        border: Border.all(color: isSelected ? themeColor : Colors.white10, width: isSelected ? 2 : 1),
+        boxShadow: isSelected ? [BoxShadow(color: themeColor.withValues(alpha: 0.3), blurRadius: 15, spreadRadius: 2)] : [],
       ),
       child: Row(
         children: [
@@ -597,211 +672,795 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
   Widget _buildSimulation(String testNum) {
     switch (testNum) {
       case '01': // Visual Acuity
-        return AnimatedBuilder(
-          animation: _anim,
-          builder: (context, _) => Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('E', style: TextStyle(color: Colors.white, fontSize: 80 * (1 - _anim.value * 0.5), fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              Text('F P', style: TextStyle(color: Colors.white, fontSize: 40 * (1 - _anim.value * 0.5))),
-              const SizedBox(height: 5),
-              Text('T O Z', style: TextStyle(color: Colors.white, fontSize: 20 * (1 - _anim.value * 0.5))),
-            ],
-          ),
-        );
+        return _buildVisualAcuityReal();
       case '02': // Reading Test
-        return AnimatedBuilder(
-          animation: _anim,
-          builder: (context, _) {
-            final text = "Reading clarity is essential for daily life. Optometry advanced analytics.";
-            final visibleChars = (text.length * _anim.value).toInt();
-            return Padding(
-              padding: const EdgeInsets.all(20),
-              child: Text(
-                text.substring(0, visibleChars),
-                style: const TextStyle(color: Colors.white, fontSize: 13, height: 1.5),
-                textAlign: TextAlign.center,
-              ),
-            );
-          },
-        );
+        return _buildReadingSimulation();
       case '03': // Color Vision
-        return CustomPaint(
-          size: const Size(180, 180),
-          painter: _IshiharaPainter(anim: _anim, color: widget.themeColor),
-        );
+        return _buildColorSimulationReal();
       case '04': // Amsler Grid
-        return CustomPaint(
-          size: const Size(160, 160),
-          painter: _AmslerPainter(anim: _anim, color: widget.themeColor),
-        );
-      case '05': // Contrast Sensitivity
+        return _buildAmslerSimulationReal();
+      case '05': // Pelli-Robson
+        return _buildPelliRobsonSimulation();
+      case '06': // Refractometry
+        return _buildRefractionSimulation();
+      case '07': // Eye Hydration
+        return _buildHydrationSimulation();
+      case '08': // Shadow Test
+        return _buildShadowTestSimulation();
+      case '09': // Stereopsis
+        return _buildStereoSimulation();
+      case '10': // Visual Field
+        return _buildVisualFieldSimulation();
+      case '11': // Cover Test
+        return _buildCoverTestSimulation();
+      case '12': // Torchlight Exam
+        return _buildTorchSimulation();
+      default:
+        // Generic telemetry fallback
         return AnimatedBuilder(
           animation: _anim,
-          builder: (context, _) => Opacity(
-            opacity: 0.1 + (_anim.value * 0.8),
-            child: const Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('CONTRAST', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w900)),
-                Text('LEVEL 12', style: TextStyle(color: Colors.white12, fontSize: 10, letterSpacing: 4)),
-              ],
-            ),
+          builder: (context, _) => CustomPaint(
+            painter: _SystemTelemetryPainter(animValue: _anim.value, color: widget.themeColor),
+            size: const Size(double.infinity, double.infinity),
           ),
         );
-      case '06': // Refractometry
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Stack(
-              alignment: Alignment.center,
+    }
+  }
+
+  Widget _buildVisualAcuityReal() {
+    return Container(
+      color: AppColors.background.withValues(alpha: 0.9),
+      child: Column(
+        children: [
+          // Simulated App Bar
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            color: AppColors.surface,
+            child: Row(
               children: [
-                Container(width: 100, height: 100, decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: widget.themeColor, width: 2))),
-                AnimatedBuilder(
-                  animation: _anim,
-                  builder: (context, _) => Transform.rotate(
-                    angle: _anim.value * math.pi * 2,
-                    child: Container(width: 120, height: 2, color: widget.themeColor),
+                Icon(Icons.close, color: widget.themeColor, size: 20),
+                const SizedBox(width: 16),
+                Text(
+                  'VISUAL ACUITY - RIGHT',
+                  style: AppFonts.bodyLarge.copyWith(
+                    fontWeight: FontWeight.w900,
+                    color: widget.themeColor,
+                    fontSize: 12,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            Text('REFRACTING...', style: TextStyle(color: widget.themeColor, fontSize: 10, fontWeight: FontWeight.bold)),
-          ],
-        );
-      case '07': // Eye Hydration
-        return AnimatedBuilder(
-          animation: _anim,
-          builder: (context, _) => Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.water_drop, size: 60, color: widget.themeColor.withValues(alpha: 0.5 + math.sin(_anim.value * math.pi) * 0.5)),
-              const SizedBox(height: 10),
-              Text('HYDRATION: ${(70 + _anim.value * 20).toInt()}%', style: const TextStyle(color: Colors.white, fontSize: 12)),
-            ],
           ),
-        );
-      case '09': // Stereopsis
-        return AnimatedBuilder(
-          animation: _anim,
-          builder: (context, _) => Stack(
-            alignment: Alignment.center,
-            children: List.generate(4, (i) {
-              final angle = (_anim.value * math.pi * 2) + (i * math.pi / 2);
-              return Transform.translate(
-                offset: Offset(math.cos(angle) * 40, math.sin(angle) * 40),
-                child: Container(width: 12, height: 12, decoration: BoxDecoration(shape: BoxShape.circle, color: widget.themeColor)),
-              );
-            }),
-          ),
-        );
-      case '10': // Visual Field (Sonar)
-        return AnimatedBuilder(
-          animation: _anim,
-          builder: (context, _) => Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                width: 140, height: 140,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: widget.themeColor.withValues(alpha: 0.2)),
-                ),
-              ),
-              // Radar sweep
-              Transform.rotate(
-                angle: _anim.value * math.pi * 2,
-                child: Container(
-                  width: 140, height: 140,
+          
+          // Fixed Header Data
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              border: Border(bottom: BorderSide(color: widget.themeColor.withValues(alpha: 0.2))),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: SweepGradient(
-                      colors: [widget.themeColor.withValues(alpha: 0.5), Colors.transparent],
-                      stops: const [0.1, 0.2],
+                    color: widget.themeColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text('6/6', style: TextStyle(fontWeight: FontWeight.w900, color: widget.themeColor, fontSize: 11)),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: widget.themeColor.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('LEVEL 7/7', style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.w900, fontSize: 8)),
+                      const SizedBox(width: 8),
+                      Container(width: 1, height: 10, color: widget.themeColor.withValues(alpha: 0.2)),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.check_circle_outline, size: 10, color: Colors.greenAccent),
+                      const SizedBox(width: 4),
+                      const Text('5/5', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.w900, fontSize: 8)),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                Icon(Icons.timer_outlined, size: 12, color: widget.themeColor),
+                const SizedBox(width: 4),
+                AnimatedBuilder(
+                  animation: _anim,
+                  builder: (context, _) {
+                    int seconds = 7 - ((_anim.value * 14).floor() % 7);
+                    return Text('${seconds}s', style: TextStyle(fontWeight: FontWeight.w900, color: widget.themeColor, fontSize: 12));
+                  }
+                ),
+              ],
+            ),
+          ),
+
+          // Central E Display
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Center(
+                        child: AnimatedBuilder(
+                          animation: _anim,
+                          builder: (context, _) {
+                            int phase = (_anim.value * 8).floor();
+                            double angle = phase * math.pi / 2;
+                            return Transform.rotate(
+                              angle: angle,
+                              child: const Text('E', style: TextStyle(fontSize: 80, fontWeight: FontWeight.bold, color: Colors.black, height: 1.0)),
+                            );
+                          }
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text('Which way is the E facing?', style: TextStyle(color: AppColors.muted, fontSize: 11, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text('Use buttons to indicate direction', style: TextStyle(color: AppColors.white.withValues(alpha: 0.5), fontSize: 9)),
+                ],
+              ),
+            ),
+          ),
+
+          // Control Pad
+          Container(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 20, offset: const Offset(0, -5))],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildVaBtn(Icons.arrow_upward),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildVaBtn(Icons.arrow_back),
+                    const SizedBox(width: 40),
+                    _buildVaBtn(Icons.arrow_forward),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                _buildVaBtn(Icons.arrow_downward),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () {},
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      side: BorderSide(color: widget.themeColor.withValues(alpha: 0.5), width: 1.5),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      backgroundColor: widget.themeColor.withValues(alpha: 0.05),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.visibility_off_rounded, size: 14, color: widget.themeColor),
+                        const SizedBox(width: 6),
+                        Text("Blurry / Can't see clearly", style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.w700, fontSize: 10)),
+                      ],
                     ),
                   ),
                 ),
+              ],
+            ),
+          ),
+        ],
+      )
+    );
+  }
+
+  Widget _buildVaBtn(IconData icon) {
+    return Container(
+      width: 45, height: 45,
+      decoration: BoxDecoration(
+        color: widget.themeColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: widget.themeColor.withValues(alpha: 0.3), blurRadius: 6, offset: const Offset(0, 3))],
+      ),
+      child: Icon(icon, color: Colors.white, size: 24),
+    );
+  }
+
+  // End legacy Contrast simulation
+  
+  Widget _buildReadingSimulation() {
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          _buildSimulationAppBar('READING TEST', 'Near Vision Clarity'),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('1. Clinical Passage', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Colors.blue)),
+                  const SizedBox(height: 8),
+                  Text(
+                    'The quick brown fox jumps over the lazy dog. This sentence contains every letter of the English alphabet exactly once. Clinical reading tests often use specialized paragraphs like this to evaluate how well a patient can identify characters at small point sizes.',
+                    style: TextStyle(fontSize: 12, color: Colors.black, height: 1.4),
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Vision assessment is a critical component of primary healthcare. By measuring acuity at both distance and near, clinicians can diagnose refractive errors such as myopia, hyperopia, and presbyopia.',
+                    style: TextStyle(fontSize: 8, color: Colors.black54, height: 1.4),
+                  ),
+                ],
               ),
-              if (_anim.value > 0.7)
-                Positioned(top: 40, left: 30, child: Container(width: 6, height: 6, decoration: BoxDecoration(shape: BoxShape.circle, color: widget.themeColor))),
+            ),
+          ),
+          _buildSimulationFooter(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPelliRobsonSimulation() {
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          _buildSimulationAppBar('CONTRAST SENSITIVITY', 'Pelli-Robson Triplet'),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildSloanTriplet('V R S', 0.8),
+                const SizedBox(height: 20),
+                _buildSloanTriplet('K H Z', 0.3), // Faded
+                const SizedBox(height: 20),
+                _buildSloanTriplet('N O C', 0.1), // Barely visible
+                const SizedBox(height: 30),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildResponseButton(Icons.check, Colors.green, 'VISIBLE'),
+                    const SizedBox(width: 12),
+                    _buildResponseButton(Icons.close, Colors.red, 'NOT VISIBLE'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          _buildSimulationFooter(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResponseButton(IconData icon, Color color, String label) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle, border: Border.all(color: color)),
+          child: Icon(icon, color: color, size: 16),
+        ),
+        const SizedBox(height: 4),
+        Text(label, style: TextStyle(fontSize: 6, fontWeight: FontWeight.bold, color: color)),
+      ],
+    );
+  }
+
+  Widget _buildRefractionSimulation() {
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          _buildSimulationAppBar('MOBILE REFRACTOMETRY', 'Adjusting Focus'),
+          Expanded(
+            child: Center(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  const Positioned(top: 20, child: Icon(Icons.arrow_drop_up, color: Colors.blue, size: 30)),
+                  const Positioned(bottom: 20, child: Icon(Icons.arrow_drop_down, color: Colors.blue, size: 30)),
+                  const Positioned(left: 20, child: Icon(Icons.arrow_left, color: Colors.blue, size: 30)),
+                  const Positioned(right: 20, child: Icon(Icons.arrow_right, color: Colors.blue, size: 30)),
+                  AnimatedBuilder(
+                    animation: _anim,
+                    builder: (context, _) {
+                      final blur = (math.sin(_anim.value * math.pi * 2) * 5.0).abs();
+                      return ImageFiltered(
+                        imageFilter: ui.ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+                        child: const Text('E', style: TextStyle(fontSize: 100, fontWeight: FontWeight.w900, color: Colors.black)),
+                      );
+                    }
+                  ),
+                ],
+              ),
+            ),
+          ),
+          _buildSimulationFooter(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShadowTestSimulation() {
+    return Container(
+      color: Colors.black,
+      child: Stack(
+        children: [
+          // Camera feed placeholder (Dark Eye)
+          Center(
+            child: Container(
+              width: 140, height: 140,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [Colors.grey[900]!, Colors.black],
+                ),
+                border: Border.all(color: Colors.white10, width: 2),
+              ),
+              child: Center(
+                child: Container(
+                  width: 40, height: 40,
+                  decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
+                ),
+              ),
+            ),
+          ),
+          // Flashlight beam animation
+          AnimatedBuilder(
+            animation: _anim,
+            builder: (context, _) {
+              final x = math.cos(_anim.value * math.pi * 2) * 40;
+              final y = math.sin(_anim.value * math.pi * 2) * 40;
+              return Center(
+                child: Transform.translate(
+                  offset: Offset(x, y),
+                  child: Container(
+                    width: 50, height: 50,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(color: Colors.yellow.withValues(alpha: 0.3 + (math.sin(_anim.value * 10) * 0.1)), blurRadius: 20, spreadRadius: 10),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          Column(
+            children: [
+              _buildSimulationAppBar('SHADOW TEST', 'Cataract Screening'),
+              const Spacer(),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                color: Colors.yellow.withValues(alpha: 0.1),
+                child: const Text('ANALYZING SHADOW PATTERN...', textAlign: TextAlign.center, style: TextStyle(color: Colors.yellow, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+              ),
+              _buildSimulationFooter(),
             ],
           ),
-        );
-      default:
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(widget.test.icon, size: 80, color: widget.themeColor),
-            const SizedBox(height: 20),
-            Text('ACTIVE SENSOR', style: TextStyle(color: widget.themeColor, fontSize: 10, letterSpacing: 2)),
-          ],
-        );
-    }
-  }
-}
-
-class _AmslerPainter extends CustomPainter {
-  final Animation<double> anim;
-  final Color color;
-  _AmslerPainter({required this.anim, required this.color}) : super(repaint: anim);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color.withValues(alpha: 0.2)..strokeWidth = 1;
-    final w = size.width;
-    final h = size.height;
-    
-    for (double i = 0; i <= w; i += 20) {
-      final path = Path();
-      path.moveTo(i, 0);
-      for (double j = 0; j <= h; j += 5) {
-        final warp = math.sin((anim.value * math.pi * 2) + (j * 0.05)) * 2;
-        path.lineTo(i + (isSelectedPoint(i, j) ? warp : 0), j);
-      }
-      canvas.drawPath(path, paint..style = PaintingStyle.stroke);
-    }
-    for (double j = 0; j <= h; j += 20) {
-      final path = Path();
-      path.moveTo(0, j);
-      for (double i = 0; i <= w; i += 5) {
-        final warp = math.cos((anim.value * math.pi * 2) + (i * 0.05)) * 10;
-        path.lineTo(i, j + (isSelectedPoint(i, j) ? warp : 0));
-      }
-      canvas.drawPath(path, paint..style = PaintingStyle.stroke);
-    }
-    
-    // Central dot
-    canvas.drawCircle(Offset(w/2, h/2), 4, Paint()..color = color);
+        ],
+      ),
+    );
   }
 
-  bool isSelectedPoint(double x, double y) => (x - 80).abs() < 40 && (y - 80).abs() < 40;
-
-  @override
-  bool shouldRepaint(covariant _AmslerPainter oldDelegate) => false;
-}
-
-class _IshiharaPainter extends CustomPainter {
-  final Animation<double> anim;
-  final Color color;
-  _IshiharaPainter({required this.anim, required this.color}) : super(repaint: anim);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rand = math.Random(42);
-    final center = Offset(size.width / 2, size.height / 2);
-    for (int i = 0; i < 50; i++) {
-        final dist = rand.nextDouble() * size.width / 2;
-        final angle = rand.nextDouble() * math.pi * 2;
-        final pos = center + Offset(math.cos(angle) * dist, math.sin(angle) * dist);
-        final dotColor = Color.lerp(color, Colors.red, math.sin(anim.value * math.pi + i) * 0.5 + 0.5)!;
-        canvas.drawCircle(pos, rand.nextDouble() * 5 + 2, Paint()..color = dotColor);
-    }
+  Widget _buildSloanTriplet(String letters, double opacity) {
+    return Opacity(
+      opacity: opacity,
+      child: Text(letters, style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w900, color: Colors.black, letterSpacing: 10, fontFamily: 'monospace')),
+    );
   }
-  @override
-  bool shouldRepaint(covariant _IshiharaPainter oldDelegate) => false;
-}
+
+  Widget _buildHydrationSimulation() {
+    return Container(
+      color: Colors.black,
+      child: Column(
+        children: [
+          _buildSimulationAppBar('EYE HYDRATION', 'Blink Rate Monitoring'),
+          const Spacer(),
+          Center(
+            child: Container(
+              width: 100, height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.blue, width: 2),
+                boxShadow: [BoxShadow(color: Colors.blue.withValues(alpha: 0.2), blurRadius: 10)],
+              ),
+              child: const Icon(Icons.remove_red_eye, color: Colors.blue, size: 50),
+            ),
+          ),
+          const SizedBox(height: 20),
+          _buildBlinkFeedback(7),
+          const Spacer(),
+          _buildSimulationFooter(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBlinkFeedback(int count) {
+    return Column(
+      children: [
+        Text('$count', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.blue)),
+        const Text('BLINKS DETECTED', style: TextStyle(fontSize: 8, color: Colors.white54, letterSpacing: 1.2)),
+      ],
+    );
+  }
+
+  Widget _buildStereoSimulation() {
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          _buildSimulationAppBar('STEREOPSIS', 'Depth Perception'),
+          Expanded(
+            child: Center(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  _buildStereoShape(const Offset(-20, -20), Colors.red.withValues(alpha: 0.5)),
+                  _buildStereoShape(const Offset(20, 20), Colors.blue.withValues(alpha: 0.5)),
+                  const Text('Identify the floating shape', style: TextStyle(fontSize: 8, color: Colors.grey)),
+                ],
+              ),
+            ),
+          ),
+          _buildSimulationFooter(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStereoShape(Offset offset, Color color) {
+    return Transform.translate(
+      offset: offset,
+      child: Container(width: 60, height: 60, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+    );
+  }
+
+  Widget _buildVisualFieldSimulation() {
+    return Container(
+      color: Colors.black,
+      child: Column(
+        children: [
+          _buildSimulationAppBar('VISUAL FIELD', 'Perimetry Grid'),
+          Expanded(
+            child: Center(
+              child: Container(
+                width: 160, height: 160,
+                decoration: BoxDecoration(border: Border.all(color: Colors.white10)),
+                child: Stack(
+                  children: [
+                    const Center(child: Icon(Icons.add, color: Colors.white24, size: 20)),
+                    Positioned(
+                      left: 40, top: 100,
+                      child: AnimatedBuilder(
+                        animation: _anim,
+                        builder: (context, _) {
+                          final show = (_anim.value * 10).floor() % 3 == 0;
+                          return Opacity(
+                            opacity: show ? 1.0 : 0.0,
+                            child: Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                          );
+                        }
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const Text('TAP WHEN YOU SEE A DOT', style: TextStyle(fontSize: 8, color: Colors.white54, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 10),
+          _buildSimulationFooter(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCoverTestSimulation() {
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          _buildSimulationAppBar('COVER TEST', 'Muscle Alignment'),
+          const Spacer(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildEyeMockup(true),
+              const SizedBox(width: 40),
+              _buildEyeMockup(false),
+            ],
+          ),
+          const Spacer(),
+          _buildSimulationFooter(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEyeMockup(bool isCovered) {
+    return Container(
+      width: 60, height: 40,
+      decoration: BoxDecoration(
+        color: isCovered ? Colors.black87 : Colors.grey[200],
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: isCovered ? null : Center(child: Container(width: 20, height: 20, decoration: const BoxDecoration(color: Colors.brown, shape: BoxShape.circle))),
+    );
+  }
+
+  Widget _buildTorchSimulation() {
+    return Container(
+      color: Colors.black,
+      child: Column(
+        children: [
+          _buildSimulationAppBar('TORCHLIGHT EXAM', 'Pupillary Reflex'),
+          const Spacer(),
+          Center(
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(width: 80, height: 80, decoration: const BoxDecoration(color: Colors.white10, shape: BoxShape.circle)),
+                AnimatedBuilder(
+                  animation: _anim,
+                  builder: (context, _) {
+                    final size = 40.0 - (math.sin(_anim.value * math.pi * 2).abs() * 20);
+                    return Container(width: size, height: size, decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle));
+                  }
+                ),
+              ],
+            ),
+          ),
+          const Spacer(),
+          _buildSimulationFooter(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildColorSimulationReal() {
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          _buildSimulationAppBar('COLOR VISION', 'Plate 08/14'),
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Ishihara Plate Mockup
+                  Container(
+                    width: 140, height: 140,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: DecorationImage(
+                        image: NetworkImage('https://upload.wikimedia.org/wikipedia/commons/e/e0/Ishihara_9.png'),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Premium Buttons Grid
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: GridView.count(
+                      shrinkWrap: true,
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 8,
+                      crossAxisSpacing: 8,
+                      childAspectRatio: 2.2,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: ['12', '74', '06', 'Nothing'].map((opt) => _buildPremiumButton(opt, opt == '74')).toList(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          _buildSimulationFooter(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAmslerSimulationReal() {
+    return Container(
+      color: Colors.black,
+      child: Column(
+        children: [
+          _buildSimulationAppBar('AMSLER GRID', 'Mark Rectified'),
+          Expanded(
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+                // The Grid
+                Container(
+                  width: 160, height: 160,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                  ),
+                  child: CustomPaint(
+                    painter: _AmslerDistortionPainter(color: Colors.white.withValues(alpha: 0.3)),
+                    child: Stack(
+                      children: [
+                        // Central dot
+                        Center(child: Container(width: 4, height: 4, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle))),
+                        // Marks
+                        Positioned(
+                          left: 40, top: 60,
+                          child: Container(
+                            width: 20, height: 20,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.red, width: 2),
+                              color: Colors.red.withValues(alpha: 0.3),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Questions
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Column(
+                    children: [
+                      _buildAmslerQ('Lines Straight?', true),
+                      _buildAmslerQ('Gaps Visible?', false),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _buildSimulationFooter(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSimulationAppBar(String title, String subtitle) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(10, 25, 10, 8),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.05),
+        border: Border(bottom: BorderSide(color: Colors.grey.withValues(alpha: 0.2))),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 1)),
+              Text(subtitle, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blue)),
+            ],
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
+            child: Row(
+              children: [
+                const Icon(Icons.timer_outlined, size: 10, color: Colors.red),
+                const SizedBox(width: 2),
+                AnimatedBuilder(
+                  animation: _anim,
+                  builder: (context, _) {
+                    int seconds = 9 - ((_anim.value * 18).floor() % 9);
+                    return Text('${seconds}s', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.red));
+                  }
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSimulationFooter() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildFooterIcon(Icons.mic, 'Speak'),
+          _buildFooterIcon(Icons.help_outline, 'Help'),
+          _buildFooterIcon(Icons.exit_to_app, 'Exit'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFooterIcon(IconData icon, String label) {
+    return Column(
+      children: [
+        Icon(icon, size: 12, color: Colors.grey),
+        Text(label, style: const TextStyle(fontSize: 6, color: Colors.grey)),
+      ],
+    );
+  }
+
+  Widget _buildPremiumButton(String label, bool isSelected) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isSelected ? Colors.blue.withValues(alpha: 0.1) : Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: isSelected ? Colors.blue : Colors.grey.withValues(alpha: 0.3), width: 1.5),
+        boxShadow: isSelected ? [BoxShadow(color: Colors.blue.withValues(alpha: 0.2), blurRadius: 4)] : [],
+      ),
+      child: Center(
+        child: Text(label, style: TextStyle(
+          fontSize: 14, 
+          fontWeight: FontWeight.w900, 
+          color: isSelected ? Colors.blue : Colors.black87,
+        )),
+      ),
+    );
+  }
+
+  Widget _buildAmslerQ(String text, bool? val) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(text, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: Colors.white70)),
+          Row(
+            children: [
+              _buildYesNo(true, val == true),
+              const SizedBox(width: 4),
+              _buildYesNo(false, val == false),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildYesNo(bool isYes, bool selected) {
+    final color = isYes ? Colors.green : Colors.red;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: selected ? color : color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(isYes ? 'YES' : 'NO', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: selected ? Colors.white : color)),
+    );
+  }
+} // End of _TestSimulationEngineState
+
+
 
 class _SystemTelemetryPainter extends CustomPainter {
   final double animValue;
@@ -824,6 +1483,46 @@ class _SystemTelemetryPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _SystemTelemetryPainter oldDelegate) =>
       (oldDelegate.animValue - animValue).abs() > 0.5 || oldDelegate.color != color;
+}
+
+class _AmslerDistortionPainter extends CustomPainter {
+  final Color color;
+  _AmslerDistortionPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 0.5
+      ..style = PaintingStyle.stroke;
+
+    // Draw vertical lines with slight "warp" center-left
+    for (double x = 0; x <= size.width; x += 16) {
+      final path = Path();
+      path.moveTo(x, 0);
+      for (double y = 0; y <= size.height; y += 2) {
+        final dist = math.sqrt(math.pow(x - 50, 2) + math.pow(y - 70, 2));
+        final warp = math.exp(-dist / 30) * 10; 
+        path.lineTo(x + warp * math.sin(y / 10), y);
+      }
+      canvas.drawPath(path, paint);
+    }
+
+    // Draw horizontal lines
+    for (double y = 0; y <= size.height; y += 16) {
+      final path = Path();
+      path.moveTo(0, y);
+      for (double x = 0; x <= size.width; x += 2) {
+        final dist = math.sqrt(math.pow(x - 50, 2) + math.pow(y - 70, 2));
+        final warp = math.exp(-dist / 30) * 10;
+        path.lineTo(x, y + warp * math.cos(x / 10));
+      }
+      canvas.drawPath(path, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _AmslerDistortionPainter oldDelegate) => false;
 }
 
 class _DiagnosticGridPainter extends CustomPainter {
