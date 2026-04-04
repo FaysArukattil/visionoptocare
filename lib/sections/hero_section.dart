@@ -168,8 +168,10 @@ class _HeroSectionState extends State<HeroSection>
           // ── Main Content ──
           Padding(
             padding: EdgeInsets.symmetric(horizontal: isMob ? 24 : 60),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: SingleChildScrollView(
+              physics: const NeverScrollableScrollPhysics(),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // ── Typewriter Brand ──
                 ShaderMask(
@@ -292,6 +294,7 @@ class _HeroSectionState extends State<HeroSection>
                   ),
                 ),
               ],
+            ),
             ),
           ),
         ],

@@ -78,65 +78,55 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
   }
 
   Widget _buildDesktopLayout() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // ── Left: 3D iPhone ──
-        Expanded(
-          flex: 5,
-          child: Center(
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            flex: 4,
             child: AnimatedBuilder(
               animation: _phoneCtrl,
-              builder: (context, _) {
+              builder: (_, _) {
                 final t = CurvedAnimation(
                   parent: _phoneCtrl,
                   curve: Curves.easeOutBack,
                 ).value.clamp(0.0, 1.0);
                 return Opacity(
-                  opacity: t.clamp(0.0, 1.0),
-                  child: Transform(
-                    transform: Matrix4.identity()
-                      ..setEntry(3, 2, 0.001)
-                      ..rotateY(0.15 * (1 - t)) // subtle swivel on entry
-                      ..setTranslationRaw(0.0, 15.0 * (1 - t), 0.0),
-                    alignment: Alignment.center,
-                    child: PhoneMockup(
-                      width: 260,
-                      height: 500,
-                      tiltX: 0.0,
-                      tiltY: 0.0,
-                      screen: _buildPhoneScreen(),
-                    ),
+                  opacity: t,
+                  child: PhoneMockup(
+                    width: 320,
+                    height: 600,
+                    tiltX: 0.05,
+                    tiltY: 0.1,
+                    screen: _buildPhoneScreen(),
                   ),
                 );
               },
             ),
           ),
-        ),
-
-        const SizedBox(width: 80),
-
-        // ── Right: Brand description ──
-        Expanded(
-          flex: 5,
-          child: AnimatedBuilder(
-            animation: _textCtrl,
-            builder: (_, _) {
-              final t = CurvedAnimation(
-                parent: _textCtrl,
-                curve: Curves.easeOutCubic,
-              ).value.clamp(0.0, 1.0);
-              return Opacity(
-                opacity: t.clamp(0.0, 1.0),
-                child: Transform.translate(
-                  offset: Offset(30 * (1 - t), 0),
-                  child: _buildIntroText(false),
-                ),
-              );
-            },
+          const SizedBox(width: 40),
+          Expanded(
+            flex: 5,
+            child: AnimatedBuilder(
+              animation: _textCtrl,
+              builder: (_, _) {
+                final t = CurvedAnimation(
+                  parent: _textCtrl,
+                  curve: Curves.easeOutCubic,
+                ).value.clamp(0.0, 1.0);
+                return Opacity(
+                  opacity: t.clamp(0.0, 1.0),
+                  child: Transform.translate(
+                    offset: Offset(30 * (1 - t), 0),
+                    child: _buildIntroText(false),
+                  ),
+                );
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

@@ -101,8 +101,8 @@ class _HomePageState extends State<HomePage> {
                         child: ValueListenableBuilder<int>(
                           valueListenable: _currentPage,
                           builder: (context, activeIdx, child) {
-                            // Only activate tickers if the page is visible or adjacent
-                            final bool isActive = (activeIdx - i).abs() <= 1;
+                            // strictly pause the heavy rendering for offscreen sections
+                            final bool isActive = activeIdx == i;
                             return TickerMode(
                               enabled: isActive,
                               child: _buildSection(i, isActive),
