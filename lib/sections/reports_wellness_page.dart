@@ -161,82 +161,119 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage> {
     );
   }
 
-  final PageController _bentoCtrl = PageController(viewportFraction: 0.85);
+
+  Widget _buildCompactRowCard(String title, String subtitle, IconData icon, Color color, Widget animation) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.background.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.15), width: 1.5),
+      ),
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          // Text Details taking the majority of horizontal space
+          Expanded(
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  children: [
+                    Icon(icon, color: color, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        title, 
+                        style: AppFonts.h4.copyWith(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)
+                      )
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle, 
+                  style: AppFonts.bodyLarge.copyWith(color: AppColors.muted, fontSize: 10, height: 1.2),
+                  maxLines: 3,
+                  overflow: TextOverflow.visible, // Prevent truncation and allow full wrap
+                ),
+              ],
+            ),
+          ),
+          // Animation scaled neatly to the right
+          Expanded(
+            flex: 2,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: SizedBox(
+                width: 180, height: 180,
+                child: animation
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildMobileLayout(double tEntry, double tExit) {
     final entrySY = (1.0 - Curves.easeOutCubic.transform(tEntry)) * 100;
     final exitSY = Curves.easeInCubic.transform(tExit) * 100;
     
-    return Column(
-      children: [
-        Expanded(
-          child: Transform.translate(
-            offset: Offset(0, entrySY + exitSY),
-            child: PageView(
-              controller: _bentoCtrl,
-              physics: const BouncingScrollPhysics(),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: _BentoCard(
-                    title: 'Education Reels',
-                    subtitle: 'Eye care video tips in a TikTok-style feed.',
-                    icon: Icons.play_circle_outline,
-                    color: const Color(0xFF4F6AFF),
-                    child: const _AnimatedReelsFeed(color: Color(0xFF4F6AFF)),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: _BentoCard(
-                    title: 'Smart Clinical reports',
-                    subtitle: 'Auto-generate comprehensive PDF reports.',
-                    icon: Icons.picture_as_pdf_outlined,
-                    color: const Color(0xFF00D4C8),
-                    child: const _AnimatedPdfGenerator(color: Color(0xFF00D4C8)),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: _BentoCard(
-                    title: 'Ocular Wellness',
-                    subtitle: 'Interactive eye therapy games.',
-                    icon: Icons.headphones_outlined,
-                    color: const Color(0xFF9D4EDD),
-                    child: const _AnimatedOcularWellness(color: Color(0xFF9D4EDD)),
-                  ),
-                ),
-              ],
+    return Transform.translate(
+      offset: Offset(0, entrySY + exitSY),
+      child: Column(
+        children: [
+          // Top Half: Education Reels
+          Expanded(
+            flex: 12,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _BentoCard(
+                title: 'Education Reels',
+                subtitle: 'Eye care video tips feed.',
+                icon: Icons.play_circle_outline,
+                color: const Color(0xFF4F6AFF),
+                child: const _AnimatedReelsFeed(color: Color(0xFF4F6AFF)),
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 16),
-        // Progress Dots
-        AnimatedBuilder(
-          animation: _bentoCtrl,
-          builder: (context, _) {
-            double page = 0;
-            if (_bentoCtrl.hasClients) page = _bentoCtrl.page ?? 0;
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(3, (i) {
-                final isCurrent = (page - i).abs() < 0.5;
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
-                  width: isCurrent ? 12 : 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: isCurrent ? AppColors.accent2 : Colors.white24,
-                    borderRadius: BorderRadius.circular(4),
+          const SizedBox(height: 12),
+          // Bottom Half: Stacked Compact Rows
+          Expanded(
+            flex: 9,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: _buildCompactRowCard(
+                      'Smart Reports',
+                      'Downloading diagnostic report.',
+                      Icons.picture_as_pdf_outlined,
+                      const Color(0xFF00D4C8),
+                      const _AnimatedPdfGenerator(color: Color(0xFF00D4C8)),
+                    ),
                   ),
-                );
-              }),
-            );
-          },
-        ),
-        const SizedBox(height: 20),
-      ],
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: _buildCompactRowCard(
+                      'Ocular Wellness',
+                      'Eye therapy games and music.',
+                      Icons.headphones_outlined,
+                      const Color(0xFF9D4EDD),
+                      const _AnimatedOcularWellness(color: Color(0xFF9D4EDD)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
     );
   }
 }

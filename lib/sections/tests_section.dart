@@ -2396,87 +2396,101 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
             children: [
               _buildSimulationAppBar('TORCHLIGHT EXAM', 'Pupillary Reflex Analysis'),
               
-              const Spacer(),
-
-              // Clinical Eye Indicator
-              Center(
-                child: Container(
-                  width: 180, height: 180,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: _shadowFlashOn ? Colors.yellow.withValues(alpha: 0.3) : Colors.white10,
-                      width: 2,
-                    ),
-                  ),
-                  child: Center(
-                    child: AnimatedBuilder(
-                      animation: _anim,
-                      builder: (context, _) {
-                        // Pupil constricts when light is "on"
-                        final constriction = _shadowFlashOn ? 0.6 : 1.0;
-                        return CustomPaint(
-                          painter: _PremiumEyePainter(
-                            progress: _anim.value,
-                            color: Colors.brown,
-                            scleraColor: _shadowFlashOn ? Colors.white : Colors.grey[400]!,
-                            pupilColor: Colors.black,
-                            pupilSizeMultiplier: constriction,
-                          ),
-                          size: const Size(100, 100),
-                        );
-                      }
-                    ),
-                  ),
-                ).animate(target: _shadowFlashOn ? 1 : 0).shimmer(color: Colors.yellow.withValues(alpha: 0.1), duration: 2.seconds),
-              ),
-
-              const Spacer(),
-
-              // Interactive Flashlight Controlled by the state shared with Shadow Test
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-                child: Column(
-                  children: [
-                    GestureDetector(
-                      onTap: () => setState(() => _shadowFlashOn = !_shadowFlashOn),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                        decoration: BoxDecoration(
-                          color: _shadowFlashOn ? Colors.yellow.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: _shadowFlashOn ? Colors.yellow : Colors.white10,
-                            width: 2,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              _shadowFlashOn ? Icons.flashlight_on_rounded : Icons.flashlight_off_rounded,
-                              color: _shadowFlashOn ? Colors.yellow : Colors.white38,
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Clinical Eye Indicator
+                        Container(
+                          width: 180, height: 180,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: _shadowFlashOn ? Colors.yellow.withValues(alpha: 0.3) : Colors.white10,
+                              width: 2,
                             ),
-                            const SizedBox(width: 12),
-                            Text(
-                              _shadowFlashOn ? 'LIGHT DIRECTED' : 'DIRECT LIGHT',
-                              style: TextStyle(
-                                color: _shadowFlashOn ? Colors.yellow : Colors.white38,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1,
+                          ),
+                          child: Center(
+                            child: AnimatedBuilder(
+                              animation: _anim,
+                              builder: (context, _) {
+                                // Pupil constricts when light is "on"
+                                final constriction = _shadowFlashOn ? 0.6 : 1.0;
+                                return CustomPaint(
+                                  painter: _PremiumEyePainter(
+                                    progress: _anim.value,
+                                    color: Colors.brown,
+                                    scleraColor: _shadowFlashOn ? Colors.white : Colors.grey[400]!,
+                                    pupilColor: Colors.black,
+                                    pupilSizeMultiplier: constriction,
+                                  ),
+                                  size: const Size(100, 100),
+                                );
+                              }
+                            ),
+                          ),
+                        ).animate(target: _shadowFlashOn ? 1 : 0).shimmer(color: Colors.yellow.withValues(alpha: 0.1), duration: 2.seconds),
+
+                        const SizedBox(height: 30),
+
+                        // Interactive Flashlight Controlled by the state shared with Shadow Test
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
+                            children: [
+                              GestureDetector(
+                                onTap: () => setState(() => _shadowFlashOn = !_shadowFlashOn),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                                  decoration: BoxDecoration(
+                                    color: _shadowFlashOn ? Colors.yellow.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.05),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: _shadowFlashOn ? Colors.yellow : Colors.white10,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        _shadowFlashOn ? Icons.flashlight_on_rounded : Icons.flashlight_off_rounded,
+                                        color: _shadowFlashOn ? Colors.yellow : Colors.white38,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Flexible( // Flexibility handles edge-case truncations inside the Scaled-Down space
+                                        child: FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          child: Text(
+                                            _shadowFlashOn ? 'LIGHT DIRECTED' : 'DIRECT LIGHT',
+                                            style: TextStyle(
+                                              color: _shadowFlashOn ? Colors.yellow : Colors.white38,
+                                              fontWeight: FontWeight.bold,
+                                              letterSpacing: 1,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 12),
+                              Text(
+                                'Observe for direct and consensual pupillary constriction',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 10, fontStyle: FontStyle.italic),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Observe for direct and consensual pupillary constriction',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 10, fontStyle: FontStyle.italic),
-                    ),
-                  ],
+                  ),
                 ),
               ),
 
