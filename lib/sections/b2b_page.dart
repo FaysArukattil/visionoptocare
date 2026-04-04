@@ -95,12 +95,11 @@ class _B2BPageState extends State<B2BPage> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
-                // Main content: reverted to scrolling for larger text
-                SingleChildScrollView(
-                  physics: const NeverScrollableScrollPhysics(),
+                // Main content: Made it fit securely in the viewport to avoid scroll
+                SafeArea(
                   child: Column(
                     children: [
-                      SizedBox(height: isMob ? 110 : 140),
+                      const Spacer(flex: 2),
                       // Header
                       Padding(
                         padding: Responsive.padding(context),
@@ -126,26 +125,26 @@ class _B2BPageState extends State<B2BPage> with TickerProviderStateMixin {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 12),
                             Text(
                               'Power Your Clinic\nwith Visiaxx Pro',
                               style: AppFonts.h2.copyWith(
                                 color: AppColors.white,
-                                fontSize: isMob ? 32 : 52, // Refined scaling
+                                fontSize: isMob ? 28 : 42, // Refined scaling
                                 height: 1.1,
                                 fontWeight: FontWeight.w800,
                               ),
                               textAlign: TextAlign.center,
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 12),
                             SizedBox(
                               width: isMob ? double.infinity : 700,
                               child: Text(
                                 'Empower your practice with clinical-grade digital diagnostics. License Visiaxx Pro for your clinic, mobile eye camps, and telemedicine workflows.',
                                 style: AppFonts.bodyLarge.copyWith(
                                   color: AppColors.muted,
-                                  fontSize: isMob ? 15 : 18, // Refined scaling
-                                  height: 1.7,
+                                  fontSize: isMob ? 14 : 16, // Refined scaling
+                                  height: 1.6,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -153,18 +152,18 @@ class _B2BPageState extends State<B2BPage> with TickerProviderStateMixin {
                           ],
                         ),
                       ),
-                      SizedBox(height: isMob ? 40 : 64),
+                      const SizedBox(height: 24),
                       // Feature Cards
                       Padding(
                         padding: Responsive.padding(context),
                         child: isMob
-                            ? _buildMobileCards()
+                            ? Expanded(child: _buildMobileCards())
                             : _buildDesktopCards(),
                       ),
-                      SizedBox(height: isMob ? 40 : 64),
-                      // CTA Button
+                      const Spacer(flex: 1),
+                      // CTA Button ALWAYS VISIBLE
                       _buildCTA(isMob),
-                      const SizedBox(height: 100), // Extra bottom padding
+                      const Spacer(flex: 2),
                     ],
                   ),
                 ),
@@ -195,15 +194,16 @@ class _B2BPageState extends State<B2BPage> with TickerProviderStateMixin {
 
   Widget _buildMobileCards() {
     final ctrls = [_card1Ctrl, _card2Ctrl, _card3Ctrl];
-    return Column(
-      children: _features.asMap().entries.map((entry) {
-        final i = entry.key;
-        final f = entry.value;
+    return ListView.builder(
+      physics: const BouncingScrollPhysics(),
+      shrinkWrap: true,
+      itemCount: _features.length,
+      itemBuilder: (context, i) {
         return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: _AnimatedFeatureCard(ctrl: ctrls[i], feature: f),
+          padding: const EdgeInsets.only(bottom: 12),
+          child: _AnimatedFeatureCard(ctrl: ctrls[i], feature: _features[i]),
         );
-      }).toList(),
+      },
     );
   }
 
