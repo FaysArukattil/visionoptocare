@@ -159,7 +159,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(height: 20),
+          const SizedBox(height: 5), // Closer to top
           AnimatedBuilder(
             animation: _phoneCtrl,
             builder: (_, _) {
@@ -171,11 +171,11 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
               Widget phoneObj = Opacity(
                 opacity: t,
                 child: PhoneMockup(
-                  width: 110,
-                  height: 220,
+                  width: 150,
+                  height: 300,
                   tiltX: 0.0, // Phone rendered straight
                   tiltY: 0.0,
-                  screen: _buildPhoneScreen(h: 220, isMini: true),
+                  screen: _buildPhoneScreen(h: 300, isMini: true),
                 ),
               );
 
@@ -201,7 +201,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
               return phoneObj;
             },
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           AnimatedBuilder(
             animation: _textCtrl,
             builder: (_, _) {
@@ -225,10 +225,9 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
 
   Widget _buildPhoneScreen({required double h, bool isMini = false}) {
     // Proportional calibration matched to the official Visiaxx App design
-    // Standardizing on ratios to ensure consistency across any mockup height
-    final double logoSize = h * 0.32; // Scaling logo size to visual weight
-    final double taglineBottom = h * 0.22; // Lowered from 0.30 for better centering
-    final double loaderBottom = h * 0.07; // Proportional bottom offset
+    final double logoSize = h * 0.28; // Slightly smaller logo for ultra-compact
+    final double taglineBottom = h * 0.26; // Raised up to avoid overlapping loader
+    final double loaderBottom = h * 0.05; // Tightened bottom spacing
 
     return Container(
       width: double.infinity,
@@ -244,7 +243,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
         children: [
           // 1. Centered Logo (Positioned slightly higher for better app-screen framing)
           Positioned(
-            top: h * 0.18,
+            top: h * 0.12, // Higher logo for more room in middle
             left: 0,
             right: 0,
             child: Center(
@@ -347,18 +346,18 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
               textAlign: TextAlign.start,
             ),
           ],
-          SizedBox(height: isMob ? 10 : 24),
+          SizedBox(height: isMob ? 8 : 24),
           Text(
             isMob ? 'Pioneering Digital Optometry.' : 'Pioneering Digital\nOptometry.',
             style: AppFonts.h2.copyWith(
               color: AppColors.white,
-              fontSize: isMob ? 26 : 52,
+              fontSize: isMob ? 22 : 52,
               height: 1.1,
               fontWeight: FontWeight.w800,
             ),
             textAlign: isMob ? TextAlign.center : TextAlign.start,
           ),
-          SizedBox(height: isMob ? 12 : 20),
+          SizedBox(height: isMob ? 8 : 20),
           Text(
             isMob 
               ? 'Clinical-grade vision screening and AI diagnostics, transformed for your smartphone.'
@@ -366,11 +365,11 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
             style: AppFonts.bodyLarge.copyWith(
               color: AppColors.muted,
               height: 1.6,
-              fontSize: isMob ? 14 : 18, 
+              fontSize: isMob ? 12 : 18, 
             ),
             textAlign: isMob ? TextAlign.center : TextAlign.start,
           ),
-          SizedBox(height: isMob ? 24 : 36),
+          SizedBox(height: isMob ? 12 : 36),
           // Feature chips
           if (isMob)
             Column(
@@ -418,7 +417,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                 _FeatureChip(icon: Icons.picture_as_pdf, label: 'PDF Reports'),
               ],
             ),
-          SizedBox(height: isMob ? 10 : 20),
+          SizedBox(height: isMob ? 8 : 20),
           // Store Buttons (Row for one-line behavior)
           FittedBox(
             child: Row(
