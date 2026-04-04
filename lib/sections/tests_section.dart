@@ -648,6 +648,10 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
 
   // Pelli-Robson Mock State
   int _pelliTripletIndex = 0;
+  
+  // Shadow Test (Cataract) Mock State
+  bool _shadowFlashOn = false;
+  bool _shadowCapturing = false;
 
   @override
   void initState() {
@@ -1288,59 +1292,229 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
       color: Colors.black,
       child: Stack(
         children: [
-          // Camera feed placeholder (Dark Eye)
-          Center(
-            child: Container(
-              width: 140, height: 140,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [Colors.grey[900]!, Colors.black],
-                ),
-                border: Border.all(color: Colors.white10, width: 2),
-              ),
-              child: Center(
-                child: Container(
-                  width: 40, height: 40,
-                  decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
-                ),
+          // Background "Viewfinder" Noise/Scanline effect
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.03,
+              child: Image.network(
+                'https://upload.wikimedia.org/wikipedia/commons/b/b5/Static_noise.gif',
+                fit: BoxFit.cover,
               ),
             ),
           ),
-          // Flashlight beam animation
-          AnimatedBuilder(
-            animation: _anim,
-            builder: (context, _) {
-              final x = math.cos(_anim.value * math.pi * 2) * 40;
-              final y = math.sin(_anim.value * math.pi * 2) * 40;
-              return Center(
-                child: Transform.translate(
-                  offset: Offset(x, y),
-                  child: Container(
-                    width: 50, height: 50,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(color: Colors.yellow.withValues(alpha: 0.3 + (math.sin(_anim.value * 10) * 0.1)), blurRadius: 20, spreadRadius: 10),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
+
+          // Main Simulation Column
           Column(
             children: [
-              _buildSimulationAppBar('SHADOW TEST', 'Cataract Screening'),
-              const Spacer(),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                color: Colors.yellow.withValues(alpha: 0.1),
-                child: const Text('ANALYZING SHADOW PATTERN...', textAlign: TextAlign.center, style: TextStyle(color: Colors.yellow, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+              _buildSimulationAppBar('CATARACT SCREENING', 'Shadow Pattern Analysis'),
+              
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Column(
+                    children: [
+                      // Testing Eye Indicator (Reference matching)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1.5),
+                        ),
+                        child: const Text(
+                          'Testing RIGHT Eye',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Detection Guide Circle + Animated Eye
+                      Center(
+                        child: Container(
+                          width: 160,
+                          height: 160,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: (_anim.value > 0.3 && _anim.value < 0.7) ? Colors.green : Colors.white24,
+                              width: 3,
+                            ),
+                          ),
+                          child: Center(
+                            child: AnimatedBuilder(
+                              animation: _anim,
+                              builder: (context, _) {
+                                return CustomPaint(
+                                  painter: _PremiumEyePainter(
+                                    progress: _anim.value,
+                                    color: _shadowFlashOn ? Colors.blue : Colors.blueGrey,
+                                    scleraColor: _shadowFlashOn ? Colors.white : Colors.grey[400]!,
+                                    pupilColor: const Color(0xFF000510),
+                                  ),
+                                  size: const Size(80, 80),
+                                );
+                              }
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Interactive Controls Area
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          children: [
+                            // Flashlight Toggle UI (User requested flashlight toggle)
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _shadowFlashOn = !_shadowFlashOn;
+                                });
+                              },
+                              child: Column(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: _shadowFlashOn ? Colors.blue.withValues(alpha: 0.8) : Colors.black45,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: Colors.white24, width: 1),
+                                    ),
+                                    child: Icon(
+                                      _shadowFlashOn ? Icons.flashlight_on_rounded : Icons.flashlight_off_rounded,
+                                      color: Colors.white,
+                                      size: 18,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _shadowFlashOn ? 'Flash On' : 'Flash Off',
+                                    style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            
+                            const SizedBox(height: 12),
+
+                            // Readiness Feedback Card
+                            AnimatedBuilder(
+                              animation: _anim,
+                              builder: (context, child) {
+                                final isReady = _anim.value > 0.3 && _anim.value < 0.7;
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: isReady 
+                                        ? Colors.green.withValues(alpha: 0.12)
+                                        : Colors.white.withValues(alpha: 0.06),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: isReady 
+                                          ? Colors.green.withValues(alpha: 0.35)
+                                          : Colors.white.withValues(alpha: 0.12),
+                                      width: 1.2,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        isReady ? 'READY TO CAPTURE' : 'POSITIONING...',
+                                        style: TextStyle(
+                                          color: isReady ? Colors.green : Colors.white.withValues(alpha: 0.4),
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w900,
+                                          letterSpacing: 1.5,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        isReady ? 'Perfect illumination' : 'Center eye in circle',
+                                        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            // Large Clinical Capture Button
+                            GestureDetector(
+                              onTap: () async {
+                                if (!_shadowCapturing) {
+                                  setState(() {
+                                    _shadowCapturing = true;
+                                  });
+                                  // Simulated capture delay
+                                  await Future.delayed(const Duration(seconds: 2));
+                                  if (mounted) {
+                                    setState(() {
+                                      _shadowCapturing = false;
+                                    });
+                                  }
+                                }
+                              },
+                              child: Container(
+                                width: 56,
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: const LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [Colors.white24, Colors.white12],
+                                  ),
+                                  border: Border.all(color: Colors.white.withValues(alpha: 0.7), width: 3),
+                                ),
+                                child: _shadowCapturing
+                                    ? const Center(child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                    : const Center(child: Icon(Icons.camera_alt_rounded, color: Colors.white, size: 24)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
+              
               _buildSimulationFooter(),
             ],
+          ),
+          
+          // Capturing Overlay
+          if (_shadowCapturing)
+            Container(
+              color: Colors.black54,
+              child: const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Analyzing Shadow Pattern...',
+                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          // Close button (standard for simulations)
+          Positioned(
+            top: 48,
+            left: 20,
+            child: Icon(Icons.close, color: Colors.white, size: 24),
           ),
         ],
       ),
