@@ -270,7 +270,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
 
           // Entry (1.0 -> 2.0)
           final t12 = (v - 1.0).clamp(0.0, 1.0);
-          final distanceX = (width / 2) - 20;
+          final distanceX = width * 0.6;
           final entryTx = -distanceX * (1.0 - t12);
           final entryTy = -(1.0 - t12) * height;
 
@@ -295,71 +295,71 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     return Stack(
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 40, right: 20), // Essential for scroll track visibility
+          padding: const EdgeInsets.symmetric(horizontal: 40), 
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-            // ── Left: Elevated Data Card & HUD ──
-            Expanded(
-              flex: 5,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 100), // Clears the navbar completely
-                  // Header
-                  Text(
-                    'VISION TEST SUITE',
-                    style: AppFonts.caption.copyWith(
-                      color: AppColors.accent2,
-                      letterSpacing: 3,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 11,
+              // ── Left: Header ──
+              Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 100), 
+                    Text(
+                      'VISION TEST SUITE',
+                      style: AppFonts.caption.copyWith(
+                        color: AppColors.accent2,
+                        letterSpacing: 2,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 10,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '12 Clinical-Grade\nDiagnostics',
-                    style: AppFonts.h2.copyWith(
-                      color: AppColors.white,
-                      fontSize: 38,
-                      height: 1.1,
-                      fontWeight: FontWeight.w800,
+                    const SizedBox(height: 12),
+                    Text(
+                      '12 Clinical-Grade\nDiagnostics',
+                      style: AppFonts.h2.copyWith(
+                        color: AppColors.white,
+                        fontSize: 32,
+                        height: 1.1,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 40),
-                  
-                  // HUD Indicator & HUD Stack
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        // The Tactical HUD
-                        _buildTacticalHUD(false, scrollPos),
-
-                        // Scroll Indicator Track (Fixed Progress Bar)
-                        _buildVerticalScrollIndicator(scrollPos, themeColor),
-                      ],
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
-            const SizedBox(width: 80),
+              // ── Center: Centered Tactical HUD ──
+              Expanded(
+                flex: 4,
+                child: Container(
+                  height: 600,
+                  alignment: Alignment.center,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // The Tactical HUD (now centered in its expanded area)
+                      _buildTacticalHUD(false, scrollPos),
 
-            // ── Right: Interactive 3D Phone ──
-            Expanded(
-              flex: 5,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  phoneObj, // phoneObj is a RepaintBoundary wrapping PhoneMockup
-                ],
+                      // Scroll Indicator Track (moved closer to names)
+                      _buildVerticalScrollIndicator(scrollPos, themeColor, isHUDCentered: true),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ],
+
+              // ── Right: Interactive 3D Phone ──
+              Expanded(
+                flex: 3,
+                child: Container(
+                  alignment: Alignment.center,
+                  child: phoneObj,
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
 
         // 🟢 Top-Layer Detail Card: Absolute Positioned
         Positioned(
@@ -371,9 +371,11 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     );
   }
 
-  Widget _buildVerticalScrollIndicator(double scrollPos, Color themeColor) {
+  Widget _buildVerticalScrollIndicator(double scrollPos, Color themeColor, {bool isHUDCentered = false}) {
     return Positioned(
-      left: 0, top: 40, bottom: 40,
+      left: isHUDCentered ? null : 0, 
+      right: isHUDCentered ? 0 : null,
+      top: 100, bottom: 100,
       width: 4,
       child: Container(
         decoration: BoxDecoration(
@@ -388,7 +390,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
             return Stack(
               children: [
                 Positioned(
-                  top: progress * h,
+                  top: progress.clamp(0.0, 1.0) * h,
                   left: 0,
                   child: Container(
                     width: 4, height: h / _tests.length,
@@ -487,16 +489,24 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   }
 
   Widget _buildTacticalHUD(bool isMob, double scrollPos) {
-    return Listener(
-      onPointerSignal: (event) {
-        if (event is PointerScrollEvent) {
-          _userIntervened = true;
-          _stopAutoCycle();
-          _scrollCtrl.value += event.scrollDelta.dy / 1000.0;
-          _resumeAfterDelay();
-        }
+    return GestureDetector(
+      onVerticalDragUpdate: (d) {
+        _userIntervened = true;
+        _stopAutoCycle();
+        _scrollCtrl.value += d.delta.dy / 100.0;
+        _resumeAfterDelay();
       },
-      child: LayoutBuilder(
+      onVerticalDragEnd: (_) => _snapToNearest(),
+      child: Listener(
+        onPointerSignal: (event) {
+          if (event is PointerScrollEvent) {
+            _userIntervened = true;
+            _stopAutoCycle();
+            _scrollCtrl.value += event.scrollDelta.dy / 1000.0;
+            _resumeAfterDelay();
+          }
+        },
+        child: LayoutBuilder(
         builder: (context, constraints) {
           final centerY = constraints.maxHeight / 2;
           
@@ -524,19 +534,21 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
             return MapEntry(
               absDiff,
               Positioned(
-                top: centerY + y - 40,
+                key: ValueKey('hud_test_$i'),
+                top: (centerY + y - 40).clamp(-1000.0, 2000.0),
                 width: isMob ? 180 : 260,
-                child: Opacity(
-                  opacity: opacity < 0.1 ? 0.0 : 1.0,
-                  child: Transform(
-                    transform: Matrix4.identity()
-                      ..setEntry(3, 2, 0.001)
-                      ..setTranslationRaw(0.0, 0.0, -z),
-                    alignment: Alignment.center,
-                    child: Transform.scale(
-                      scale: scale,
-                        child: Opacity(
-                          opacity: opacity.clamp(0.01, 1.0),
+                child: Visibility(
+                  visible: opacity >= 0.05,
+                  maintainState: true,
+                  child: Opacity(
+                    opacity: opacity.clamp(0.0, 1.0),
+                    child: Transform(
+                      transform: Matrix4.identity()
+                        ..setEntry(3, 2, 0.001)
+                        ..setTranslationRaw(0.0, 0.0, -z.clamp(0.0, 500.0)),
+                      alignment: Alignment.center,
+                      child: Transform.scale(
+                        scale: scale.clamp(0.1, 1.5),
                         child: GestureDetector(
                           onTap: () => _onTapItem(i),
                           behavior: HitTestBehavior.opaque,
@@ -559,10 +571,11 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
           }).toList()
             ..sort((a, b) => b.key.compareTo(a.key)))
             .map((e) => e.value).toList(),
-        );
+          );
         },
       ),
-    );
+    ),
+   );
   }
 
   Widget _buildFloatingPhone(TestData test, Color themeColor, ValueNotifier<double>? scrollProgress, {bool isMob = false}) {
@@ -1355,7 +1368,7 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
             child: Opacity(
               opacity: 0.03,
               child: Image.network(
-                'https://upload.wikimedia.org/wikipedia/commons/b/b5/Static_noise.gif',
+                'https://media.giphy.com/media/oEI9uWUjW3pA2rx_IA/giphy.gif',
                 fit: BoxFit.cover,
               ),
             ),
@@ -2049,7 +2062,7 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
             child: Opacity(
               opacity: 0.02,
               child: Image.network(
-                'https://upload.wikimedia.org/wikipedia/commons/b/b5/Static_noise.gif',
+                'https://media.giphy.com/media/oEI9uWUjW3pA2rx_IA/giphy.gif',
                 fit: BoxFit.cover,
               ),
             ),
@@ -2299,7 +2312,7 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
             child: Opacity(
               opacity: 0.02,
               child: Image.network(
-                'https://upload.wikimedia.org/wikipedia/commons/b/b5/Static_noise.gif',
+                'https://media.giphy.com/media/oEI9uWUjW3pA2rx_IA/giphy.gif',
                 fit: BoxFit.cover,
               ),
             ),

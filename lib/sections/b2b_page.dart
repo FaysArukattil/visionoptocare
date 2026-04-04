@@ -152,12 +152,11 @@ class _B2BPageState extends State<B2BPage> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Transform(
-              transform: Matrix4.identity()
-                ..scale(
-                  (Curves.easeOutBack.transform(tEntry) * (1.0 - Curves.easeInCubic.transform(tExit))).clamp(0.01, 2.0),
-                  (Curves.easeOutBack.transform(tEntry) * (1.0 - Curves.easeInCubic.transform(tExit))).clamp(0.01, 2.0),
-                  1.0,
-                ),
+              transform: Matrix4.diagonal3Values(
+                (Curves.easeOutBack.transform(tEntry) * (1.0 - Curves.easeInCubic.transform(tExit))).clamp(0.01, 2.0),
+                (Curves.easeOutBack.transform(tEntry) * (1.0 - Curves.easeInCubic.transform(tExit))).clamp(0.01, 2.0),
+                1.0,
+              ),
               alignment: Alignment.center,
               child: _AnimatedFeatureCard(
                   progress: tEntry,

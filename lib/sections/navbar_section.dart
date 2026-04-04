@@ -124,7 +124,7 @@ class _NavbarSectionState extends State<NavbarSection>
                             children: [
                               _NavLink(
                                 label: 'Home',
-                                isActive: widget.currentPage == 0,
+                                isActive: widget.currentPage <= 1,
                                 onTap: () => widget.onNavTap?.call(0),
                               ),
                               const SizedBox(width: 32),
@@ -138,7 +138,7 @@ class _NavbarSectionState extends State<NavbarSection>
                               _NavLink(
                                 label: 'About Us',
                                 isActive: widget.currentPage >= 5,
-                                onTap: () => widget.onNavTap?.call(5),
+                                onTap: () => widget.onNavTap?.call(6),
                               ),
                               const SizedBox(width: 24),
                               _buildDownloadButton(),
@@ -168,7 +168,7 @@ class _NavbarSectionState extends State<NavbarSection>
                           const SizedBox(height: 24),
                           _NavLink(
                             label: 'Home',
-                            isActive: widget.currentPage == 0,
+                            isActive: widget.currentPage <= 1,
                             onTap: () { setState(() => _menuOpen = false); widget.onNavTap?.call(0); },
                           ),
                           const SizedBox(height: 24),
@@ -181,7 +181,7 @@ class _NavbarSectionState extends State<NavbarSection>
                           _NavLink(
                             label: 'About Us',
                             isActive: widget.currentPage >= 5,
-                            onTap: () { setState(() => _menuOpen = false); widget.onNavTap?.call(5); },
+                            onTap: () { setState(() => _menuOpen = false); widget.onNavTap?.call(6); },
                           ),
                           const SizedBox(height: 12),
                           _buildDownloadButton(),
@@ -295,6 +295,7 @@ class _NavLinkState extends State<_NavLink>
     _ctrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 280),
+      value: widget.isActive ? 1.0 : 0.0,
     );
     _underlineWidth = Tween<double>(begin: 0, end: 28).animate(
       CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic),
@@ -302,6 +303,16 @@ class _NavLinkState extends State<_NavLink>
     _colorLerp = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _ctrl, curve: Curves.easeOut),
     );
+  }
+
+  @override
+  void didUpdateWidget(covariant _NavLink oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && !oldWidget.isActive) {
+      _ctrl.forward();
+    } else if (!widget.isActive && oldWidget.isActive && !_hovered) {
+      _ctrl.reverse();
+    }
   }
 
   @override
@@ -327,14 +338,13 @@ class _NavLinkState extends State<_NavLink>
         child: AnimatedBuilder(
           animation: _ctrl,
           builder: (context, _) {
-            final isActive = widget.isActive;
-            final lerp = isActive ? 1.0 : _colorLerp.value;
+            final lerp = _colorLerp.value;
             final textColor = Color.lerp(
               AppColors.white.withValues(alpha: 0.7),
               AppColors.accent2,
               lerp,
             )!;
-            final underline = isActive ? 28.0 : _underlineWidth.value;
+            final underline = _underlineWidth.value;
 
             return Column(
               mainAxisSize: MainAxisSize.min,
