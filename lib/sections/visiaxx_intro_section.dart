@@ -93,7 +93,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                   height: 500,
                   tiltX: 0.0,
                   tiltY: 0.0,
-                  screen: _buildPhoneScreen(),
+                  screen: _buildPhoneScreen(h: 500),
                 );
 
                 if (widget.scrollProgress != null) {
@@ -153,10 +153,10 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
   }
 
   Widget _buildMobileLayout() {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
+    return Container(
+      alignment: Alignment.center,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const SizedBox(height: 20),
@@ -167,15 +167,15 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                 parent: _phoneCtrl,
                 curve: Curves.easeOutBack,
               ).value.clamp(0.0, 1.0);
-              
+
               Widget phoneObj = Opacity(
                 opacity: t,
                 child: PhoneMockup(
-                  width: 190,
-                  height: 380,
+                  width: 140,
+                  height: 280,
                   tiltX: 0.0, // Phone rendered straight
                   tiltY: 0.0,
-                  screen: _buildPhoneScreen(isMini: true),
+                  screen: _buildPhoneScreen(h: 280, isMini: true),
                 ),
               );
 
@@ -185,10 +185,10 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                   builder: (context, scrollVal, child) {
                     final t01 = (1.0 - scrollVal).clamp(0.0, 1.0);
                     final t12 = (scrollVal - 1.0).clamp(0.0, 1.0);
-                    
+
                     final translateX = -500.0 * Curves.easeIn.transform(t01);
                     final translateY = MediaQuery.of(context).size.height * t12;
-                    
+
                     return Transform.translate(
                       offset: Offset(translateX, translateY),
                       child: child,
@@ -201,7 +201,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
               return phoneObj;
             },
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 20),
           AnimatedBuilder(
             animation: _textCtrl,
             builder: (_, _) {
@@ -223,13 +223,12 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
     );
   }
 
-  Widget _buildPhoneScreen({bool isMini = false}) {
+  Widget _buildPhoneScreen({required double h, bool isMini = false}) {
     // Proportional calibration matched to the official Visiaxx App design
-    // Standardizing on ratios to ensure consistency across 450px (Laptop) and 380px (Mobile) mockups
-    final double h = isMini ? 380 : 450;
+    // Standardizing on ratios to ensure consistency across any mockup height
     final double logoSize = h * 0.32; // Scaling logo size to visual weight
-    final double taglineBottom = h * 0.30; // Proportional bottom offset
-    final double loaderBottom = h * 0.08; // Proportional bottom offset
+    final double taglineBottom = h * 0.22; // Lowered from 0.30 for better centering
+    final double loaderBottom = h * 0.07; // Proportional bottom offset
 
     return Container(
       width: double.infinity,
@@ -275,7 +274,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                   Text(
                     'Your Vision,\nOur Priority',
                     style: TextStyle(
-                      fontSize: isMini ? 16 : 18,
+                      fontSize: isMini ? 14 : 18, // Reduced for mobile
                       fontWeight: FontWeight.w500,
                       color: Colors.white.withValues(alpha: 0.8),
                       letterSpacing: 0.5,
@@ -286,7 +285,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                   Text(
                     'Pioneering Digital Optometry',
                     style: TextStyle(
-                      fontSize: isMini ? 8.5 : 11, // Reduced for mobile
+                      fontSize: isMini ? 8.0 : 11, // Further reduced for mobile
                       fontWeight: FontWeight.w400,
                       color: Colors.white.withValues(alpha: 0.6),
                       letterSpacing: 1.0,
@@ -337,7 +336,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
           ),
           const SizedBox(height: 16),
           Text(
-            'AN APP FOR STANDARDIZED VISION DISEASE DETECTION',
+            isMob ? 'AI-POWERED VISION DIAGNOSTICS' : 'AN APP FOR STANDARDIZED VISION DISEASE DETECTION',
             style: AppFonts.caption.copyWith(
               color: AppColors.white.withValues(alpha: 0.5),
               letterSpacing: 1.5,
@@ -348,26 +347,28 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
           ),
           const SizedBox(height: 24),
           Text(
-            'Pioneering Digital\nOptometry.',
+            isMob ? 'Pioneering Digital Optometry.' : 'Pioneering Digital\nOptometry.',
             style: AppFonts.h2.copyWith(
               color: AppColors.white,
-              fontSize: isMob ? 28 : 52, // Refined scaling
+              fontSize: isMob ? 26 : 52,
               height: 1.1,
               fontWeight: FontWeight.w800,
             ),
             textAlign: isMob ? TextAlign.center : TextAlign.start,
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: isMob ? 12 : 20),
           Text(
-            'We merge clinical-grade screening with AI-driven analytics to transform your smartphone into a powerful diagnostic tool. Vision Optocare empowers patients and practitioners with accessible, high-precision ocular health tracking.',
+            isMob 
+              ? 'Clinical-grade vision screening and AI diagnostics, transformed for your smartphone.'
+              : 'We merge clinical-grade screening with AI-driven analytics to transform your smartphone into a powerful diagnostic tool. Vision Optocare empowers patients and practitioners with accessible, high-precision ocular health tracking.',
             style: AppFonts.bodyLarge.copyWith(
               color: AppColors.muted,
-              height: 1.7,
+              height: 1.6,
               fontSize: isMob ? 14 : 18, 
             ),
             textAlign: isMob ? TextAlign.center : TextAlign.start,
           ),
-          const SizedBox(height: 36),
+          SizedBox(height: isMob ? 24 : 36),
           // Feature chips
           if (isMob)
             Column(
@@ -415,7 +416,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                 _FeatureChip(icon: Icons.picture_as_pdf, label: 'PDF Reports'),
               ],
             ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 20),
           // Store Buttons (Row for one-line behavior)
           FittedBox(
             child: Row(

@@ -521,13 +521,13 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
 
   Widget _buildTacticalHUD(bool isMob, double scrollPos) {
     return GestureDetector(
-      onVerticalDragUpdate: (d) {
+      onVerticalDragUpdate: isMob ? null : (d) {
         _userIntervened = true;
         _stopAutoCycle();
         _scrollCtrl.value += d.delta.dy / 100.0;
         _resumeAfterDelay();
       },
-      onVerticalDragEnd: (_) => _snapToNearest(),
+      onVerticalDragEnd: isMob ? null : (_) => _snapToNearest(),
       child: Listener(
         onPointerSignal: (event) {
           if (event is PointerScrollEvent) {
