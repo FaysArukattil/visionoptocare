@@ -80,35 +80,29 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     _stopAutoCycle();
     if (_userIntervened) return;
 
-    // Continuous smooth scroll through all 12 tests
-    // ~1.5 seconds per test = 18 seconds total
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (!mounted || _userIntervened) return;
-      _scrollCtrl.animateTo(
-        11.0,
-        duration: const Duration(seconds: 18),
-        curve: Curves.linear,
-      );
+    // Continuous infinite smooth scroll
+    _autoTimer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
+      if (!mounted || _userIntervened) {
+        timer.cancel();
+        return;
+      }
+      _scrollCtrl.value += 0.01; // smooth constant pace
     });
   }
 
   void _stopAutoCycle() {
     _autoTimer?.cancel();
     _autoTimer = null;
-    _scrollCtrl.stop();
   }
 
-  void _onPanUpdate(DragUpdateDetails d) {
-    _userIntervened = true;
-    _stopAutoCycle();
-
-    // Vertical drag scrolls the 3D HUD
-    _scrollCtrl.value -= d.delta.dy / (Responsive.isMobile(context) ? 50 : 100); 
+  void _resumeAfterDelay() {
+    _userIntervened = false;
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted && !_userIntervened) _startAutoCycle();
+    });
   }
 
-  void _onPanEnd(DragEndDetails d) {
-    _snapToNearest();
-  }
+
 
   void _snapToNearest() {
     _userIntervened = true;
@@ -131,8 +125,8 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     if (diff > _tests.length / 2) diff -= _tests.length;
     if (diff < -_tests.length / 2) diff += _tests.length;
 
-    _scrollCtrl.value = _scrollPos.value;
     _scrollCtrl.animateTo(_scrollPos.value + diff, curve: Curves.easeOutBack, duration: const Duration(milliseconds: 600));
+    _resumeAfterDelay();
   }
 
   void _onKey(KeyEvent event) {
@@ -145,6 +139,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
       } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
         _scrollCtrl.animateTo((_scrollPos.value - 1).roundToDouble(), curve: Curves.easeOutBack);
       }
+      _resumeAfterDelay();
     }
   }
 
@@ -213,10 +208,15 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
               final test = _tests[sIdx];
               final themeColor = _getTierColor(test.tier);
 
-              return GestureDetector(
-                onVerticalDragUpdate: _onPanUpdate,
-                onVerticalDragEnd: _onPanEnd,
-                behavior: HitTestBehavior.translucent,
+              return MouseRegion(
+                onEnter: (_) {
+                  _userIntervened = true;
+                  _stopAutoCycle();
+                },
+                onExit: (_) {
+                  _userIntervened = false;
+                  _resumeAfterDelay();
+                },
                 child: isMob 
                     ? _buildMobileLayout(test, themeColor, sIdx, pos) 
                     : _buildDesktopLayout(test, themeColor, sIdx, pos),
@@ -267,6 +267,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const SizedBox(height: 100), // Clears the navbar completely
               // Header
               Text(
                 'VISION TEST SUITE',
@@ -282,7 +283,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
                 '12 Clinical-Grade\nDiagnostics',
                 style: AppFonts.h2.copyWith(
                   color: AppColors.white,
-                  fontSize: 48,
+                  fontSize: 38,
                   height: 1.1,
                   fontWeight: FontWeight.w800,
                 ),
@@ -296,13 +297,13 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
                     Positioned(
                       left: 0,
                       top: 0,
-                      bottom: 250,
+                      bottom: 0,
                       width: 500,
                       child: _buildTacticalHUD(false, scrollPos),
                     ),
                     Positioned(
-                      left: 0,
-                      bottom: 60,
+                      right: 0, // Anchored to right boundary so it doesn't overflow
+                      top: 100, // Elevated near center
                       child: _buildDetailCard(test, themeColor, false),
                     ),
                   ],
@@ -588,21 +589,6 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
             child: _buildSimulation(widget.test.number),
           ),
 
-          // Scanning Line
-          AnimatedBuilder(
-            animation: _anim,
-            builder: (context, _) => Positioned(
-              top: _anim.value * 600,
-              left: 0, right: 0,
-              child: Container(
-                height: 1,
-                decoration: BoxDecoration(
-                  color: widget.themeColor,
-                  boxShadow: [BoxShadow(color: widget.themeColor, blurRadius: 10)],
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -832,10 +818,7 @@ class _SystemTelemetryPainter extends CustomPainter {
         canvas.drawCircle(Offset(x, y), 1, paint);
       }
     }
-
-    // Moving scan rays
-    final rayX = (animValue * 50) % size.width;
-    canvas.drawLine(Offset(rayX, 0), Offset(rayX, size.height), paint);
+    // Moving scan ray removed!
   }
 
   @override

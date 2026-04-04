@@ -86,30 +86,14 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
         Expanded(
           flex: 5,
           child: Center(
-            child: AnimatedBuilder(
-              animation: _phoneCtrl,
-              builder: (context, _) {
-                final t = CurvedAnimation(
-                  parent: _phoneCtrl,
-                  curve: Curves.easeOutBack,
-                ).value.clamp(0.0, 1.0);
-                
-                Widget phoneObj = Opacity(
-                  opacity: t.clamp(0.0, 1.0),
-                  child: Transform(
-                    transform: Matrix4.identity()
-                      ..setEntry(3, 2, 0.001)
-                      ..rotateY(0.15 * (1 - t)) // subtle swivel on entry
-                      ..setTranslationRaw(0.0, 15.0 * (1 - t), 0.0),
-                    alignment: Alignment.center,
-                    child: PhoneMockup(
-                      width: 260,
-                      height: 500,
-                      tiltX: 0.0,
-                      tiltY: 0.0,
-                      screen: _buildPhoneScreen(),
-                    ),
-                  ),
+            child: Builder(
+              builder: (context) {
+                Widget phoneObj = PhoneMockup(
+                  width: 260,
+                  height: 500,
+                  tiltX: 0.0,
+                  tiltY: 0.0,
+                  screen: _buildPhoneScreen(),
                 );
 
                 if (widget.scrollProgress != null) {
