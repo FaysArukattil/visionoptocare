@@ -175,7 +175,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                   height: 380,
                   tiltX: 0.0, // Phone rendered straight
                   tiltY: 0.0,
-                  screen: _buildPhoneScreen(),
+                  screen: _buildPhoneScreen(isMini: true),
                 ),
               );
 
@@ -223,7 +223,14 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
     );
   }
 
-  Widget _buildPhoneScreen() {
+  Widget _buildPhoneScreen({bool isMini = false}) {
+    // Proportional calibration matched to the official Visiaxx App design
+    // Standardizing on ratios to ensure consistency across 450px (Laptop) and 380px (Mobile) mockups
+    final double h = isMini ? 380 : 450;
+    final double logoSize = h * 0.32; // Scaling logo size to visual weight
+    final double taglineBottom = h * 0.30; // Proportional bottom offset
+    final double loaderBottom = h * 0.08; // Proportional bottom offset
+
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -236,55 +243,64 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
       ),
       child: Stack(
         children: [
-          // Logo (Moved Higher)
+          // 1. Centered Logo (Positioned slightly higher for better app-screen framing)
           Positioned(
-            top: 40,
+            top: h * 0.18,
             left: 0,
             right: 0,
             child: Center(
               child: SizedBox(
-                width: 100,
-                height: 100,
+                width: logoSize,
+                height: logoSize,
                 child: Image.asset(
-                  'lib/assets/images/app_logo.png', // The available logo
+                  'lib/assets/images/app_logo.png',
                   fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => const EyeLogo(size: 50),
+                  errorBuilder: (context, error, stackTrace) =>
+                      EyeLogo(size: logoSize * 0.5),
                 ),
               ),
             ),
           ),
 
-          // Tagline & Loading Indicator (Combined & Moved Down)
+          // 2. Tagline (Positioned at proportional anchor)
           Positioned(
             left: 0,
             right: 0,
-            bottom: 60, // Positioned near the bottom
+            bottom: taglineBottom,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   'Your Vision,\nOur Priority',
                   style: TextStyle(
-                    fontSize: 15, // Reduced from 18
+                    fontSize: isMini ? 16 : 18,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.white.withValues(alpha: 0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     letterSpacing: 0.5,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(
-                  'Premium Digital Eye Care',
+                  'Pioneering Digital Optometry',
                   style: TextStyle(
-                    fontSize: 10, // Reduced from 11
+                    fontSize: isMini ? 10 : 11,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.white.withValues(alpha: 0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     letterSpacing: 1.0,
                   ),
                 ),
-                const SizedBox(height: 48), // Increased from 32 to fix overlap
-                const EyeLoader.adaptive(size: 32),
               ],
+            ),
+          ),
+
+          // 3. Loading Indicator (Positioned at proportional anchor)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: loaderBottom,
+            child: Center(
+              child: EyeLoader.adaptive(size: isMini ? 24 : 32),
             ),
           ),
         ],
@@ -349,17 +365,52 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
           ),
           const SizedBox(height: 36),
           // Feature chips
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            alignment: isMob ? WrapAlignment.center : WrapAlignment.start,
-            children: const [
-              _FeatureChip(icon: Icons.biotech, label: '12 Clinical Tests'),
-              _FeatureChip(icon: Icons.language, label: '13 Languages'),
-              _FeatureChip(icon: Icons.video_call, label: 'Hybrid Consults'),
-              _FeatureChip(icon: Icons.picture_as_pdf, label: 'PDF Reports'),
-            ],
-          ),
+          if (isMob)
+            Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Expanded(
+                      child: _FeatureChip(
+                          icon: Icons.biotech, label: '12 Tests'),
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: _FeatureChip(
+                          icon: Icons.language, label: '13 Languages'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Expanded(
+                      child: _FeatureChip(
+                          icon: Icons.video_call, label: 'Consultation'),
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: _FeatureChip(
+                          icon: Icons.picture_as_pdf, label: 'PDF Reports'),
+                    ),
+                  ],
+                ),
+              ],
+            )
+          else
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              alignment: WrapAlignment.start,
+              children: const [
+                _FeatureChip(icon: Icons.biotech, label: '12 Clinical Tests'),
+                _FeatureChip(icon: Icons.language, label: '13 Languages'),
+                _FeatureChip(icon: Icons.video_call, label: 'Hybrid Consults'),
+                _FeatureChip(icon: Icons.picture_as_pdf, label: 'PDF Reports'),
+              ],
+            ),
           const SizedBox(height: 32),
           // Store Buttons (Row for one-line behavior)
           FittedBox(
@@ -424,24 +475,33 @@ class _FeatureChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMob = Responsive.isMobile(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: EdgeInsets.symmetric(
+          horizontal: isMob ? 10 : 14, vertical: 8), // Reduced mobile padding
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(50),
         color: AppColors.white.withValues(alpha: 0.04),
         border: Border.all(color: AppColors.white.withValues(alpha: 0.1)),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: isMob ? MainAxisSize.max : MainAxisSize.min,
+        mainAxisAlignment:
+            isMob ? MainAxisAlignment.center : MainAxisAlignment.start,
         children: [
-          Icon(icon, color: AppColors.accent2, size: 14),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: AppFonts.caption.copyWith(
-              color: AppColors.white.withValues(alpha: 0.7),
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
+          Icon(icon, color: AppColors.accent2, size: isMob ? 12 : 14),
+          const SizedBox(width: 6),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown, // Ensures text fits without ellipsis
+              child: Text(
+                label,
+                style: AppFonts.caption.copyWith(
+                  color: AppColors.white.withValues(alpha: 0.7),
+                  fontSize: isMob ? 11 : 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
         ],
