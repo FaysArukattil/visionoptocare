@@ -21,8 +21,8 @@ class PhoneMockup extends StatelessWidget {
   const PhoneMockup({
     super.key,
     required this.screen,
-    this.width = 300,
-    this.height = 580,
+    this.width = 260,
+    this.height = 560,
     this.tiltX = -0.08,
     this.tiltY = 0.12,
     this.showNotch = true,
@@ -32,7 +32,7 @@ class PhoneMockup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Proportional corner radius based on phone size
-    final outerR = width * 0.13; // ~13% of width
+    final outerR = width * 0.12; // ~12% of width for modern look
     final innerR = outerR - 2.0;
     final screenR = innerR - 1.5;
     // Proportional notch dimensions

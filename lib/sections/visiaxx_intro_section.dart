@@ -65,54 +65,60 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
       color: AppColors.background,
       child: Padding(
         padding: EdgeInsets.only(
-          top: isMob ? 80 : 90,
+          top: isMob ? 80 : 90, // Clear the navbar
           left: isMob ? 24 : 60,
           right: isMob ? 24 : 60,
-          bottom: isMob ? 16 : 24,
+          bottom: 24,
         ),
         child: isMob
-            ? _buildMobileLayout(size)
-            : _buildDesktopLayout(size),
+            ? _buildMobileLayout()
+            : _buildDesktopLayout(),
       ),
     );
   }
 
-  Widget _buildDesktopLayout(Size size) {
-    // Scale phone dimensions proportionally to viewport height
-    final phoneH = (size.height * 0.72).clamp(380.0, 580.0);
-    final phoneW = phoneH * 0.53; // proper iPhone aspect ratio
-
+  Widget _buildDesktopLayout() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Phone mockup — fixed size, centered
-        SizedBox(
-          width: phoneW + 80, // account for shadows/transforms
+        // ── Left: 3D iPhone ──
+        Expanded(
+          flex: 5,
           child: Center(
             child: AnimatedBuilder(
               animation: _phoneCtrl,
-              builder: (_, _) {
+              builder: (context, _) {
                 final t = CurvedAnimation(
                   parent: _phoneCtrl,
                   curve: Curves.easeOutBack,
                 ).value.clamp(0.0, 1.0);
                 return Opacity(
-                  opacity: t,
-                  child: PhoneMockup(
-                    width: phoneW,
-                    height: phoneH,
-                    tiltX: 0.05,
-                    tiltY: 0.1,
-                    screen: _buildPhoneScreen(),
+                  opacity: t.clamp(0.0, 1.0),
+                  child: Transform(
+                    transform: Matrix4.identity()
+                      ..setEntry(3, 2, 0.001)
+                      ..rotateY(0.15 * (1 - t)) // subtle swivel on entry
+                      ..setTranslationRaw(0.0, 15.0 * (1 - t), 0.0),
+                    alignment: Alignment.center,
+                    child: PhoneMockup(
+                      width: 260,
+                      height: 500,
+                      tiltX: 0.0,
+                      tiltY: 0.0,
+                      screen: _buildPhoneScreen(),
+                    ),
                   ),
                 );
               },
             ),
           ),
         ),
-        const SizedBox(width: 40),
-        // Text content — flexible
+
+        const SizedBox(width: 80),
+
+        // ── Right: Brand description ──
         Expanded(
+          flex: 5,
           child: AnimatedBuilder(
             animation: _textCtrl,
             builder: (_, _) {
@@ -134,17 +140,13 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
     );
   }
 
-  Widget _buildMobileLayout(Size size) {
-    // Scale phone for mobile viewport
-    final phoneH = (size.height * 0.42).clamp(280.0, 420.0);
-    final phoneW = phoneH * 0.53;
-
+  Widget _buildMobileLayout() {
     return SingleChildScrollView(
       physics: const NeverScrollableScrollPhysics(),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: 10),
+          const SizedBox(height: 20),
           AnimatedBuilder(
             animation: _phoneCtrl,
             builder: (_, _) {
@@ -155,16 +157,16 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
               return Opacity(
                 opacity: t,
                 child: PhoneMockup(
-                  width: phoneW,
-                  height: phoneH,
-                  tiltX: 0.0,
+                  width: 230,
+                  height: 450,
+                  tiltX: 0.0, // Phone rendered straight
                   tiltY: 0.0,
                   screen: _buildPhoneScreen(),
                 ),
               );
             },
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 40),
           AnimatedBuilder(
             animation: _textCtrl,
             builder: (_, _) {
@@ -205,7 +207,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
               width: 140,
               height: 140,
               child: Image.asset(
-                'lib/assets/images/app_logo.png',
+                'lib/assets/images/app_logo.png', // The available logo
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) => const EyeLogo(size: 80),
               ),
@@ -216,7 +218,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
           Positioned(
             left: 0,
             right: 0,
-            bottom: 120,
+            bottom: 120, // Match the splash screen bottom offset proportionally
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -300,7 +302,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
             'Pioneering Digital\nOptometry.',
             style: AppFonts.h2.copyWith(
               color: AppColors.white,
-              fontSize: isMob ? 30 : 52,
+              fontSize: isMob ? 32 : 52, // Refined scaling
               height: 1.1,
               fontWeight: FontWeight.w800,
             ),
@@ -312,24 +314,24 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
             style: AppFonts.bodyLarge.copyWith(
               color: AppColors.muted,
               height: 1.7,
-              fontSize: isMob ? 14 : 18,
+              fontSize: isMob ? 15 : 18, // Refined scaling
             ),
             textAlign: isMob ? TextAlign.center : TextAlign.start,
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 36),
           // Feature chips
           Wrap(
             spacing: 12,
             runSpacing: 12,
             alignment: isMob ? WrapAlignment.center : WrapAlignment.start,
-            children: [
+            children: const [
               _FeatureChip(icon: Icons.biotech, label: '12 Clinical Tests'),
               _FeatureChip(icon: Icons.language, label: '13 Languages'),
               _FeatureChip(icon: Icons.video_call, label: 'Hybrid Consults'),
               _FeatureChip(icon: Icons.picture_as_pdf, label: 'PDF Reports'),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
           // Store Buttons
           Wrap(
             spacing: 16,

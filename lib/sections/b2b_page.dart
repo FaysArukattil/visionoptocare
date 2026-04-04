@@ -190,7 +190,7 @@ class _B2BPageState extends State<B2BPage> with TickerProviderStateMixin {
   Widget _buildDesktopCards() {
     final ctrls = [_card1Ctrl, _card2Ctrl, _card3Ctrl];
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: _features.asMap().entries.map((entry) {
         final i = entry.key;
         final f = entry.value;
@@ -380,7 +380,6 @@ class _AnimatedFeatureCardState extends State<_AnimatedFeatureCard> {
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
                           padding: EdgeInsets.all(isMob ? 10 : 14),
@@ -403,15 +402,17 @@ class _AnimatedFeatureCardState extends State<_AnimatedFeatureCard> {
                           ),
                         ),
                         SizedBox(height: isMob ? 8 : 14),
-                        Text(
-                          widget.feature.desc,
-                          style: AppFonts.bodyLarge.copyWith(
-                            color: AppColors.muted,
-                            fontSize: isMob ? 12 : 15,
-                            height: 1.7,
+                        Flexible(
+                          child: Text(
+                            widget.feature.desc,
+                            style: AppFonts.bodyLarge.copyWith(
+                              color: AppColors.muted,
+                              fontSize: isMob ? 12 : 15,
+                              height: 1.7,
+                            ),
+                            maxLines: isMob ? 3 : 6,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: isMob ? 3 : 5,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
