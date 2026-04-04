@@ -5,13 +5,13 @@ import 'sections/hero_section.dart';
 import 'sections/visiaxx_intro_section.dart';
 import 'sections/clinical_tests_page.dart';
 import 'sections/reports_wellness_page.dart';
-import 'sections/consultation_languages_page.dart';
 import 'sections/philosophy_section.dart';
 import 'sections/b2b_page.dart';
 import 'sections/leadership_section.dart';
 import 'sections/team_section.dart';
 import 'sections/footer_section.dart';
 import 'sections/hero_animation_engine.dart';
+import 'widgets/section_transitions.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -26,6 +26,8 @@ class _HomePageState extends State<HomePage> {
   // Track page indices separately to avoid full-tree rebuilds.
   final ValueNotifier<int> _currentPage = ValueNotifier(0);
   final ValueNotifier<double> _scrollProgress = ValueNotifier(0.0);
+  // Track raw scroll for section transitions
+  final ValueNotifier<double> _rawScrollProgress = ValueNotifier(0.0);
 
   static const int _totalPages = 10;
 
@@ -43,6 +45,11 @@ class _HomePageState extends State<HomePage> {
     if (vh <= 0) return;
 
     final rawPage = offset / vh;
+
+    // Feed raw scroll to transition overlay
+    _rawScrollProgress.value = rawPage;
+
+    // Hero iris transition (only pages 0→1)
     if (rawPage <= 1.2 || _scrollProgress.value <= 1.2) {
       _scrollProgress.value = rawPage;
     }
@@ -59,6 +66,7 @@ class _HomePageState extends State<HomePage> {
     _scrollController.dispose();
     _currentPage.dispose();
     _scrollProgress.dispose();
+    _rawScrollProgress.dispose();
     super.dispose();
   }
 
@@ -84,34 +92,38 @@ class _HomePageState extends State<HomePage> {
         children: [
           // ── Continuous Scroll with optimized Performance ──
           ScrollConfiguration(
-            // Use smooth scrolling behavior on web
             behavior: ScrollConfiguration.of(
               context,
             ).copyWith(scrollbars: false, overscroll: false),
             child: CustomScrollView(
               controller: _scrollController,
               physics: const PageScrollPhysics(parent: ClampingScrollPhysics()),
-              cacheExtent: size.height * 2, // Keeps adjacent pages alive, fixing lag
+              cacheExtent: size.height * 2,
               slivers: [
                 SliverList(
-                  delegate: SliverChildBuilderDelegate((context, i) {
-                    return SizedBox(
-                      height: size.height,
-                      child: RepaintBoundary(
-                        child: ValueListenableBuilder<int>(
-                          valueListenable: _currentPage,
-                          builder: (context, activeIdx, child) {
-                            // strictly pause the heavy rendering for offscreen sections
-                            final bool isActive = activeIdx == i;
-                            return TickerMode(
-                              enabled: isActive,
-                              child: _buildSection(i, isActive),
-                            );
-                          },
+                  delegate: SliverChildBuilderDelegate(
+                    (context, i) {
+                      return SizedBox(
+                        height: size.height,
+                        child: RepaintBoundary(
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: _currentPage,
+                            builder: (context, activeIdx, child) {
+                              // Enable tickers for active page ± 1 for smooth transitions
+                              final bool isNearActive = (activeIdx - i).abs() <= 1;
+                              return TickerMode(
+                                enabled: isNearActive,
+                                child: _buildSection(i, activeIdx == i),
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                    );
-                  }, childCount: _totalPages),
+                      );
+                    },
+                    childCount: _totalPages,
+                    addAutomaticKeepAlives: true,
+                    addRepaintBoundaries: true,
+                  ),
                 ),
               ],
             ),
@@ -121,12 +133,10 @@ class _HomePageState extends State<HomePage> {
           ValueListenableBuilder<double>(
             valueListenable: _scrollProgress,
             builder: (context, progress, _) {
-              // Strictly limit transition rendering to range [0.0, 1.0]
               if (progress < -0.1 || progress > 1.1) {
                 return const SizedBox.shrink();
               }
 
-              // Only show transition in the first section change
               final double t = progress.clamp(0.0, 1.0);
               if (t <= 0.01 || t >= 0.99) return const SizedBox.shrink();
 
@@ -139,6 +149,20 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
+              );
+            },
+          ),
+
+          // ── Section Transition Overlays (Pages 1→9) ──
+          ValueListenableBuilder<double>(
+            valueListenable: _rawScrollProgress,
+            builder: (context, raw, _) {
+              if (raw < 0.9 || raw > _totalPages - 0.5) {
+                return const SizedBox.shrink();
+              }
+              return SectionTransitionOverlay(
+                scrollProgress: raw,
+                totalPages: _totalPages,
               );
             },
           ),
@@ -166,9 +190,9 @@ class _HomePageState extends State<HomePage> {
       case 4:
         return ConsultationLanguagesPage(isActive: isActive);
       case 5:
-        return PhilosophySection(isActive: isActive);
+        return B2BPage(isActive: isActive); // ← B2B before Philosophy
       case 6:
-        return B2BPage(isActive: isActive);
+        return PhilosophySection(isActive: isActive); // ← Philosophy after B2B
       case 7:
         return LeadershipSection(isActive: isActive);
       case 8:

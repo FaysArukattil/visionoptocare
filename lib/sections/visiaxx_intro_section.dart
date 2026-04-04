@@ -65,26 +65,30 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
       color: AppColors.background,
       child: Padding(
         padding: EdgeInsets.only(
-          top: isMob ? 80 : 90, // Clear the navbar
+          top: isMob ? 80 : 90,
           left: isMob ? 24 : 60,
           right: isMob ? 24 : 60,
-          bottom: 24,
+          bottom: isMob ? 16 : 24,
         ),
         child: isMob
-            ? _buildMobileLayout()
-            : _buildDesktopLayout(),
+            ? _buildMobileLayout(size)
+            : _buildDesktopLayout(size),
       ),
     );
   }
 
-  Widget _buildDesktopLayout() {
-    return SingleChildScrollView(
-      physics: const NeverScrollableScrollPhysics(),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            flex: 4,
+  Widget _buildDesktopLayout(Size size) {
+    // Scale phone dimensions proportionally to viewport height
+    final phoneH = (size.height * 0.72).clamp(380.0, 580.0);
+    final phoneW = phoneH * 0.53; // proper iPhone aspect ratio
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Phone mockup — fixed size, centered
+        SizedBox(
+          width: phoneW + 80, // account for shadows/transforms
+          child: Center(
             child: AnimatedBuilder(
               animation: _phoneCtrl,
               builder: (_, _) {
@@ -95,8 +99,8 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                 return Opacity(
                   opacity: t,
                   child: PhoneMockup(
-                    width: 320,
-                    height: 600,
+                    width: phoneW,
+                    height: phoneH,
                     tiltX: 0.05,
                     tiltY: 0.1,
                     screen: _buildPhoneScreen(),
@@ -105,38 +109,42 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
               },
             ),
           ),
-          const SizedBox(width: 40),
-          Expanded(
-            flex: 5,
-            child: AnimatedBuilder(
-              animation: _textCtrl,
-              builder: (_, _) {
-                final t = CurvedAnimation(
-                  parent: _textCtrl,
-                  curve: Curves.easeOutCubic,
-                ).value.clamp(0.0, 1.0);
-                return Opacity(
-                  opacity: t.clamp(0.0, 1.0),
-                  child: Transform.translate(
-                    offset: Offset(30 * (1 - t), 0),
-                    child: _buildIntroText(false),
-                  ),
-                );
-              },
-            ),
+        ),
+        const SizedBox(width: 40),
+        // Text content — flexible
+        Expanded(
+          child: AnimatedBuilder(
+            animation: _textCtrl,
+            builder: (_, _) {
+              final t = CurvedAnimation(
+                parent: _textCtrl,
+                curve: Curves.easeOutCubic,
+              ).value.clamp(0.0, 1.0);
+              return Opacity(
+                opacity: t.clamp(0.0, 1.0),
+                child: Transform.translate(
+                  offset: Offset(30 * (1 - t), 0),
+                  child: _buildIntroText(false),
+                ),
+              );
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildMobileLayout() {
+  Widget _buildMobileLayout(Size size) {
+    // Scale phone for mobile viewport
+    final phoneH = (size.height * 0.42).clamp(280.0, 420.0);
+    final phoneW = phoneH * 0.53;
+
     return SingleChildScrollView(
       physics: const NeverScrollableScrollPhysics(),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           AnimatedBuilder(
             animation: _phoneCtrl,
             builder: (_, _) {
@@ -147,16 +155,16 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
               return Opacity(
                 opacity: t,
                 child: PhoneMockup(
-                  width: 230,
-                  height: 450,
-                  tiltX: 0.0, // Phone rendered straight
+                  width: phoneW,
+                  height: phoneH,
+                  tiltX: 0.0,
                   tiltY: 0.0,
                   screen: _buildPhoneScreen(),
                 ),
               );
             },
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 28),
           AnimatedBuilder(
             animation: _textCtrl,
             builder: (_, _) {
@@ -197,7 +205,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
               width: 140,
               height: 140,
               child: Image.asset(
-                'lib/assets/images/app_logo.png', // The available logo
+                'lib/assets/images/app_logo.png',
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) => const EyeLogo(size: 80),
               ),
@@ -208,7 +216,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
           Positioned(
             left: 0,
             right: 0,
-            bottom: 120, // Match the splash screen bottom offset proportionally
+            bottom: 120,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -292,7 +300,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
             'Pioneering Digital\nOptometry.',
             style: AppFonts.h2.copyWith(
               color: AppColors.white,
-              fontSize: isMob ? 32 : 52, // Refined scaling
+              fontSize: isMob ? 30 : 52,
               height: 1.1,
               fontWeight: FontWeight.w800,
             ),
@@ -304,11 +312,11 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
             style: AppFonts.bodyLarge.copyWith(
               color: AppColors.muted,
               height: 1.7,
-              fontSize: isMob ? 15 : 18, // Refined scaling
+              fontSize: isMob ? 14 : 18,
             ),
             textAlign: isMob ? TextAlign.center : TextAlign.start,
           ),
-          const SizedBox(height: 36),
+          const SizedBox(height: 28),
           // Feature chips
           Wrap(
             spacing: 12,
@@ -321,7 +329,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
               _FeatureChip(icon: Icons.picture_as_pdf, label: 'PDF Reports'),
             ],
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
           // Store Buttons
           Wrap(
             spacing: 16,

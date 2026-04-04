@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../widgets/eye_logo.dart';
-import '../widgets/eye_loader.dart';
 import '../utils/responsive.dart';
 
 class FooterSection extends StatefulWidget {
@@ -43,24 +42,27 @@ class _FooterSectionState extends State<FooterSection> {
       height: size.height,
       child: Column(
         children: [
-          // ── Top spacer to push footer content to center/bottom ──
-          const Spacer(flex: 2),
-
-          // ── Eye Logo Bridge ──
+          // ── Static Branding Divider (replaces animated eye) ──
+          const SizedBox(height: 32),
+          // Static brand icon — no animation
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: const Color(0xFF050A18),
               shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.accent2.withValues(alpha: 0.15),
+                width: 1.5,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.accent2.withValues(alpha: 0.15),
-                  blurRadius: 30,
-                  spreadRadius: 5,
+                  color: AppColors.accent2.withValues(alpha: 0.08),
+                  blurRadius: 20,
+                  spreadRadius: 2,
                 ),
               ],
             ),
-            child: const EyeLoader(size: 50),
+            child: const EyeLogo(size: 50, showGlow: false),
           ),
           const SizedBox(height: 8),
 
@@ -81,33 +83,44 @@ class _FooterSectionState extends State<FooterSection> {
 
           // ── Footer Body ──
           Expanded(
-            flex: 5,
             child: Container(
               width: double.infinity,
               color: const Color(0xFF050A18),
               child: Padding(
                 padding: Responsive.padding(context),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 16),
-                    _buildBrandingHeader(context, isMob),
-                    const SizedBox(height: 32),
-                    isMob ? _buildMobileGrid() : _buildDesktopGrid(),
-                    AnimatedSize(
-                      duration: const Duration(milliseconds: 600),
-                      curve: Curves.fastOutSlowIn,
-                      child: _showLegal
-                          ? Padding(
-                              padding: const EdgeInsets.only(top: 32),
-                              child: _buildLegalFramework(context, isMob),
-                            )
-                          : const SizedBox.shrink(),
-                    ),
-                    const Spacer(),
-                    _buildSignatureBar(context, isMob),
-                    SizedBox(height: isMob ? 8 : 16),
-                  ],
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 16),
+                            _buildBrandingHeader(context, isMob),
+                            SizedBox(height: isMob ? 20 : 32),
+                            isMob ? _buildMobileGrid() : _buildDesktopGrid(),
+                            AnimatedSize(
+                              duration: const Duration(milliseconds: 600),
+                              curve: Curves.fastOutSlowIn,
+                              child: _showLegal
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(top: 24),
+                                      child: _buildLegalFramework(context, isMob),
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
+                            SizedBox(height: isMob ? 16 : 32),
+                            _buildSignatureBar(context, isMob),
+                            SizedBox(height: isMob ? 8 : 16),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -241,19 +254,19 @@ class _FooterSectionState extends State<FooterSection> {
     return Column(
       children: [
         const _SocialCluster(),
-        const SizedBox(height: 40),
+        const SizedBox(height: 28),
         const _GridCluster(
           title: 'LOCATION',
           items: ['B-19, Gokul Dham, Mumbai-63'],
           isCentered: true,
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
         const _GridCluster(
           title: 'CONTACT',
           items: ['contact@visionoptocare.co.in', '+91-9819335775'],
           isCentered: true,
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
         _GridCluster(
           title: 'RESOURCES',
           items: ['Legal Terms and Service of Use'],
@@ -292,7 +305,7 @@ class _FooterSectionState extends State<FooterSection> {
   Widget _buildLegalFramework(BuildContext context, bool isMob) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(32),
+      padding: EdgeInsets.all(isMob ? 20 : 32),
       decoration: BoxDecoration(
         color: AppColors.surface.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(32),
@@ -322,22 +335,22 @@ class _FooterSectionState extends State<FooterSection> {
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           Text(
             'Important Notice: Vision Optocare provides screening and supportive data for educational and awareness purposes only. It is not a replacement for professional medical diagnosis or clinical eye examinations. All results should be treated as indicative, not absolute, as digital screenings are subject to environmental factors like lighting and screen quality. Vision Optocare, its developers, and partners are not liable for any decisions, health outcomes, or actions taken based on the results provided by this platform. By using this service, you acknowledge that you are responsible for following testing instructions accurately and maintaining your own formal clinical follow-ups. We prioritize your privacy and ensure vision data security adheres to best practices in confidentiality.',
             style: AppFonts.bodySmall.copyWith(
               color: AppColors.white.withValues(alpha: 0.5),
               height: 1.8,
-              fontSize: isMob ? 12 : 14,
+              fontSize: isMob ? 11 : 13,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Text(
             'This notice will automatically hide after 30 seconds of visibility.',
             style: AppFonts.caption.copyWith(
               color: AppColors.accent2.withValues(alpha: 0.5),
               fontStyle: FontStyle.italic,
-              fontSize: 11,
+              fontSize: 10,
             ),
           ),
         ],
@@ -376,9 +389,9 @@ class _GridCluster extends StatelessWidget {
             fontSize: 13,
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
         ...items.map((item) => Padding(
-          padding: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.only(bottom: 10),
           child: InkWell(
             onTap: onItemTap != null ? () => onItemTap!(item) : null,
             child: Text(
@@ -387,7 +400,7 @@ class _GridCluster extends StatelessWidget {
               style: AppFonts.bodySmall.copyWith(
                 color: AppColors.white.withValues(alpha: 0.4),
                 height: 1.6,
-                fontSize: 15,
+                fontSize: 14,
               ),
             ),
           ),

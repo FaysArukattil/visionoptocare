@@ -318,7 +318,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
           child: Transform(
             transform: Matrix4.identity()
               ..setEntry(3, 2, 0.001)
-              ..translateByDouble(0.0, 0.0, -z, 1.0),
+              ..setTranslationRaw(0.0, 0.0, -z),
             alignment: Alignment.center,
             child: Transform.scale(
               scale: scale,
@@ -345,23 +345,15 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   }
 
   Widget _buildFloatingPhone(TestData test, Color themeColor, {bool isMob = false}) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: const Duration(seconds: 12),
-      curve: Curves.easeInOut,
-      builder: (context, val, child) {
-        final floatY = math.sin(val * math.pi * 2) * 0.4;
-        return Transform.translate(
-          offset: Offset(0, floatY),
-          child: PhoneMockup(
-            width: isMob ? 170 : 220,
-            height: isMob ? 350 : 470,
-            tiltX: 0.0,
-            tiltY: 0.0,
-            screen: _TestSimulationEngine(test: test, themeColor: themeColor),
-          ),
-        );
-      },
+    // Only animate float when active to save GPU cycles
+    return RepaintBoundary(
+      child: PhoneMockup(
+        width: isMob ? 170 : 220,
+        height: isMob ? 350 : 470,
+        tiltX: 0.0,
+        tiltY: 0.0,
+        screen: _TestSimulationEngine(test: test, themeColor: themeColor),
+      ),
     );
   }
 
@@ -751,7 +743,7 @@ class _SystemTelemetryPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _SystemTelemetryPainter oldDelegate) =>
-      oldDelegate.animValue != animValue || oldDelegate.color != color;
+      (oldDelegate.animValue - animValue).abs() > 0.5 || oldDelegate.color != color;
 }
 
 class _DiagnosticGridPainter extends CustomPainter {

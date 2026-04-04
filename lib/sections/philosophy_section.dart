@@ -98,65 +98,70 @@ class _PhilosophySectionState extends State<PhilosophySection>
                     ),
                   ),
                 ),
-                // Main content
-                // Main content
-                RepaintBoundary(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(height: isMob ? 100 : 120),
-                      // Header with float animation (RepaintBoundary helps here)
-                      Padding(
-                        padding: Responsive.padding(context),
-                        child: AnimatedBuilder(
-                          animation: _floatCtrl,
-                          builder: (context, child) {
-                            final y = math.sin(_floatCtrl.value * math.pi) * 0.4;
-                            return Transform.translate(
-                              offset: Offset(0, y),
-                              child: child,
-                            );
-                          },
-                          child: Column(
-                            children: [
-                              Text(
-                                'OUR PHILOSOPHY',
-                                style: AppFonts.caption.copyWith(
-                                  color: AppColors.accent2,
-                                  letterSpacing: 4,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                                textAlign: TextAlign.center,
-                                ),
-                              const SizedBox(height: 20),
-                              Text(
-                                'The Vision Behind\nVision Optocare',
-                                style: AppFonts.h2.copyWith(
-                                  color: AppColors.white,
-                                  fontSize: isMob ? 30 : 52,
-                                  height: 1.1,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 48),
-                      // Cards with staggered animation
-                      Flexible(
-                        child: RepaintBoundary(
-                          child: Padding(
+                // Main content — properly constrained
+                Positioned.fill(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      top: isMob ? 90 : 110,
+                      bottom: isMob ? 16 : 32,
+                    ),
+                    child: RepaintBoundary(
+                      child: Column(
+                        children: [
+                          // Header with float animation
+                          Padding(
                             padding: Responsive.padding(context),
-                            child: isMob
-                                ? _buildMobileLayout()
-                                : _buildDesktopLayout(),
+                            child: AnimatedBuilder(
+                              animation: _floatCtrl,
+                              builder: (context, child) {
+                                final y = math.sin(_floatCtrl.value * math.pi) * 0.4;
+                                return Transform.translate(
+                                  offset: Offset(0, y),
+                                  child: child,
+                                );
+                              },
+                              child: Column(
+                                children: [
+                                  Text(
+                                    'OUR PHILOSOPHY',
+                                    style: AppFonts.caption.copyWith(
+                                      color: AppColors.accent2,
+                                      letterSpacing: 4,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'The Vision Behind\nVision Optocare',
+                                    style: AppFonts.h2.copyWith(
+                                      color: AppColors.white,
+                                      fontSize: isMob ? 28 : 48,
+                                      height: 1.1,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
+                          SizedBox(height: isMob ? 20 : 36),
+                          // Cards — fully flexible
+                          Expanded(
+                            child: RepaintBoundary(
+                              child: Padding(
+                                padding: Responsive.padding(context),
+                                child: isMob
+                                    ? _buildMobileLayout()
+                                    : _buildDesktopLayout(),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: isMob ? 12 : 24),
+                        ],
                       ),
-                      SizedBox(height: isMob ? 20 : 40),
-                    ],
+                    ),
                   ),
                 ),
               ],
@@ -192,36 +197,35 @@ class _PhilosophySectionState extends State<PhilosophySection>
 
   Widget _buildMobileLayout() {
     final ctrls = [_card1Ctrl, _card2Ctrl, _card3Ctrl];
-    return SingleChildScrollView(
+    // Use ListView for overflow safety on mobile
+    return ListView.builder(
       physics: const NeverScrollableScrollPhysics(),
-      child: Column(
-        children: _steps.asMap().entries.map((entry) {
-          final i = entry.key;
-          final s = entry.value;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: _AnimatedCard(
-              ctrl: ctrls[i],
-              floatCtrl: _floatCtrl,
-              pulseCtrl: _pulseCtrl,
-              step: s,
-              index: i,
-            ),
-          );
-        }).toList(),
-      ),
+      padding: EdgeInsets.zero,
+      itemCount: _steps.length,
+      itemBuilder: (context, i) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: _AnimatedCard(
+            ctrl: ctrls[i],
+            floatCtrl: _floatCtrl,
+            pulseCtrl: _pulseCtrl,
+            step: _steps[i],
+            index: i,
+          ),
+        );
+      },
     );
   }
 
   static final _steps = [
     _Step('01', 'Our Vision',
-        'A world where clinical-grade optometry is not a luxury, but a fundamental right accessible to everyone through mobile technology.',
+        'A world where clinical-grade optometry is accessible to everyone through mobile technology.',
         Icons.visibility, AppColors.accent2),
     _Step('02', 'Our Mission',
-        'To decentralize global eye care by delivering an AI-driven, highly accurate diagnostic ecosystem directly to your smartphone.',
+        'To decentralize global eye care by delivering AI-driven diagnostics directly to your smartphone.',
         Icons.rocket_launch, const Color(0xFF00D4C8)),
     _Step('03', 'Our Innovation',
-        'Fusing medical science with digital convenience. We integrate AI precision, hybrid care, and therapeutic engagement in one platform.',
+        'Fusing medical science with digital convenience — AI precision, hybrid care, and therapy in one platform.',
         Icons.lightbulb_outline, const Color(0xFFF5C842)),
   ];
 }
@@ -257,7 +261,6 @@ class _AnimatedCardState extends State<_AnimatedCard> {
 
   @override
   Widget build(BuildContext context) {
-    // Outer builder: enter animation (fires once then stops)
     return AnimatedBuilder(
       animation: widget.ctrl,
       builder: (context, _) {
@@ -268,7 +271,6 @@ class _AnimatedCardState extends State<_AnimatedCard> {
           child: Transform.translate(
             offset: Offset(0, 30 * (1 - enter)),
             child: RepaintBoundary(
-              // Inner builder: float + pulse (continuous, isolated)
               child: AnimatedBuilder(
                 animation: Listenable.merge([widget.floatCtrl, widget.pulseCtrl]),
                 builder: (context, child) {
@@ -290,7 +292,6 @@ class _AnimatedCardState extends State<_AnimatedCard> {
 
   Widget _buildCardBody() {
     final isMob = Responsive.isMobile(context);
-    // Icon pulse extracted to its own builder
     return MouseRegion(
       onEnter: (_) => setState(() => _hov = true),
       onExit: (_) => setState(() => _hov = false),
@@ -305,10 +306,10 @@ class _AnimatedCardState extends State<_AnimatedCard> {
               ..rotateY(0.02 * v),
             alignment: Alignment.center,
             child: Container(
-              padding: EdgeInsets.all(isMob ? 20 : 32),
+              padding: EdgeInsets.all(isMob ? 16 : 28),
               decoration: BoxDecoration(
                 color: AppColors.surface.withValues(alpha: 0.05 + 0.03 * v),
-                borderRadius: BorderRadius.circular(36),
+                borderRadius: BorderRadius.circular(32),
                 border: Border.all(
                   color: Color.lerp(
                     AppColors.white.withValues(alpha: 0.05),
@@ -325,77 +326,74 @@ class _AnimatedCardState extends State<_AnimatedCard> {
                   ),
                 ],
               ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          widget.step.number,
-                          style: AppFonts.h1.copyWith(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        widget.step.number,
+                        style: AppFonts.h1.copyWith(
+                          color: widget.step.color
+                              .withValues(alpha: 0.15 + v * 0.1),
+                          fontSize: isMob ? 40 : 56,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -2,
+                        ),
+                      ),
+                      AnimatedBuilder(
+                        animation: widget.pulseCtrl,
+                        builder: (context, child) {
+                          final iconScale = 1.0 + math.sin((widget.pulseCtrl.value * math.pi * 2) + widget.index) * 0.015;
+                          return Transform.scale(
+                            scale: iconScale,
+                            child: child,
+                          );
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(isMob ? 8 : 12),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
                             color: widget.step.color
-                                .withValues(alpha: 0.15 + v * 0.1),
-                            fontSize: 60,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -2,
+                                .withValues(alpha: 0.08 + 0.08 * v),
+                            boxShadow: [
+                              BoxShadow(
+                                color: widget.step.color
+                                    .withValues(alpha: 0.2 * v),
+                                blurRadius: 20,
+                                spreadRadius: -5,
+                              ),
+                            ],
                           ),
+                          child: Icon(widget.step.icon,
+                              color: widget.step.color, size: isMob ? 22 : 28),
                         ),
-                        // Icon pulse via its own lightweight builder
-                        AnimatedBuilder(
-                          animation: widget.pulseCtrl,
-                          builder: (context, child) {
-                            final iconScale = 1.0 + math.sin((widget.pulseCtrl.value * math.pi * 2) + widget.index) * 0.015;
-                            return Transform.scale(
-                              scale: iconScale,
-                              child: child,
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: widget.step.color
-                                  .withValues(alpha: 0.08 + 0.08 * v),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: widget.step.color
-                                      .withValues(alpha: 0.2 * v),
-                                  blurRadius: 20,
-                                  spreadRadius: -5,
-                                ),
-                              ],
-                            ),
-                            child: Icon(widget.step.icon,
-                                color: widget.step.color, size: 28),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      widget.step.title,
-                      style: AppFonts.h3.copyWith(
-                        color: AppColors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
                       ),
+                    ],
+                  ),
+                  SizedBox(height: isMob ? 12 : 20),
+                  Text(
+                    widget.step.title,
+                    style: AppFonts.h3.copyWith(
+                      color: AppColors.white,
+                      fontSize: isMob ? 22 : 26,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      widget.step.subtitle,
-                      style: AppFonts.bodyLarge.copyWith(
-                        color: AppColors.muted,
-                        fontSize: 16,
-                        height: 1.7,
-                      ),
+                  ),
+                  SizedBox(height: isMob ? 8 : 12),
+                  Text(
+                    widget.step.subtitle,
+                    style: AppFonts.bodyLarge.copyWith(
+                      color: AppColors.muted,
+                      fontSize: isMob ? 13 : 15,
+                      height: 1.6,
                     ),
-                  ],
-                ),
+                    maxLines: isMob ? 3 : 5,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
             ),
           );
@@ -405,14 +403,13 @@ class _AnimatedCardState extends State<_AnimatedCard> {
   }
 }
 
-// Ambient glow painter for philosophic feeling
+// Ambient glow painter
 class _AmbientGlowPainter extends CustomPainter {
   final double pulse;
   _AmbientGlowPainter({required this.pulse});
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Subtle orb glows
     final colors = [AppColors.accent2, const Color(0xFF00D4C8), const Color(0xFFF5C842)];
     final positions = [
       Offset(size.width * 0.2, size.height * 0.4),
@@ -433,4 +430,3 @@ class _AmbientGlowPainter extends CustomPainter {
   bool shouldRepaint(covariant _AmbientGlowPainter oldDelegate) =>
       (oldDelegate.pulse - pulse).abs() > 0.05;
 }
-

@@ -52,40 +52,55 @@ class _TeamSectionState extends State<TeamSection>
       width: size.width,
       height: size.height,
       color: AppColors.background,
-      child: SingleChildScrollView(
-        physics: const ClampingScrollPhysics(),
-        child: Column(
-          children: [
-            SizedBox(height: isMob ? 40 : 60),
-            _FadeSlide(
-              ctrl: _ctrl,
-              delay: 0.0,
-              child: Column(
-                children: [
-                  Text(
-                    'TEAM MEMBERS',
-                    style: AppFonts.caption.copyWith(
-                      color: AppColors.accent2,
-                      letterSpacing: 6,
-                      fontWeight: FontWeight.w900,
+      child: Padding(
+        padding: EdgeInsets.only(
+          top: isMob ? 80 : 100,
+          bottom: isMob ? 16 : 24,
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              physics: const NeverScrollableScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _FadeSlide(
+                      ctrl: _ctrl,
+                      delay: 0.0,
+                      child: Column(
+                        children: [
+                          Text(
+                            'TEAM MEMBERS',
+                            style: AppFonts.caption.copyWith(
+                              color: AppColors.accent2,
+                              letterSpacing: 6,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            width: 40,
+                            height: 2,
+                            color: AppColors.accent2.withValues(alpha: 0.3),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    width: 40,
-                    height: 2,
-                    color: AppColors.accent2.withValues(alpha: 0.3),
-                  ),
-                ],
+                    SizedBox(height: isMob ? 24 : 60),
+                    Padding(
+                      padding: Responsive.padding(context),
+                      child: isMob ? _buildMobile() : _buildDesktop(),
+                    ),
+                    SizedBox(height: isMob ? 16 : 40),
+                  ],
+                ),
               ),
-            ),
-            SizedBox(height: isMob ? 40 : 80),
-            Padding(
-              padding: Responsive.padding(context),
-              child: isMob ? _buildMobile() : _buildDesktop(),
-            ),
-            SizedBox(height: isMob ? 40 : 80),
-          ],
+            );
+          },
         ),
       ),
     );
@@ -133,39 +148,36 @@ class _TeamSectionState extends State<TeamSection>
   }
 
   Widget _buildMobile() {
-    return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(),
-      child: Column(
-        children: [
-          _CinematicProfile(
-            ctrl: _ctrl,
-            delay: 0.2,
-            name: 'Sherly Mary Daniel',
-            role: 'CHIEF TECHNOLOGY OFFICER',
-            imagePath: 'assets/images/Team_members/Cto.jpeg',
-            credential: 'B.Tech ECE',
-            experience: '9+ Years IT Expertise',
-            tagline: 'Scalable Software Ops.',
-            accent: const Color(0xFF9D4EDD),
-            isMobile: true,
-            alignment: Alignment.topCenter,
-          ),
-          const SizedBox(height: 40),
-          _CinematicProfile(
-            ctrl: _ctrl,
-            delay: 0.4,
-            name: 'Fays Arukattil',
-            role: 'SOFTWARE DEVELOPER',
-            imagePath: 'assets/images/Team_members/Software_Dev.jpeg',
-            credential: 'Full-Stack Architect',
-            experience: 'Product · R&D',
-            tagline: 'Architecting the Visiaxx core.',
-            accent: const Color(0xFFF5C842),
-            isMobile: true,
-            alignment: Alignment.center,
-          ),
-        ],
-      ),
+    return Column(
+      children: [
+        _CinematicProfile(
+          ctrl: _ctrl,
+          delay: 0.2,
+          name: 'Sherly Mary Daniel',
+          role: 'CHIEF TECHNOLOGY OFFICER',
+          imagePath: 'assets/images/Team_members/Cto.jpeg',
+          credential: 'B.Tech ECE',
+          experience: '9+ Years IT Expertise',
+          tagline: 'Scalable Software Ops.',
+          accent: const Color(0xFF9D4EDD),
+          isMobile: true,
+          alignment: Alignment.topCenter,
+        ),
+        const SizedBox(height: 24),
+        _CinematicProfile(
+          ctrl: _ctrl,
+          delay: 0.4,
+          name: 'Fays Arukattil',
+          role: 'SOFTWARE DEVELOPER',
+          imagePath: 'assets/images/Team_members/Software_Dev.jpeg',
+          credential: 'Full-Stack Architect',
+          experience: 'Product · R&D',
+          tagline: 'Architecting the Visiaxx core.',
+          accent: const Color(0xFFF5C842),
+          isMobile: true,
+          alignment: Alignment.center,
+        ),
+      ],
     );
   }
 }

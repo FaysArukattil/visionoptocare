@@ -4,7 +4,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../utils/responsive.dart';
 
-/// Page 6: B2B Practitioner Licensing
+/// Page: B2B Practitioner Licensing
 class B2BPage extends StatefulWidget {
   final bool isActive;
   const B2BPage({super.key, required this.isActive});
@@ -42,7 +42,6 @@ class _B2BPageState extends State<B2BPage> with TickerProviderStateMixin {
 
   void _start() async {
     _hasStarted = true;
-    // Increased delay for 'Settle Gate' — ensures PageView swipe is done before firing animations.
     await Future.delayed(const Duration(milliseconds: 400));
     if (!mounted) return;
     _enterCtrl.forward();
@@ -87,84 +86,97 @@ class _B2BPageState extends State<B2BPage> with TickerProviderStateMixin {
               children: [
                 // Subtle grid background
                 Positioned.fill(
-                  child: Opacity(
-                    opacity: 0.3,
-                    child: CustomPaint(
-                      painter: _GridPainter(
-                          color: AppColors.gold.withValues(alpha: 0.04)),
+                  child: RepaintBoundary(
+                    child: Opacity(
+                      opacity: 0.3,
+                      child: CustomPaint(
+                        painter: _GridPainter(
+                            color: AppColors.gold.withValues(alpha: 0.04)),
+                      ),
                     ),
                   ),
                 ),
-                // Main content: Made it fit securely in the viewport to avoid scroll
-                SafeArea(
-                  child: Column(
-                    children: [
-                      const Spacer(flex: 2),
-                      // Header
-                      Padding(
-                        padding: Responsive.padding(context),
-                        child: Column(
+                // Main content with proper navbar clearance
+                Positioned.fill(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      top: isMob ? 100 : 120, // ← Clear the navbar properly
+                      bottom: isMob ? 16 : 32,
+                    ),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return Column(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: AppColors.gold.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                    color:
-                                        AppColors.gold.withValues(alpha: 0.3)),
-                              ),
-                              child: Text(
-                                'FOR CLINICS & HOSPITALS',
-                                style: AppFonts.caption.copyWith(
-                                  color: AppColors.gold,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 3,
-                                  fontSize: 10,
-                                ),
+                            // Header
+                            Padding(
+                              padding: Responsive.padding(context),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.gold.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                          color:
+                                              AppColors.gold.withValues(alpha: 0.3)),
+                                    ),
+                                    child: Text(
+                                      'FOR CLINICS & HOSPITALS',
+                                      style: AppFonts.caption.copyWith(
+                                        color: AppColors.gold,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 3,
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'Power Your Clinic\nwith Visiaxx Pro',
+                                    style: AppFonts.h2.copyWith(
+                                      color: AppColors.white,
+                                      fontSize: isMob ? 28 : 42,
+                                      height: 1.1,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  SizedBox(height: isMob ? 8 : 12),
+                                  SizedBox(
+                                    width: isMob ? double.infinity : 700,
+                                    child: Text(
+                                      'Empower your practice with clinical-grade digital diagnostics. License Visiaxx Pro for your clinic, mobile eye camps, and telemedicine workflows.',
+                                      style: AppFonts.bodyLarge.copyWith(
+                                        color: AppColors.muted,
+                                        fontSize: isMob ? 13 : 16,
+                                        height: 1.6,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 12),
-                            Text(
-                              'Power Your Clinic\nwith Visiaxx Pro',
-                              style: AppFonts.h2.copyWith(
-                                color: AppColors.white,
-                                fontSize: isMob ? 28 : 42, // Refined scaling
-                                height: 1.1,
-                                fontWeight: FontWeight.w800,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              width: isMob ? double.infinity : 700,
-                              child: Text(
-                                'Empower your practice with clinical-grade digital diagnostics. License Visiaxx Pro for your clinic, mobile eye camps, and telemedicine workflows.',
-                                style: AppFonts.bodyLarge.copyWith(
-                                  color: AppColors.muted,
-                                  fontSize: isMob ? 14 : 16, // Refined scaling
-                                  height: 1.6,
-                                ),
-                                textAlign: TextAlign.center,
+                            SizedBox(height: isMob ? 16 : 24),
+                            // Feature Cards — flexible, no overflow
+                            Expanded(
+                              child: Padding(
+                                padding: Responsive.padding(context),
+                                child: isMob
+                                    ? _buildMobileCards()
+                                    : _buildDesktopCards(),
                               ),
                             ),
+                            SizedBox(height: isMob ? 12 : 16),
+                            // CTA Button
+                            _buildCTA(isMob),
+                            SizedBox(height: isMob ? 8 : 16),
                           ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      // Feature Cards
-                      Padding(
-                        padding: Responsive.padding(context),
-                        child: isMob
-                            ? Expanded(child: _buildMobileCards())
-                            : _buildDesktopCards(),
-                      ),
-                      const Spacer(flex: 1),
-                      // CTA Button ALWAYS VISIBLE
-                      _buildCTA(isMob),
-                      const Spacer(flex: 2),
-                    ],
+                        );
+                      },
+                    ),
                   ),
                 ),
               ],
@@ -196,7 +208,8 @@ class _B2BPageState extends State<B2BPage> with TickerProviderStateMixin {
     final ctrls = [_card1Ctrl, _card2Ctrl, _card3Ctrl];
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
-      shrinkWrap: true,
+      padding: EdgeInsets.zero,
+      shrinkWrap: false,
       itemCount: _features.length,
       itemBuilder: (context, i) {
         return Padding(
@@ -344,7 +357,7 @@ class _AnimatedFeatureCardState extends State<_AnimatedFeatureCard> {
                 tween: Tween(begin: 0.0, end: _hov ? 1.0 : 0.0),
                 builder: (context, v, _) {
                   return Container(
-                    padding: EdgeInsets.all(isMob ? 24 : 36),
+                    padding: EdgeInsets.all(isMob ? 20 : 32),
                     decoration: BoxDecoration(
                       color: AppColors.surface.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(32),
@@ -367,6 +380,7 @@ class _AnimatedFeatureCardState extends State<_AnimatedFeatureCard> {
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
                           padding: EdgeInsets.all(isMob ? 10 : 14),
@@ -379,23 +393,25 @@ class _AnimatedFeatureCardState extends State<_AnimatedFeatureCard> {
                               color: widget.feature.color,
                               size: isMob ? 24 : 30),
                         ),
-                        SizedBox(height: isMob ? 16 : 24),
+                        SizedBox(height: isMob ? 12 : 20),
                         Text(
                           widget.feature.title,
                           style: AppFonts.h4.copyWith(
                             color: AppColors.white,
-                            fontSize: isMob ? 18 : 22,
+                            fontSize: isMob ? 17 : 22,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: isMob ? 10 : 14),
+                        SizedBox(height: isMob ? 8 : 14),
                         Text(
                           widget.feature.desc,
                           style: AppFonts.bodyLarge.copyWith(
                             color: AppColors.muted,
-                            fontSize: isMob ? 13 : 15,
+                            fontSize: isMob ? 12 : 15,
                             height: 1.7,
                           ),
+                          maxLines: isMob ? 3 : 5,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),

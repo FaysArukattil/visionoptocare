@@ -165,136 +165,152 @@ class _HeroSectionState extends State<HeroSection>
             ),
           ),
 
-          // ── Main Content ──
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: isMob ? 24 : 60),
-            child: SingleChildScrollView(
-              physics: const NeverScrollableScrollPhysics(),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // ── Typewriter Brand ──
-                ShaderMask(
-                  shaderCallback: (bounds) => const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0xFFF0F4FF), Color(0xFFA0A8C8)],
-                  ).createShader(bounds),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          _displayedText,
-                          style: AppFonts.heading(
-                            fontSize: isMob ? 60 : 110,
-                            fontWeight: FontWeight.w900,
-                            height: 0.88,
-                            letterSpacing: isMob ? 4 : 8,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        // Blinking Cursor — isolated rebuild via ValueListenableBuilder
-                        if (!_typewriterDone)
-                          ValueListenableBuilder<bool>(
-                            valueListenable: _cursorVisible,
-                            builder: (context, visible, _) => Opacity(
-                              opacity: visible ? 1.0 : 0.0,
-                              child: Text(
-                                '|',
-                                style: AppFonts.heading(
-                                  fontSize: isMob ? 60 : 110,
-                                  fontWeight: FontWeight.w900,
-                                  height: 0.88,
-                                  color: AppColors.accent2,
-                                ),
+          // ── Main Content — pushed below navbar ──
+          Positioned.fill(
+            child: Padding(
+              padding: EdgeInsets.only(
+                top: isMob ? 90 : 100, // ← Clear the navbar
+                left: isMob ? 24 : 60,
+                right: isMob ? 24 : 60,
+                bottom: isMob ? 16 : 24,
+              ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // ── Typewriter Brand ──
+                          ShaderMask(
+                            shaderCallback: (bounds) => const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Color(0xFFF0F4FF), Color(0xFFA0A8C8)],
+                            ).createShader(bounds),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    _displayedText,
+                                    style: AppFonts.heading(
+                                      fontSize: isMob ? 60 : 110,
+                                      fontWeight: FontWeight.w900,
+                                      height: 0.88,
+                                      letterSpacing: isMob ? 4 : 8,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  // Blinking Cursor
+                                  if (!_typewriterDone)
+                                    ValueListenableBuilder<bool>(
+                                      valueListenable: _cursorVisible,
+                                      builder: (context, visible, _) => Opacity(
+                                        opacity: visible ? 1.0 : 0.0,
+                                        child: Text(
+                                          '|',
+                                          style: AppFonts.heading(
+                                            fontSize: isMob ? 60 : 110,
+                                            fontWeight: FontWeight.w900,
+                                            height: 0.88,
+                                            color: AppColors.accent2,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
                           ),
-                      ],
-                    ),
-                  ),
-                ),
 
-                const SizedBox(height: 32),
+                          SizedBox(height: isMob ? 20 : 32),
 
-                // ── Tagline Pill ──
-                _FadeSlide(
-                  controller: _taglineCtrl,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(30),
-                      gradient: LinearGradient(
-                        colors: [
-                          AppColors.accent2.withValues(alpha: 0.15),
-                          Colors.transparent,
+                          // ── Tagline Pill ──
+                          _FadeSlide(
+                            controller: _taglineCtrl,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(30),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppColors.accent2.withValues(alpha: 0.15),
+                                    Colors.transparent,
+                                  ],
+                                ),
+                                border: Border.all(
+                                  color: AppColors.accent2.withValues(alpha: 0.3),
+                                ),
+                              ),
+                              child: Text(
+                                'Transforming Eye Care through Innovation.',
+                                style: AppFonts.bodyLarge.copyWith(
+                                  color: AppColors.accent2,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: isMob ? 13 : 20,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(height: isMob ? 14 : 20),
+
+                          // ── Quote ──
+                          _FadeSlide(
+                            controller: _quoteCtrl,
+                            child: Text(
+                              '"Your Vision, Our Priority"',
+                              style: AppFonts.bodyLarge.copyWith(
+                                color: AppColors.white.withValues(alpha: 0.75),
+                                fontStyle: FontStyle.italic,
+                                fontSize: isMob ? 15 : 24,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+
+                          SizedBox(height: isMob ? 18 : 28),
+
+                          // ── Description ──
+                          _FadeSlide(
+                            controller: _descCtrl,
+                            child: SizedBox(
+                              width: isMob ? double.infinity : 680,
+                              child: Text(
+                                'Vision Optocare is a forward-thinking digital health startup focused on reshaping how primary eye care is delivered. By merging optometric precision with mobile-first technology, we make vision care more accessible and data-driven across the globe.',
+                                style: AppFonts.bodyLarge.copyWith(
+                                  color: AppColors.muted,
+                                  height: 1.8,
+                                  fontSize: isMob ? 14 : 18,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(height: isMob ? 28 : 48),
+
+                          // ── Scroll CTA ──
+                          _FadeSlide(
+                            controller: _ctaCtrl,
+                            child: GestureDetector(
+                              onTap: widget.onScrollDown,
+                              child: _PulsingScrollCta(isMob: isMob),
+                            ),
+                          ),
                         ],
                       ),
-                      border: Border.all(
-                        color: AppColors.accent2.withValues(alpha: 0.3),
-                      ),
                     ),
-                    child: Text(
-                      'Transforming Eye Care through Innovation.',
-                      style: AppFonts.bodyLarge.copyWith(
-                        color: AppColors.accent2,
-                        fontWeight: FontWeight.w600,
-                        fontSize: isMob ? 14 : 20,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // ── Quote ──
-                _FadeSlide(
-                  controller: _quoteCtrl,
-                  child: Text(
-                    '"Your Vision, Our Priority"',
-                    style: AppFonts.bodyLarge.copyWith(
-                      color: AppColors.white.withValues(alpha: 0.75),
-                      fontStyle: FontStyle.italic,
-                      fontSize: isMob ? 16 : 24,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-
-                const SizedBox(height: 28),
-
-                // ── Description ──
-                _FadeSlide(
-                  controller: _descCtrl,
-                  child: SizedBox(
-                    width: isMob ? double.infinity : 680,
-                    child: Text(
-                      'Vision Optocare is a forward-thinking digital health startup focused on reshaping how primary eye care is delivered. By merging optometric precision with mobile-first technology, we make vision care more accessible and data-driven across the globe.',
-                      style: AppFonts.bodyLarge.copyWith(
-                        color: AppColors.muted,
-                        height: 1.8,
-                        fontSize: isMob ? 15 : 18,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 48),
-
-                // ── Scroll CTA ──
-                _FadeSlide(
-                  controller: _ctaCtrl,
-                  child: GestureDetector(
-                    onTap: widget.onScrollDown,
-                    child: _PulsingScrollCta(isMob: isMob),
-                  ),
-                ),
-              ],
-            ),
+                  );
+                },
+              ),
             ),
           ),
         ],

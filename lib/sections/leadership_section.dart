@@ -56,51 +56,70 @@ class _LeadershipSectionState extends State<LeadershipSection>
         children: [
           // ── Background Accent ──
           Positioned.fill(
-            child: Opacity(
-              opacity: 0.05,
-              child: CustomPaint(
-                painter: _GridPainter(),
+            child: RepaintBoundary(
+              child: Opacity(
+                opacity: 0.05,
+                child: CustomPaint(
+                  painter: _GridPainter(),
+                ),
               ),
             ),
           ),
 
           // ── Content ──
-          SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            child: Column(
-              children: [
-                // Header
-                SizedBox(height: isMob ? 80 : 100),
-                _FadeSlide(
-                  ctrl: _ctrl,
-                  delay: 0.0,
-                  child: Column(
-                    children: [
-                      Text(
-                        'THE LEADERSHIP',
-                        style: AppFonts.caption.copyWith(
-                          color: AppColors.accent2,
-                          letterSpacing: 6,
-                          fontWeight: FontWeight.w900,
-                        ),
+          Positioned.fill(
+            child: Padding(
+              padding: EdgeInsets.only(
+                top: isMob ? 80 : 100,
+                bottom: isMob ? 16 : 24,
+              ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
                       ),
-                      const SizedBox(height: 8),
-                      Container(
-                        width: 40,
-                        height: 2,
-                        color: AppColors.accent2.withValues(alpha: 0.3),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Header
+                          _FadeSlide(
+                            ctrl: _ctrl,
+                            delay: 0.0,
+                            child: Column(
+                              children: [
+                                Text(
+                                  'THE LEADERSHIP',
+                                  style: AppFonts.caption.copyWith(
+                                    color: AppColors.accent2,
+                                    letterSpacing: 6,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Container(
+                                  width: 40,
+                                  height: 2,
+                                  color: AppColors.accent2.withValues(alpha: 0.3),
+                                ),
+                              ],
+                            ),
+                          ),
+                          
+                          // Profiles
+                          Padding(
+                            padding: EdgeInsets.symmetric(vertical: isMob ? 20 : 40),
+                            child: isMob ? _buildMobileLayout() : _buildDesktopLayout(),
+                          ),
+                          SizedBox(height: isMob ? 16 : 40),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-                
-                // Profiles
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 40),
-                  child: isMob ? _buildMobileLayout() : _buildDesktopLayout(),
-                ),
-                SizedBox(height: isMob ? 40 : 80),
-              ],
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ],
@@ -154,39 +173,35 @@ class _LeadershipSectionState extends State<LeadershipSection>
   }
 
   Widget _buildMobileLayout() {
-    return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(),
-      padding: const EdgeInsets.only(top: 24, bottom: 40),
-      child: Column(
-        children: [
-          _CinematicProfile(
-            ctrl: _ctrl,
-            delay: 0.2,
-            name: 'Aben Thomas Angadiyil',
-            role: 'FOUNDER & CEO',
-            imagePath: 'assets/images/Founders/Founder_1.jpeg',
-            credential: 'B.Optom · BMS',
-            experience: '14+ Years in Vision Care',
-            tagline: 'Healthcare Innovation',
-            accent: AppColors.accent2,
-            isMobile: true,
-          ),
-          const SizedBox(height: 32),
-          _CinematicProfile(
-            ctrl: _ctrl,
-            delay: 0.4,
-            name: 'Thomas Angadiyil Philip',
-            role: 'CO-FOUNDER & DIRECTOR',
-            imagePath: 'assets/images/Founders/Founder_2.jpeg',
-            credential: 'Rajan Optics',
-            experience: '44+ Years Optical Expertise',
-            tagline: 'Legacy of Precision',
-            accent: const Color(0xFF4F6AFF),
-            isMobile: true,
-            alignment: Alignment.center,
-          ),
-        ],
-      ),
+    return Column(
+      children: [
+        _CinematicProfile(
+          ctrl: _ctrl,
+          delay: 0.2,
+          name: 'Aben Thomas Angadiyil',
+          role: 'FOUNDER & CEO',
+          imagePath: 'assets/images/Founders/Founder_1.jpeg',
+          credential: 'B.Optom · BMS',
+          experience: '14+ Years in Vision Care',
+          tagline: 'Healthcare Innovation',
+          accent: AppColors.accent2,
+          isMobile: true,
+        ),
+        const SizedBox(height: 24),
+        _CinematicProfile(
+          ctrl: _ctrl,
+          delay: 0.4,
+          name: 'Thomas Angadiyil Philip',
+          role: 'CO-FOUNDER & DIRECTOR',
+          imagePath: 'assets/images/Founders/Founder_2.jpeg',
+          credential: 'Rajan Optics',
+          experience: '44+ Years Optical Expertise',
+          tagline: 'Legacy of Precision',
+          accent: const Color(0xFF4F6AFF),
+          isMobile: true,
+          alignment: Alignment.center,
+        ),
+      ],
     );
   }
 }
@@ -293,8 +308,8 @@ class _CinematicProfile extends StatelessWidget {
 
   Widget _buildImage() {
     return Container(
-      width: 260,
-      height: 380,
+      width: 240,
+      height: 340,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
