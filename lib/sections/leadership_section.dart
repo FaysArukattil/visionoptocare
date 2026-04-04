@@ -14,13 +14,11 @@ class LeadershipSection extends StatefulWidget {
 }
 
 class _LeadershipSectionState extends State<LeadershipSection> {
-  @override
-  void initState() {
-    super.initState();
-  }
+  final PageController _leadCtrl = PageController(viewportFraction: 0.85);
 
   @override
   void dispose() {
+    _leadCtrl.dispose();
     super.dispose();
   }
 
@@ -45,7 +43,6 @@ class _LeadershipSectionState extends State<LeadershipSection> {
             color: AppColors.background,
             child: Stack(
               children: [
-                // ── Background Accent ──
                 Positioned.fill(
                   child: RepaintBoundary(
                     child: Opacity(
@@ -56,61 +53,47 @@ class _LeadershipSectionState extends State<LeadershipSection> {
                     ),
                   ),
                 ),
-
-                // ── Content ──
                 Positioned.fill(
                   child: Padding(
                     padding: EdgeInsets.only(
-                      top: isMob ? 80 : 100,
-                      bottom: isMob ? 16 : 24,
+                      top: isMob ? 60 : 100,
+                      bottom: isMob ? 12 : 24,
                     ),
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        return SingleChildScrollView(
-                          physics: const NeverScrollableScrollPhysics(),
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minHeight: constraints.maxHeight,
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                // Header
-                                Opacity(
-                                  opacity: ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0),
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        'THE LEADERSHIP',
-                                        style: AppFonts.caption.copyWith(
-                                          color: AppColors.accent2,
-                                          letterSpacing: 6,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Container(
-                                        width: 40,
-                                        height: 2,
-                                        color: AppColors.accent2.withValues(alpha: 0.3),
-                                      ),
-                                    ],
-                                  ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Opacity(
+                          opacity: ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0),
+                          child: Column(
+                            children: [
+                              Text(
+                                'THE LEADERSHIP',
+                                style: AppFonts.caption.copyWith(
+                                  color: AppColors.accent2,
+                                  letterSpacing: 6,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: isMob ? 10 : 12,
                                 ),
-                                
-                                // Profiles
-                                Padding(
-                                  padding: EdgeInsets.symmetric(vertical: isMob ? 20 : 40),
-                                  child: isMob 
-                                      ? _buildMobileLayout(tEntry, tExit) 
-                                      : _buildDesktopLayout(tEntry, tExit),
-                                ),
-                                SizedBox(height: isMob ? 16 : 40),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                width: 40,
+                                height: 2,
+                                color: AppColors.accent2.withValues(alpha: 0.3),
+                              ),
+                            ],
                           ),
-                        );
-                      },
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: isMob ? 20 : 40),
+                            child: isMob 
+                                ? _buildMobileLayout(tEntry, tExit) 
+                                : _buildDesktopLayout(tEntry, tExit),
+                          ),
+                        ),
+                        if (!isMob) const SizedBox(height: 40),
+                      ],
                     ),
                   ),
                 ),
@@ -125,7 +108,6 @@ class _LeadershipSectionState extends State<LeadershipSection> {
   Widget _buildDesktopLayout(double tEntry, double tExit) {
     final entryLX = (1.0 - Curves.easeOutCubic.transform(tEntry)) * -500;
     final exitLX = Curves.easeInCubic.transform(tExit) * -500;
-
     final entryRX = (1.0 - Curves.easeOutCubic.transform(tEntry)) * 500;
     final exitRX = Curves.easeInCubic.transform(tExit) * 500;
 
@@ -169,7 +151,6 @@ class _LeadershipSectionState extends State<LeadershipSection> {
                   tagline: 'Legacy of trust and diagnostic precision.',
                   accent: const Color(0xFF4F6AFF),
                   isReverse: true,
-                  alignment: Alignment.center,
                 ),
               ),
             ),
@@ -182,31 +163,68 @@ class _LeadershipSectionState extends State<LeadershipSection> {
   Widget _buildMobileLayout(double tEntry, double tExit) {
     return Column(
       children: [
-        _CinematicProfile(
-          progress: tEntry,
-          exitProgress: tExit,
-          name: 'Aben Thomas Angadiyil',
-          role: 'FOUNDER & CEO',
-          imagePath: 'assets/images/Founders/Founder_1.jpeg',
-          credential: 'B.Optom · BMS',
-          experience: '14+ Years in Vision Care',
-          tagline: 'Healthcare Innovation',
-          accent: AppColors.accent2,
-          isMobile: true,
+        Expanded(
+          child: PageView(
+            controller: _leadCtrl,
+            physics: const BouncingScrollPhysics(),
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: _CinematicProfile(
+                  progress: tEntry,
+                  exitProgress: tExit,
+                  name: 'Aben Thomas Angadiyil',
+                  role: 'FOUNDER & CEO',
+                  imagePath: 'assets/images/Founders/Founder_1.jpeg',
+                  credential: 'B.Optom · BMS',
+                  experience: '14+ Years in Vision Care',
+                  tagline: 'Healthcare Innovation',
+                  accent: AppColors.accent2,
+                  isMobile: true,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: _CinematicProfile(
+                  progress: tEntry,
+                  exitProgress: tExit,
+                  name: 'Thomas Angadiyil Philip',
+                  role: 'CO-FOUNDER & DIRECTOR',
+                  imagePath: 'assets/images/Founders/Founder_2.jpeg',
+                  credential: 'Rajan Optics',
+                  experience: '44+ Years Optical Expertise',
+                  tagline: 'Legacy of Trust',
+                  accent: const Color(0xFF4F6AFF),
+                  isMobile: true,
+                  isReverse: true,
+                ),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 24),
-        _CinematicProfile(
-          progress: tEntry,
-          exitProgress: tExit,
-          name: 'Thomas Angadiyil Philip',
-          role: 'CO-FOUNDER & DIRECTOR',
-          imagePath: 'assets/images/Founders/Founder_2.jpeg',
-          credential: 'Rajan Optics',
-          experience: '44+ Years Optical Expertise',
-          tagline: 'Legacy of Precision',
-          accent: const Color(0xFF4F6AFF),
-          isMobile: true,
-          alignment: Alignment.center,
+        const SizedBox(height: 12),
+        AnimatedBuilder(
+          animation: _leadCtrl,
+          builder: (context, _) {
+            double page = 0;
+            if (_leadCtrl.hasClients) page = _leadCtrl.page ?? 0;
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(2, (i) {
+                final isCurrent = (page - i).abs() < 0.5;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: isCurrent ? 12 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: isCurrent ? AppColors.accent2 : Colors.white24,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                );
+              }),
+            );
+          },
         ),
       ],
     );
@@ -214,12 +232,10 @@ class _LeadershipSectionState extends State<LeadershipSection> {
 }
 
 class _CinematicProfile extends StatelessWidget {
-  final double progress;
-  final double exitProgress;
+  final double progress, exitProgress;
   final String name, role, imagePath, credential, experience, tagline;
   final Color accent;
   final bool isReverse, isMobile;
-  final AlignmentGeometry alignment;
 
   const _CinematicProfile({
     required this.progress,
@@ -233,215 +249,87 @@ class _CinematicProfile extends StatelessWidget {
     required this.accent,
     this.isReverse = false,
     this.isMobile = false,
-    this.alignment = Alignment.topCenter,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (isMobile) return _buildMobileCard(context);
-
-    final enter = Curves.easeOutCubic.transform(progress);
+    final entry = Curves.easeOutQuart.transform(progress);
+    final opacity = (entry * (1.0 - exitProgress)).clamp(0.0, 1.0);
 
     return Opacity(
-      opacity: (enter * (1.0 - exitProgress)).clamp(0.0, 1.0),
+      opacity: opacity,
       child: Container(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(isMobile ? 16 : 30),
         decoration: BoxDecoration(
-          color: AppColors.surface.withValues(alpha: 0.03),
+          color: AppColors.surface.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(40),
-          border: Border.all(
-            color: AppColors.white.withValues(alpha: 0.05),
-          ),
+          border: Border.all(color: accent.withValues(alpha: 0.15)),
         ),
-        child: Row(
-          children: [
-            if (!isReverse) _buildImage(),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment:
-                      isReverse ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                  children: [
-                    _TitleChip(role: role, accent: accent),
-                    const SizedBox(height: 16),
-                    Text(
-                      name,
-                      style: AppFonts.h3.copyWith(
-                        color: AppColors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
-                      ),
-                      textAlign: isReverse ? TextAlign.right : TextAlign.left,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '$credential  ·  $experience',
-                      style: AppFonts.bodySmall.copyWith(
-                        color: AppColors.muted,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      textAlign: isReverse ? TextAlign.right : TextAlign.left,
-                    ),
-                    const SizedBox(height: 20),
-                    Container(
-                      width: 30,
-                      height: 2,
-                      color: accent.withValues(alpha: 0.4),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      tagline,
-                      style: AppFonts.bodyLarge.copyWith(
-                        color: AppColors.white.withValues(alpha: 0.8),
-                        fontSize: 16,
-                        height: 1.5,
-                        fontStyle: FontStyle.italic,
-                      ),
-                      textAlign: isReverse ? TextAlign.right : TextAlign.left,
-                    ),
-                  ],
-                ),
-              ),
+        child: isMobile 
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildImage(),
+                const SizedBox(height: 16),
+                _buildInfo(),
+              ],
+            )
+          : Row(
+              children: isReverse 
+                ? [_buildInfo(), const SizedBox(width: 40), _buildImage()]
+                : [_buildImage(), const SizedBox(width: 40), _buildInfo()],
             ),
-            if (isReverse) _buildImage(),
-          ],
-        ),
       ),
     );
   }
 
   Widget _buildImage() {
     return Container(
-      width: 240,
-      height: 340,
+      width: isMobile ? 180 : 220,
+      height: isMobile ? 180 : 280,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: accent.withValues(alpha: 0.15),
-            blurRadius: 40,
+            color: accent.withValues(alpha: 0.2),
+            blurRadius: 30,
             spreadRadius: -10,
           ),
         ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(30),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image.asset(
-              imagePath,
-              fit: BoxFit.cover,
-              alignment: alignment,
-            ),
-            // Accent gradient
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    accent.withValues(alpha: 0.2),
-                    AppColors.background.withValues(alpha: 0.7),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+        child: Image.asset(imagePath, fit: BoxFit.cover),
       ),
     );
   }
 
-  Widget _buildMobileCard(BuildContext context) {
-    final enter = Curves.easeOutCubic.transform(progress);
-    return Opacity(
-      opacity: (enter * (1.0 - exitProgress)).clamp(0.0, 1.0),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: AspectRatio(
-                aspectRatio: 1,
-                child: Image.asset(
-                  imagePath,
-                  fit: BoxFit.cover,
-                  alignment: alignment,
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            _TitleChip(role: role, accent: accent),
-            const SizedBox(height: 12),
-            Text(
-              name,
-              style: AppFonts.h4.copyWith(
-                color: AppColors.white,
-                fontWeight: FontWeight.w900,
-                fontSize: 22,
-              ),
-              textAlign: TextAlign.start,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              '$credential  ·  $experience',
-              style: AppFonts.caption.copyWith(
-                color: AppColors.muted,
-                fontWeight: FontWeight.w600,
-              ),
-              textAlign: TextAlign.start,
-            ),
-          ],
-        ),
+  Widget _buildInfo() {
+    return Expanded(
+      flex: isMobile ? 0 : 1,
+      child: Column(
+        crossAxisAlignment: isMobile ? CrossAxisAlignment.center : (isReverse ? CrossAxisAlignment.end : CrossAxisAlignment.start),
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(role, style: AppFonts.caption.copyWith(color: accent, letterSpacing: 2, fontSize: isMobile ? 10 : 12)),
+          const SizedBox(height: 8),
+          Text(name, style: AppFonts.h3.copyWith(color: AppColors.white, fontSize: isMobile ? 18 : 32, fontWeight: FontWeight.w900), textAlign: isMobile ? TextAlign.center : (isReverse ? TextAlign.right : TextAlign.left)),
+          const SizedBox(height: 4),
+          Text(credential, style: AppFonts.bodyLarge.copyWith(color: accent.withValues(alpha: 0.7), fontWeight: FontWeight.bold, fontSize: isMobile ? 12 : 16)),
+          const SizedBox(height: 12),
+          Text(experience, style: AppFonts.bodyLarge.copyWith(color: AppColors.muted, fontSize: isMobile ? 12 : 14)),
+          const SizedBox(height: 8),
+          Text(tagline, style: AppFonts.bodyLarge.copyWith(color: AppColors.white.withValues(alpha: 0.5), fontStyle: FontStyle.italic, fontSize: isMobile ? 11 : 14), textAlign: isMobile ? TextAlign.center : (isReverse ? TextAlign.right : TextAlign.left)),
+        ],
       ),
     );
   }
 }
-
-class _TitleChip extends StatelessWidget {
-  final String role;
-  final Color accent;
-  const _TitleChip({required this.role, required this.accent});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: accent.withValues(alpha: 0.25)),
-      ),
-      child: Text(
-        role,
-        style: AppFonts.caption.copyWith(
-          color: accent,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 1.5,
-          fontSize: 9,
-        ),
-      ),
-    );
-  }
-}
-
-// Removed _FadeSlide as it's replaced by direct opacity/transform logic
 
 class _GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppColors.white.withValues(alpha: 0.1)
-      ..strokeWidth = 0.5;
-
+    final paint = Paint()..color = Colors.white10..strokeWidth = 0.5;
     for (double i = 0; i < size.width; i += 40) {
       canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
     }
@@ -449,7 +337,6 @@ class _GridPainter extends CustomPainter {
       canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
     }
   }
-
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

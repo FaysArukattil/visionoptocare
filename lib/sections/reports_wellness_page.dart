@@ -44,7 +44,7 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage> {
             color: AppColors.background,
             child: Column(
               children: [
-                SizedBox(height: isMob ? 100 : 120),
+                SizedBox(height: isMob ? 60 : 120),
                 // Title Area (Delayed fade in/out)
                 Opacity(
                   opacity: ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0),
@@ -58,6 +58,7 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage> {
                             color: AppColors.accent2,
                             letterSpacing: 4,
                             fontWeight: FontWeight.w900,
+                            fontSize: isMob ? 10 : 12,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -66,7 +67,7 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage> {
                           'Smart Reports, Eye Education & Wellness',
                           style: AppFonts.h2.copyWith(
                             color: AppColors.white,
-                            fontSize: isMob ? 20 : 38,
+                            fontSize: isMob ? 18 : 38, // Reduced for mobile
                             fontWeight: FontWeight.w800,
                             height: 1.1,
                           ),
@@ -160,63 +161,82 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage> {
     );
   }
 
+  final PageController _bentoCtrl = PageController(viewportFraction: 0.85);
+
   Widget _buildMobileLayout(double tEntry, double tExit) {
     final entrySY = (1.0 - Curves.easeOutCubic.transform(tEntry)) * 100;
     final exitSY = Curves.easeInCubic.transform(tExit) * 100;
     
-    return SingleChildScrollView(
-      physics: const NeverScrollableScrollPhysics(),
-      child: Opacity(
-        opacity: (tEntry * (1.0 - tExit)).clamp(0.0, 1.0),
-        child: Transform.translate(
-          offset: Offset(0, entrySY + exitSY),
-          child: Column(
-            children: [
-              SizedBox(
-                height: 300,
-                child: _BentoCard(
-                  title: 'Education Reels',
-                  subtitle: 'Eye care video tips in a TikTok-style feed.',
-                  icon: Icons.play_circle_outline,
-                  color: const Color(0xFF4F6AFF),
-                  child: const SizedBox(
-                    height: 160,
-                    child: _AnimatedReelsFeed(color: Color(0xFF4F6AFF)),
+    return Column(
+      children: [
+        Expanded(
+          child: Transform.translate(
+            offset: Offset(0, entrySY + exitSY),
+            child: PageView(
+              controller: _bentoCtrl,
+              physics: const BouncingScrollPhysics(),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: _BentoCard(
+                    title: 'Education Reels',
+                    subtitle: 'Eye care video tips in a TikTok-style feed.',
+                    icon: Icons.play_circle_outline,
+                    color: const Color(0xFF4F6AFF),
+                    child: const _AnimatedReelsFeed(color: Color(0xFF4F6AFF)),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 280,
-                child: _BentoCard(
-                  title: 'Smart Clinical PDF Reports',
-                  subtitle: 'Auto-generate comprehensive PDF reports.',
-                  icon: Icons.picture_as_pdf_outlined,
-                  color: const Color(0xFF00D4C8),
-                  child: const SizedBox(
-                    height: 120,
-                    child: _AnimatedPdfGenerator(color: Color(0xFF00D4C8)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: _BentoCard(
+                    title: 'Smart Clinical reports',
+                    subtitle: 'Auto-generate comprehensive PDF reports.',
+                    icon: Icons.picture_as_pdf_outlined,
+                    color: const Color(0xFF00D4C8),
+                    child: const _AnimatedPdfGenerator(color: Color(0xFF00D4C8)),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 220,
-                child: _BentoCard(
-                  title: 'Ocular Wellness',
-                  subtitle: 'Interactive eye therapy games.',
-                  icon: Icons.headphones_outlined,
-                  color: const Color(0xFF9D4EDD),
-                  child: const SizedBox(
-                    height: 100,
-                    child: _AnimatedOcularWellness(color: Color(0xFF9D4EDD)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: _BentoCard(
+                    title: 'Ocular Wellness',
+                    subtitle: 'Interactive eye therapy games.',
+                    icon: Icons.headphones_outlined,
+                    color: const Color(0xFF9D4EDD),
+                    child: const _AnimatedOcularWellness(color: Color(0xFF9D4EDD)),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
+        const SizedBox(height: 16),
+        // Progress Dots
+        AnimatedBuilder(
+          animation: _bentoCtrl,
+          builder: (context, _) {
+            double page = 0;
+            if (_bentoCtrl.hasClients) page = _bentoCtrl.page ?? 0;
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(3, (i) {
+                final isCurrent = (page - i).abs() < 0.5;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: isCurrent ? 12 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: isCurrent ? AppColors.accent2 : Colors.white24,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                );
+              }),
+            );
+          },
+        ),
+        const SizedBox(height: 20),
+      ],
     );
   }
 }
@@ -258,7 +278,7 @@ class _ConsultationLanguagesPageState extends State<ConsultationLanguagesPage> {
             color: AppColors.background,
             child: Column(
               children: [
-                SizedBox(height: isMob ? 100 : 120),
+                SizedBox(height: isMob ? 60 : 120),
                 // Title Area (Delayed fade in/out)
                 Opacity(
                   opacity: ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0),
@@ -280,7 +300,7 @@ class _ConsultationLanguagesPageState extends State<ConsultationLanguagesPage> {
                           'Hybrid Consultations & Global Languages',
                           style: AppFonts.h2.copyWith(
                             color: AppColors.white,
-                            fontSize: isMob ? 20 : 38,
+                            fontSize: isMob ? 18 : 38, // Reduced for mobile
                             fontWeight: FontWeight.w800,
                             height: 1.1,
                           ),
@@ -353,48 +373,72 @@ class _ConsultationLanguagesPageState extends State<ConsultationLanguagesPage> {
     );
   }
 
+  final PageController _consultCtrl = PageController(viewportFraction: 0.85);
+
   Widget _buildMobileLayout(double tEntry, double tExit) {
     final entrySY = (1.0 - Curves.easeOutCubic.transform(tEntry)) * 100;
     final exitSY = Curves.easeInCubic.transform(tExit) * 100;
 
-    return SingleChildScrollView(
-      physics: const NeverScrollableScrollPhysics(),
-      child: Transform.translate(
-        offset: Offset(0, entrySY + exitSY),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 300,
-              child: _BentoCard(
-                title: 'Hybrid Consultations',
-                subtitle:
-                    'Book online video consults or request offline home visits.',
-                icon: Icons.video_call_outlined,
-                color: const Color(0xFFF5C842),
-                child: const SizedBox(
-                  height: 140,
-                  child: _AnimatedConsultationNetwork(
-                      color: Color(0xFFF5C842)),
+    return Column(
+      children: [
+        Expanded(
+          child: Transform.translate(
+            offset: Offset(0, entrySY + exitSY),
+            child: PageView(
+              controller: _consultCtrl,
+              physics: const BouncingScrollPhysics(),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: _BentoCard(
+                    title: 'Hybrid Consultations',
+                    subtitle: 'Book online video consults or request offline home visits.',
+                    icon: Icons.video_call_outlined,
+                    color: const Color(0xFFF5C842),
+                    child: const _AnimatedConsultationNetwork(color: Color(0xFFF5C842)),
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 340,
-              child: _BentoCard(
-                title: '13 Local Languages',
-                subtitle: 'Natively localized into 13 major languages.',
-                icon: Icons.public,
-                color: const Color(0xFFFF5252),
-                child: const SizedBox(
-                  height: 200,
-                  child: _AnimatedLanguageGlobe(color: Color(0xFFFF5252)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: _BentoCard(
+                    title: '13 Local Languages',
+                    subtitle: 'Natively localized into 13 major languages.',
+                    icon: Icons.public,
+                    color: const Color(0xFFFF5252),
+                    child: const _AnimatedLanguageGlobe(color: Color(0xFFFF5252)),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
-      ),
+        const SizedBox(height: 16),
+        // Progress Dots
+        AnimatedBuilder(
+          animation: _consultCtrl,
+          builder: (context, _) {
+            double page = 0;
+            if (_consultCtrl.hasClients) page = _consultCtrl.page ?? 0;
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(2, (i) {
+                final isCurrent = (page - i).abs() < 0.5;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: isCurrent ? 12 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: isCurrent ? AppColors.accent2 : Colors.white24,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                );
+              }),
+            );
+          },
+        ),
+        const SizedBox(height: 20),
+      ],
     );
   }
 }

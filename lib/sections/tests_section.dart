@@ -620,7 +620,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     // Only animate float when active to save GPU cycles
     return RepaintBoundary(
       child: PhoneMockup(
-        width: isMob ? 180 : 260,
+        width: isMob ? 180 : 250,
         height: isMob ? 360 : 500,
         tiltX: 0.0,
         tiltY: 0.0,
@@ -699,7 +699,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
               height: 1.5,
               fontSize: isMob ? 13 : 16,
             ),
-            maxLines: isMob ? 4 : 4, // Increased to fit full text
+            maxLines: null, // Removed limit to see completely
             overflow: TextOverflow.ellipsis,
           ),
         ],
@@ -801,11 +801,11 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
     return Container(
       color: Colors.black,
       child: FittedBox(
-        fit: BoxFit.scaleDown,
+        fit: BoxFit.fill, // Ensures every pixel is covered
         alignment: Alignment.center,
         child: SizedBox(
-          width: 260, // Reference width for simulation design
-          height: 500, // Reference height for simulation design
+          width: 250, // Standardized 0.5 ratio
+          height: 500, // Standardized 0.5 ratio
           child: Stack(
             children: [
               // Basic grid background

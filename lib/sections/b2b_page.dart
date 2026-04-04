@@ -15,6 +15,14 @@ class B2BPage extends StatefulWidget {
 }
 
 class _B2BPageState extends State<B2BPage> {
+  final PageController _featureCtrl = PageController(viewportFraction: 0.85);
+
+  @override
+  void dispose() {
+    _featureCtrl.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.scrollProgress == null) return const SizedBox.shrink();
@@ -52,8 +60,8 @@ class _B2BPageState extends State<B2BPage> {
                 Positioned.fill(
                   child: Padding(
                     padding: EdgeInsets.only(
-                      top: isMob ? 100 : 120,
-                      bottom: isMob ? 16 : 32,
+                      top: isMob ? 60 : 120, // Reduced for mobile
+                      bottom: isMob ? 12 : 32,
                     ),
                     child: Column(
                       children: [
@@ -86,14 +94,16 @@ class _B2BPageState extends State<B2BPage> {
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
-                                  'Power Your Clinic\nwith Visiaxx Pro',
+                                  isMob ? 'Power Your Clinic with Visiaxx Pro' : 'Power Your Clinic\nwith Visiaxx Pro',
                                   style: AppFonts.h2.copyWith(
                                     color: AppColors.white,
-                                    fontSize: isMob ? 28 : 42,
+                                    fontSize: isMob ? 22 : 42, // Reduced for mobile
                                     height: 1.1,
                                     fontWeight: FontWeight.w800,
                                   ),
                                   textAlign: TextAlign.center,
+                                  maxLines: isMob ? 1 : 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
@@ -131,8 +141,6 @@ class _B2BPageState extends State<B2BPage> {
     // Right fly-in: from 500 to 0 on entry, from 0 to 500 on exit.
     final entryRX = (1.0 - Curves.easeOutCubic.transform(tEntry)) * 500;
     final exitRX = Curves.easeInCubic.transform(tExit) * 500;
-
-    // Middle scale handled inside _AnimatedFeatureCard
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -182,20 +190,47 @@ class _B2BPageState extends State<B2BPage> {
   }
 
   Widget _buildMobileCards(double tEntry, double tExit) {
-    return ListView.builder(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: _features.length,
-      itemBuilder: (context, i) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 280),
-            child: _AnimatedFeatureCard(
-              progress: tEntry, exitProgress: tExit, feature: _features[i]),
+    return Column(
+      children: [
+        Expanded(
+          child: PageView.builder(
+            controller: _featureCtrl,
+            physics: const BouncingScrollPhysics(),
+            itemCount: _features.length,
+            itemBuilder: (context, i) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: _AnimatedFeatureCard(
+                    progress: tEntry, exitProgress: tExit, feature: _features[i]),
+              );
+            },
           ),
-        );
-      },
+        ),
+        const SizedBox(height: 12),
+        AnimatedBuilder(
+          animation: _featureCtrl,
+          builder: (context, _) {
+            double page = 0;
+            if (_featureCtrl.hasClients) page = _featureCtrl.page ?? 0;
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(_features.length, (i) {
+                final isCurrent = (page - i).abs() < 0.5;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: EdgeInsets.symmetric(horizontal: i == 0 ? 0 : 3.0),
+                  width: isCurrent ? 12 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: isCurrent ? AppColors.gold : Colors.white24,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                );
+              }),
+            );
+          },
+        ),
+      ],
     );
   }
 
@@ -232,7 +267,7 @@ class _B2BPageState extends State<B2BPage> {
                   Text(
                     'Request Enterprise Access',
                     style: AppFonts.body(
-                      fontSize: isMob ? 14 : 17,
+                      fontSize: isMob ? 13 : 17,
                       fontWeight: FontWeight.w700,
                       color: AppColors.background,
                     ),

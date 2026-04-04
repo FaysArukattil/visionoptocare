@@ -17,6 +17,7 @@ class _PhilosophySectionState extends State<PhilosophySection>
     with TickerProviderStateMixin {
   late AnimationController _floatCtrl;
   late AnimationController _pulseCtrl;
+  final PageController _pageCtrl = PageController(viewportFraction: 0.85);
 
   @override
   void initState() {
@@ -29,6 +30,7 @@ class _PhilosophySectionState extends State<PhilosophySection>
   void dispose() {
     _floatCtrl.dispose();
     _pulseCtrl.dispose();
+    _pageCtrl.dispose();
     super.dispose();
   }
 
@@ -71,8 +73,8 @@ class _PhilosophySectionState extends State<PhilosophySection>
                 Positioned.fill(
                   child: Padding(
                     padding: EdgeInsets.only(
-                      top: isMob ? 90 : 110,
-                      bottom: isMob ? 16 : 32,
+                      top: isMob ? 60 : 110, // Reduced for mobile
+                      bottom: isMob ? 12 : 32,
                     ),
                     child: RepaintBoundary(
                       child: Column(
@@ -99,31 +101,34 @@ class _PhilosophySectionState extends State<PhilosophySection>
                                         color: AppColors.accent2,
                                         letterSpacing: 4,
                                         fontWeight: FontWeight.w900,
+                                        fontSize: isMob ? 10 : 12,
                                       ),
                                       textAlign: TextAlign.center,
                                       ),
-                                    const SizedBox(height: 16),
+                                    const SizedBox(height: 12),
                                     Text(
-                                      'The Vision Behind\nVision Optocare',
+                                      isMob ? 'The Vision Behind Vision Optocare' : 'The Vision Behind\nVision Optocare',
                                       style: AppFonts.h2.copyWith(
                                         color: AppColors.white,
-                                        fontSize: isMob ? 26 : 48,
+                                        fontSize: isMob ? 20 : 48,
                                         height: 1.1,
                                         fontWeight: FontWeight.w800,
                                       ),
                                       textAlign: TextAlign.center,
+                                      maxLines: isMob ? 1 : 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
                                 ),
                               ),
                             ),
                           ),
-                          SizedBox(height: isMob ? 20 : 36),
+                          SizedBox(height: isMob ? 16 : 36),
                           // Cards — fully flexible
                           Expanded(
                             child: RepaintBoundary(
                               child: Padding(
-                                padding: Responsive.padding(context),
+                                padding: Responsive.padding(context).copyWith(left: 0, right: 0),
                                 child: isMob
                                     ? _buildMobileLayout(tEntry, tExit)
                                     : _buildDesktopLayout(tEntry, tExit),
@@ -208,23 +213,53 @@ class _PhilosophySectionState extends State<PhilosophySection>
   }
 
   Widget _buildMobileLayout(double tEntry, double tExit) {
-    return ListView.builder(
-      physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.zero,
-      itemCount: _steps.length,
-      itemBuilder: (context, i) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: _AnimatedCard(
-            progress: tEntry,
-            exitProgress: tExit,
-            floatCtrl: _floatCtrl,
-            pulseCtrl: _pulseCtrl,
-            step: _steps[i],
-            index: i,
+    return Column(
+      children: [
+        Expanded(
+          child: PageView.builder(
+            controller: _pageCtrl,
+            physics: const BouncingScrollPhysics(),
+            itemCount: _steps.length,
+            itemBuilder: (context, i) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: _AnimatedCard(
+                  progress: tEntry,
+                  exitProgress: tExit,
+                  floatCtrl: _floatCtrl,
+                  pulseCtrl: _pulseCtrl,
+                  step: _steps[i],
+                  index: i,
+                ),
+              );
+            },
           ),
-        );
-      },
+        ),
+        const SizedBox(height: 16),
+        AnimatedBuilder(
+          animation: _pageCtrl,
+          builder: (context, _) {
+            double page = 0;
+            if (_pageCtrl.hasClients) page = _pageCtrl.page ?? 0;
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(_steps.length, (i) {
+                final isCurrent = (page - i).abs() < 0.5;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: isCurrent ? 12 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: isCurrent ? AppColors.accent2 : Colors.white24,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                );
+              }),
+            );
+          },
+        ),
+      ],
     );
   }
 
@@ -311,7 +346,7 @@ class _AnimatedCardState extends State<_AnimatedCard> {
               ..rotateY(0.02 * v),
             alignment: Alignment.center,
             child: Container(
-              padding: EdgeInsets.all(isMob ? 16 : 28),
+              padding: EdgeInsets.all(isMob ? 20 : 28),
               decoration: BoxDecoration(
                 color: AppColors.surface.withValues(alpha: 0.05 + 0.03 * v),
                 borderRadius: BorderRadius.circular(32),
@@ -378,25 +413,27 @@ class _AnimatedCardState extends State<_AnimatedCard> {
                       ),
                     ],
                   ),
-                  SizedBox(height: isMob ? 12 : 20),
+                  SizedBox(height: isMob ? 16 : 20),
                   Text(
                     widget.step.title,
                     style: AppFonts.h3.copyWith(
                       color: AppColors.white,
-                      fontSize: isMob ? 22 : 26,
+                      fontSize: isMob ? 20 : 26,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   SizedBox(height: isMob ? 8 : 12),
-                  Text(
-                    widget.step.subtitle,
-                    style: AppFonts.bodyLarge.copyWith(
-                      color: AppColors.muted,
-                      fontSize: isMob ? 13 : 15,
-                      height: 1.6,
+                  Flexible(
+                    child: Text(
+                      widget.step.subtitle,
+                      style: AppFonts.bodyLarge.copyWith(
+                        color: AppColors.muted,
+                        fontSize: isMob ? 13 : 15,
+                        height: 1.6,
+                      ),
+                      maxLines: isMob ? 4 : 5,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: isMob ? 3 : 5,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),

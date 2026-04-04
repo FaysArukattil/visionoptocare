@@ -14,13 +14,11 @@ class TeamSection extends StatefulWidget {
 }
 
 class _TeamSectionState extends State<TeamSection> {
-  @override
-  void initState() {
-    super.initState();
-  }
+  final PageController _teamCtrl = PageController(viewportFraction: 0.85);
 
   @override
   void dispose() {
+    _teamCtrl.dispose();
     super.dispose();
   }
 
@@ -30,6 +28,7 @@ class _TeamSectionState extends State<TeamSection> {
     final size = MediaQuery.of(context).size;
     final isMob = Responsive.isMobile(context);
 
+    // Reduced top padding and bottom margin for tighter fit
     return ValueListenableBuilder<double>(
       valueListenable: widget.scrollProgress!,
       builder: (context, raw, _) {
@@ -45,54 +44,44 @@ class _TeamSectionState extends State<TeamSection> {
             color: AppColors.background,
             child: Padding(
               padding: EdgeInsets.only(
-                top: isMob ? 80 : 100,
-                bottom: isMob ? 16 : 24,
+                top: isMob ? 60 : 100, // Reduced from 80
+                bottom: isMob ? 12 : 24, // Reduced from 16
               ),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return SingleChildScrollView(
-                    physics: const NeverScrollableScrollPhysics(),
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: constraints.maxHeight,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Opacity(
-                            opacity: ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0),
-                            child: Column(
-                              children: [
-                                Text(
-                                  'TEAM MEMBERS',
-                                  style: AppFonts.caption.copyWith(
-                                    color: AppColors.accent2,
-                                    letterSpacing: 6,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Container(
-                                  width: 40,
-                                  height: 2,
-                                  color: AppColors.accent2.withValues(alpha: 0.3),
-                                ),
-                              ],
-                            ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Opacity(
+                    opacity: ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0),
+                    child: Column(
+                      children: [
+                        Text(
+                          'TEAM MEMBERS',
+                          style: AppFonts.caption.copyWith(
+                            color: AppColors.accent2,
+                            letterSpacing: 6,
+                            fontWeight: FontWeight.w900,
+                            fontSize: isMob ? 10 : 12, // Compacted font
                           ),
-                          SizedBox(height: isMob ? 24 : 60),
-                          Padding(
-                            padding: Responsive.padding(context),
-                            child: isMob 
-                                ? _buildMobile(tEntry, tExit) 
-                                : _buildDesktop(tEntry, tExit),
-                          ),
-                          SizedBox(height: isMob ? 16 : 40),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          width: 40,
+                          height: 2,
+                          color: AppColors.accent2.withValues(alpha: 0.3),
+                        ),
+                      ],
                     ),
-                  );
-                },
+                  ),
+                  Expanded( // Replaced SingleChildScrollView + ConstrainedBox with Expanded container
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: isMob ? 20 : 60), 
+                      child: isMob 
+                          ? _buildMobile(tEntry, tExit) 
+                          : _buildDesktop(tEntry, tExit),
+                    ),
+                  ),
+                  if (!isMob) const SizedBox(height: 40),
+                ],
               ),
             ),
           ),
@@ -157,32 +146,69 @@ class _TeamSectionState extends State<TeamSection> {
   Widget _buildMobile(double tEntry, double tExit) {
     return Column(
       children: [
-        _CinematicProfile(
-          progress: tEntry,
-          exitProgress: tExit,
-          name: 'Sherly Mary Daniel',
-          role: 'CHIEF TECHNOLOGY OFFICER',
-          imagePath: 'assets/images/Team_members/Cto.jpeg',
-          credential: 'B.Tech ECE',
-          experience: '9+ Years IT Expertise',
-          tagline: 'Scalable Software Ops.',
-          accent: const Color(0xFF9D4EDD),
-          isMobile: true,
-          alignment: Alignment.topCenter,
+        Expanded(
+          child: PageView(
+            controller: _teamCtrl,
+            physics: const BouncingScrollPhysics(),
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: _CinematicProfile(
+                  progress: tEntry,
+                  exitProgress: tExit,
+                  name: 'Sherly Mary Daniel',
+                  role: 'CHIEF TECHNOLOGY OFFICER',
+                  imagePath: 'assets/images/Team_members/Cto.jpeg',
+                  credential: 'B.Tech ECE',
+                  experience: '9+ Years IT Expertise',
+                  tagline: 'Scalable Software Ops.',
+                  accent: const Color(0xFF9D4EDD),
+                  isMobile: true,
+                  alignment: Alignment.topCenter,
+                ),
+              ),
+              Padding(
+                 padding: const EdgeInsets.symmetric(horizontal: 8),
+                 child: _CinematicProfile(
+                  progress: tEntry,
+                  exitProgress: tExit,
+                  name: 'Fays Arukattil',
+                  role: 'SOFTWARE DEVELOPER',
+                  imagePath: 'assets/images/Team_members/Software_Dev.jpeg',
+                  credential: 'Full-Stack Architect',
+                  experience: 'Product · R&D',
+                  tagline: 'Architecting the Visiaxx core.',
+                  accent: const Color(0xFFF5C842),
+                  isMobile: true,
+                  alignment: Alignment.center,
+                ),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 24),
-        _CinematicProfile(
-          progress: tEntry,
-          exitProgress: tExit,
-          name: 'Fays Arukattil',
-          role: 'SOFTWARE DEVELOPER',
-          imagePath: 'assets/images/Team_members/Software_Dev.jpeg',
-          credential: 'Full-Stack Architect',
-          experience: 'Product · R&D',
-          tagline: 'Architecting the Visiaxx core.',
-          accent: const Color(0xFFF5C842),
-          isMobile: true,
-          alignment: Alignment.center,
+        const SizedBox(height: 12),
+        AnimatedBuilder(
+          animation: _teamCtrl,
+          builder: (context, _) {
+            double page = 0;
+            if (_teamCtrl.hasClients) page = _teamCtrl.page ?? 0;
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(2, (i) {
+                final isCurrent = (page - i).abs() < 0.5;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: isCurrent ? 12 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: isCurrent ? AppColors.accent2 : Colors.white24,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                );
+              }),
+            );
+          },
         ),
       ],
     );
@@ -341,11 +367,12 @@ class _CinematicProfile extends StatelessWidget {
     return Opacity(
       opacity: (enter * (1.0 - exitProgress)).clamp(0.0, 1.0),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center, // Center contents if smaller
           children: [
             Container(
-              width: 240,
+              width: 220, // Slightly reduced
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
@@ -359,7 +386,7 @@ class _CinematicProfile extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(24),
                 child: AspectRatio(
-                  aspectRatio: 0.85,
+                  aspectRatio: 0.9, // Make it a bit shorter
                   child: Image.asset(
                     imagePath,
                     fit: BoxFit.cover,
@@ -368,7 +395,7 @@ class _CinematicProfile extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             _TitleChip(role: role, accent: accent),
             const SizedBox(height: 12),
             Text(
@@ -376,9 +403,11 @@ class _CinematicProfile extends StatelessWidget {
               style: AppFonts.h4.copyWith(
                 color: AppColors.white,
                 fontWeight: FontWeight.w900,
-                fontSize: 22,
+                fontSize: 20, // Reduced from 22
               ),
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 6),
             Text(
@@ -388,16 +417,20 @@ class _CinematicProfile extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 8),
             Text(
               tagline,
               style: AppFonts.bodySmall.copyWith(
                 color: AppColors.white.withValues(alpha: 0.8),
-                fontSize: 14,
+                fontSize: 13, // Reduced from 14
                 fontStyle: FontStyle.italic,
               ),
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -432,6 +465,3 @@ class _TitleChip extends StatelessWidget {
     );
   }
 }
-
-
-// Removed _FadeSlide as it's replaced by direct opacity/transform logic

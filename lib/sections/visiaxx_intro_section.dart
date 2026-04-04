@@ -89,7 +89,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
             child: Builder(
               builder: (context) {
                 Widget phoneObj = PhoneMockup(
-                  width: 260,
+                  width: 250,
                   height: 500,
                   tiltX: 0.0,
                   tiltY: 0.0,
