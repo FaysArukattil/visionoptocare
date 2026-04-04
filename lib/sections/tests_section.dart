@@ -639,6 +639,16 @@ class _TestSimulationEngine extends StatefulWidget {
 
 class _TestSimulationEngineState extends State<_TestSimulationEngine> with TickerProviderStateMixin {
   late AnimationController _anim;
+  
+  // Amsler Grid Mock State
+  String _amslerMarkingMode = 'distortion';
+  bool? _amslerAllLinesStraight;
+  bool? _amslerHasMissingAreas;
+  bool? _amslerHasDistortions;
+
+  // Pelli-Robson Mock State
+  int _pelliScreenIndex = 0;
+  int _pelliTripletIndex = 0;
 
   @override
   void initState() {
@@ -1020,44 +1030,90 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
       child: Column(
         children: [
           _buildSimulationAppBar('CONTRAST SENSITIVITY', 'Pelli-Robson Triplet'),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+          
+          // Info Indicators
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.grey.withValues(alpha: 0.05),
+              border: Border(bottom: BorderSide(color: Colors.grey.withValues(alpha: 0.1))),
+            ),
+            child: Row(
               children: [
-                _buildSloanTriplet('V R S', 0.8),
-                const SizedBox(height: 20),
-                _buildSloanTriplet('K H Z', 0.3), // Faded
-                const SizedBox(height: 20),
-                _buildSloanTriplet('N O C', 0.1), // Barely visible
-                const SizedBox(height: 30),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildResponseButton(Icons.check, Colors.green, 'VISIBLE'),
-                    const SizedBox(width: 12),
-                    _buildResponseButton(Icons.close, Colors.red, 'NOT VISIBLE'),
-                  ],
+                _buildSimulationIndicator('SCREEN ${_pelliScreenIndex + 1}/8', Icons.grid_view_rounded, Colors.blue),
+                const SizedBox(width: 8),
+                _buildSimulationIndicator('RIGHT EYE', Icons.remove_red_eye_rounded, Colors.indigo),
+              ],
+            ),
+          ),
+
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildSloanTriplet('V R S', 1.0, isCurrent: _pelliTripletIndex == 0),
+                  const SizedBox(height: 15),
+                  _buildSloanTriplet('K H Z', 0.45, isCurrent: _pelliTripletIndex == 1),
+                  const SizedBox(height: 15),
+                  _buildSloanTriplet('N O C', 0.15, isCurrent: _pelliTripletIndex == 2),
+                  const SizedBox(height: 15),
+                  const Text('READ THE LETTERS ALOUD', style: TextStyle(fontSize: 8, color: Colors.blue, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+                ],
+              ),
+            ),
+          ),
+          
+          // Large Clinical Buttons
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5))],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildSimulationActionButton(
+                    label: 'VISIBLE',
+                    icon: Icons.visibility_rounded,
+                    color: Colors.green,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildSimulationActionButton(
+                    label: 'NOT VISIBLE',
+                    icon: Icons.visibility_off_rounded,
+                    color: Colors.red,
+                  ),
                 ),
               ],
             ),
           ),
+
           _buildSimulationFooter(),
         ],
       ),
     );
   }
 
-  Widget _buildResponseButton(IconData icon, Color color, String label) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle, border: Border.all(color: color)),
-          child: Icon(icon, color: color, size: 16),
-        ),
-        const SizedBox(height: 4),
-        Text(label, style: TextStyle(fontSize: 6, fontWeight: FontWeight.bold, color: color)),
-      ],
+  Widget _buildSimulationIndicator(String label, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 10, color: color),
+          const SizedBox(width: 4),
+          Text(label, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: color)),
+        ],
+      ),
     );
   }
 
@@ -1173,10 +1229,28 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
     );
   }
 
-  Widget _buildSloanTriplet(String letters, double opacity) {
-    return Opacity(
-      opacity: opacity,
-      child: Text(letters, style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w900, color: Colors.black, letterSpacing: 10, fontFamily: 'monospace')),
+  Widget _buildSloanTriplet(String letters, double opacity, {bool isCurrent = false}) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: isCurrent ? Colors.blue.withValues(alpha: 0.1) : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        border: isCurrent ? Border.all(color: Colors.blue.withValues(alpha: 0.3), width: 1.5) : null,
+      ),
+      child: Opacity(
+        opacity: opacity,
+        child: Text(
+          letters, 
+          style: const TextStyle(
+            fontSize: 40, 
+            fontWeight: FontWeight.w900, 
+            color: Colors.black, 
+            letterSpacing: 10, 
+            fontFamily: 'serif'
+          )
+        ),
+      ),
     );
   }
 
@@ -1398,51 +1472,107 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
 
   Widget _buildAmslerSimulationReal() {
     return Container(
-      color: Colors.black,
+      color: Colors.white,
       child: Column(
         children: [
-          _buildSimulationAppBar('AMSLER GRID', 'Mark Rectified'),
+          _buildSimulationAppBar('AMSLER GRID', 'Mark Grid Area'),
           Expanded(
-            child: Column(
-              children: [
-                const SizedBox(height: 10),
-                // The Grid
-                Container(
-                  width: 160, height: 160,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Column(
+                children: [
+                  // Instruction
+                  const Text(
+                    'MARK THE DISTORTED AREAS',
+                    style: TextStyle(fontSize: 8, color: Colors.blue, fontWeight: FontWeight.w900, letterSpacing: 1.5),
                   ),
-                  child: CustomPaint(
-                    painter: _AmslerDistortionPainter(color: Colors.white.withValues(alpha: 0.3)),
-                    child: Stack(
-                      children: [
-                        // Central dot
-                        Center(child: Container(width: 4, height: 4, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle))),
-                        // Marks
-                        Positioned(
-                          left: 40, top: 60,
-                          child: Container(
-                            width: 20, height: 20,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.red, width: 2),
-                              color: Colors.red.withValues(alpha: 0.3),
+                  const SizedBox(height: 8),
+
+                  // The Grid mockup
+                  Container(
+                    width: 140, height: 140,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.black.withValues(alpha: 0.1)),
+                      color: Colors.white,
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
+                    ),
+                    child: CustomPaint(
+                      painter: _AmslerDistortionPainter(color: Colors.black.withValues(alpha: 0.15)),
+                      child: Stack(
+                        children: [
+                          Center(child: Container(width: 4, height: 4, decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle))),
+                          // Sample marks based on current mode
+                          if (_amslerMarkingMode == 'distortion')
+                            Positioned(
+                              left: 30, top: 40,
+                              child: Container(
+                                width: 30, height: 30,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.red, width: 2),
+                                  color: Colors.red.withValues(alpha: 0.2),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                // Questions
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Column(
+                  const SizedBox(height: 12),
+
+                  // Mode Chips
+                  Row(
                     children: [
-                      _buildAmslerQ('Lines Straight?', true),
-                      _buildAmslerQ('Gaps Visible?', false),
+                      Expanded(child: _buildAmslerModeChip('distortion', 'WAVY', Icons.waves, Colors.red)),
+                      const SizedBox(width: 4),
+                      Expanded(child: _buildAmslerModeChip('missing', 'MISSING', Icons.visibility_off, Colors.orange)),
+                      const SizedBox(width: 4),
+                      Expanded(child: _buildAmslerModeChip('blurry', 'BLURRY', Icons.blur_on, Colors.blue)),
                     ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Questions
+                  _buildAmslerQuestionBlock(
+                    'Are all lines straight?',
+                    _amslerAllLinesStraight,
+                    (val) => setState(() => _amslerAllLinesStraight = val),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildAmslerQuestionBlock(
+                    'Any missing areas?',
+                    _amslerHasMissingAreas,
+                    (val) => setState(() => _amslerHasMissingAreas = val),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildAmslerQuestionBlock(
+                    'Any wavy lines?',
+                    _amslerHasDistortions,
+                    (val) => setState(() => _amslerHasDistortions = val),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          // Action Controls
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5))],
+            ),
+            child: Row(
+              children: [
+                _buildAmslerIconBtn(Icons.undo_rounded, Colors.blue),
+                const SizedBox(width: 8),
+                _buildAmslerIconBtn(Icons.delete_outline_rounded, Colors.red),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildSimulationActionButton(
+                    label: 'CONTINUE',
+                    icon: Icons.arrow_forward_rounded,
+                    color: Colors.blue,
                   ),
                 ),
               ],
@@ -1451,6 +1581,78 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
           _buildSimulationFooter(),
         ],
       ),
+    );
+  }
+
+  Widget _buildAmslerModeChip(String mode, String label, IconData icon, Color color) {
+    final bool isSelected = _amslerMarkingMode == mode;
+    return GestureDetector(
+      onTap: () => setState(() => _amslerMarkingMode = mode),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? color : color.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: isSelected ? color : color.withValues(alpha: 0.2)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 10, color: isSelected ? Colors.white : color),
+            const SizedBox(width: 4),
+            Text(label, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: isSelected ? Colors.white : color)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAmslerQuestionBlock(String question, bool? value, Function(bool) onChanged) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.grey.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: Text(question, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black87))),
+          Row(
+            children: [
+              _buildSmallYesNo('NO', value == false, () => onChanged(false), Colors.red),
+              const SizedBox(width: 6),
+              _buildSmallYesNo('YES', value == true, () => onChanged(true), Colors.green),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSmallYesNo(String label, bool isSelected, VoidCallback onTap, Color color) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected ? color : Colors.white,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: isSelected ? color : Colors.grey.withValues(alpha: 0.2)),
+        ),
+        child: Text(label, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: isSelected ? Colors.white : color)),
+      ),
+    );
+  }
+
+  Widget _buildAmslerIconBtn(IconData icon, Color color) {
+    return Container(
+      width: 40, height: 40,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Icon(icon, color: color, size: 18),
     );
   }
 
@@ -1534,36 +1736,6 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
     );
   }
 
-  Widget _buildAmslerQ(String text, bool? val) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(text, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: Colors.white70)),
-          Row(
-            children: [
-              _buildYesNo(true, val == true),
-              const SizedBox(width: 4),
-              _buildYesNo(false, val == false),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildYesNo(bool isYes, bool selected) {
-    final color = isYes ? Colors.green : Colors.red;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: selected ? color : color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(isYes ? 'YES' : 'NO', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: selected ? Colors.white : color)),
-    );
-  }
 } // End of _TestSimulationEngineState
 
 
