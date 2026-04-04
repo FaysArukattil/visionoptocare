@@ -466,8 +466,13 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
         _scrollCtrl.value -= d.delta.dx / 50;
       },
       onHorizontalDragEnd: (_) => _snapToNearest(),
-      child: Column(
-        children: [
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.center,
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width,
+          child: Column(
+            children: [
           const SizedBox(height: 5), // Tightened
           phoneObj,
           const SizedBox(height: 10), // Reduced from 40
@@ -525,7 +530,9 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
           const SizedBox(height: 10),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildTacticalHUD(bool isMob, double scrollPos) {
@@ -1230,17 +1237,23 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildSloanTriplet('V R S', 1.0, isCurrent: _pelliTripletIndex == 0),
-                    const SizedBox(height: 6),
-                    _buildSloanTriplet('K H Z', 0.45, isCurrent: _pelliTripletIndex == 1),
-                    const SizedBox(height: 6),
-                    _buildSloanTriplet('N O C', 0.15, isCurrent: _pelliTripletIndex == 2),
-                    const SizedBox(height: 12),
-                    const Text('READ THE LETTERS ALOUD', style: TextStyle(fontSize: 8, color: Colors.blue, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
-                  ],
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildSloanTriplet('V R S', 1.0, isCurrent: _pelliTripletIndex == 0),
+                        const SizedBox(height: 6),
+                        _buildSloanTriplet('K H Z', 0.45, isCurrent: _pelliTripletIndex == 1),
+                        const SizedBox(height: 6),
+                        _buildSloanTriplet('N O C', 0.15, isCurrent: _pelliTripletIndex == 2),
+                        const SizedBox(height: 12),
+                        const Text('READ THE LETTERS ALOUD', style: TextStyle(fontSize: 8, color: Colors.blue, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -2490,35 +2503,45 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
           _buildSimulationAppBar('COLOR VISION', 'Plate 08/14'),
           Expanded(
             child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Ishihara Plate Mockup
-                  Container(
-                    width: 140, height: 140,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: DecorationImage(
-                        image: NetworkImage('https://upload.wikimedia.org/wikipedia/commons/e/e0/Ishihara_9.png'),
-                        fit: BoxFit.cover,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Ishihara Plate Mockup
+                      Container(
+                        width: 140, height: 140,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                            image: NetworkImage('https://upload.wikimedia.org/wikipedia/commons/e/e0/Ishihara_9.png'),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 20),
+                      // Premium Buttons Grid
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: SizedBox(
+                          width: 220, // Strictly bounded width to guarantee proper FittedBox scaling
+                          height: 120, // Strict height for GridView
+                          child: GridView.count(
+                            shrinkWrap: true,
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 8,
+                            crossAxisSpacing: 8,
+                            childAspectRatio: 2.2,
+                            physics: const NeverScrollableScrollPhysics(),
+                            children: ['12', '74', '06', 'Nothing'].map((opt) => _buildPremiumButton(opt, opt == '74')).toList(),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 20),
-                  // Premium Buttons Grid
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: GridView.count(
-                      shrinkWrap: true,
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 8,
-                      crossAxisSpacing: 8,
-                      childAspectRatio: 2.2,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: ['12', '74', '06', 'Nothing'].map((opt) => _buildPremiumButton(opt, opt == '74')).toList(),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
