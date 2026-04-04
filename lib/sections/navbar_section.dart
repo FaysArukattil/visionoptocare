@@ -104,7 +104,7 @@ class _NavbarSectionState extends State<NavbarSection>
                 Container(
                   height: isMob ? 72 : 88,
                   padding: EdgeInsets.symmetric(
-                    horizontal: isMob ? 16 : 32,
+                    horizontal: isMob ? 6 : 32,
                   ),
                   child: Row(
                     children: [

@@ -184,13 +184,16 @@ class _B2BPageState extends State<B2BPage> {
   Widget _buildMobileCards(double tEntry, double tExit) {
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.zero,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: _features.length,
       itemBuilder: (context, i) {
         return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: _AnimatedFeatureCard(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 280),
+            child: _AnimatedFeatureCard(
               progress: tEntry, exitProgress: tExit, feature: _features[i]),
+          ),
         );
       },
     );

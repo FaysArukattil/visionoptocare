@@ -106,8 +106,8 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                       
                       // Moves from Center of Left Half (0.25w) to Left-of-Center Column (0.80w approx)
                       // Exact Target: (w * 0.805 - 24.4) - (0.25w) = 0.555w - 24.4
-                      // splitting the difference: 18 -> 21 => use 19.5 for the perfect float
-                      final distanceX = width * 0.55 - 19.5;
+                      // Final sub-pixel balance: 18.8 (Perfect center between 18.0 and 19.5)
+                      final distanceX = width * 0.55 - 18.8;
                       final translateX = -800.0 * Curves.easeIn.transform(t01) + distanceX * t12;
                       final translateY = MediaQuery.of(context).size.height * t12;
                       
@@ -154,9 +154,10 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
 
   Widget _buildMobileLayout() {
     return SingleChildScrollView(
-      physics: const NeverScrollableScrollPhysics(),
+      physics: const BouncingScrollPhysics(),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const SizedBox(height: 20),
           AnimatedBuilder(
@@ -170,8 +171,8 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
               Widget phoneObj = Opacity(
                 opacity: t,
                 child: PhoneMockup(
-                  width: 230,
-                  height: 450,
+                  width: 190,
+                  height: 380,
                   tiltX: 0.0, // Phone rendered straight
                   tiltY: 0.0,
                   screen: _buildPhoneScreen(),
@@ -235,58 +236,55 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
       ),
       child: Stack(
         children: [
-          // Centered Logo
-          Center(
-            child: SizedBox(
-              width: 140,
-              height: 140,
-              child: Image.asset(
-                'lib/assets/images/app_logo.png', // The available logo
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => const EyeLogo(size: 80),
+          // Logo (Moved Higher)
+          Positioned(
+            top: 40,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: SizedBox(
+                width: 100,
+                height: 100,
+                child: Image.asset(
+                  'lib/assets/images/app_logo.png', // The available logo
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const EyeLogo(size: 50),
+                ),
               ),
             ),
           ),
 
-          // Tagline
+          // Tagline & Loading Indicator (Combined & Moved Down)
           Positioned(
             left: 0,
             right: 0,
-            bottom: 120, // Match the splash screen bottom offset proportionally
+            bottom: 60, // Positioned near the bottom
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   'Your Vision,\nOur Priority',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 15, // Reduced from 18
                     fontWeight: FontWeight.w500,
                     color: AppColors.white.withValues(alpha: 0.8),
                     letterSpacing: 0.5,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Text(
                   'Premium Digital Eye Care',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 10, // Reduced from 11
                     fontWeight: FontWeight.w400,
                     color: AppColors.white.withValues(alpha: 0.6),
                     letterSpacing: 1.0,
                   ),
                 ),
+                const SizedBox(height: 48), // Increased from 32 to fix overlap
+                const EyeLoader.adaptive(size: 32),
               ],
-            ),
-          ),
-
-          // Loading Indicator
-          const Positioned(
-            left: 0,
-            right: 0,
-            bottom: 40,
-            child: Center(
-              child: EyeLoader.adaptive(size: 32),
             ),
           ),
         ],
@@ -295,12 +293,9 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
   }
 
   Widget _buildIntroText(bool isMob) {
-    return SingleChildScrollView(
-      physics: const NeverScrollableScrollPhysics(),
-      child: Column(
+    return Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment:
-            isMob ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+        crossAxisAlignment: isMob ? CrossAxisAlignment.center : CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -336,7 +331,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
             'Pioneering Digital\nOptometry.',
             style: AppFonts.h2.copyWith(
               color: AppColors.white,
-              fontSize: isMob ? 32 : 52, // Refined scaling
+              fontSize: isMob ? 28 : 52, // Refined scaling
               height: 1.1,
               fontWeight: FontWeight.w800,
             ),
@@ -348,7 +343,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
             style: AppFonts.bodyLarge.copyWith(
               color: AppColors.muted,
               height: 1.7,
-              fontSize: isMob ? 15 : 18, // Refined scaling
+              fontSize: isMob ? 14 : 18, 
             ),
             textAlign: isMob ? TextAlign.center : TextAlign.start,
           ),
@@ -366,29 +361,29 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
             ],
           ),
           const SizedBox(height: 32),
-          // Store Buttons
-          Wrap(
-            spacing: 16,
-            runSpacing: 12,
-            alignment: isMob ? WrapAlignment.center : WrapAlignment.start,
-            children: [
-              _StoreButton(
-                storeName: 'Google Play',
-                label: 'GET IT ON',
-                icon: Icons.play_arrow_rounded,
-                onTap: () => _showComingSoon(context),
-              ),
-              _StoreButton(
-                storeName: 'App Store',
-                label: 'DOWNLOAD ON THE',
-                icon: Icons.apple,
-                onTap: () => _showComingSoon(context),
-              ),
-            ],
+          // Store Buttons (Row for one-line behavior)
+          FittedBox(
+            child: Row(
+              mainAxisAlignment: isMob ? MainAxisAlignment.center : MainAxisAlignment.start,
+              children: [
+                _StoreButton(
+                  storeName: 'Google Play',
+                  label: 'GET IT ON',
+                  icon: Icons.play_arrow_rounded,
+                  onTap: () => _showComingSoon(context),
+                ),
+                const SizedBox(width: 16),
+                _StoreButton(
+                  storeName: 'App Store',
+                  label: 'DOWNLOAD ON THE',
+                  icon: Icons.apple,
+                  onTap: () => _showComingSoon(context),
+                ),
+              ],
+            ),
           ),
         ],
-      ),
-    );
+      );
   }
 
   void _showComingSoon(BuildContext context) {

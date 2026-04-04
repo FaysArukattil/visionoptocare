@@ -365,6 +365,7 @@ class _CinematicProfile extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(24),
@@ -387,7 +388,7 @@ class _CinematicProfile extends StatelessWidget {
                 fontWeight: FontWeight.w900,
                 fontSize: 22,
               ),
-              textAlign: TextAlign.center,
+              textAlign: TextAlign.start,
             ),
             const SizedBox(height: 6),
             Text(
@@ -396,7 +397,7 @@ class _CinematicProfile extends StatelessWidget {
                 color: AppColors.muted,
                 fontWeight: FontWeight.w600,
               ),
-              textAlign: TextAlign.center,
+              textAlign: TextAlign.start,
             ),
           ],
         ),

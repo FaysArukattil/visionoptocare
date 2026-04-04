@@ -107,7 +107,7 @@ class _PhilosophySectionState extends State<PhilosophySection>
                                       'The Vision Behind\nVision Optocare',
                                       style: AppFonts.h2.copyWith(
                                         color: AppColors.white,
-                                        fontSize: isMob ? 28 : 48,
+                                        fontSize: isMob ? 26 : 48,
                                         height: 1.1,
                                         fontWeight: FontWeight.w800,
                                       ),

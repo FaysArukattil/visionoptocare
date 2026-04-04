@@ -270,7 +270,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
 
           // Entry (1.0 -> 2.0)
           final t12 = (v - 1.0).clamp(0.0, 1.0);
-          final distanceX = width * 0.55 - 19.5;
+          final distanceX = width * 0.55 - 18.8;
           final entryTx = -distanceX * (1.0 - t12);
           final entryTy = -(1.0 - t12) * height;
 
@@ -495,13 +495,25 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
           ),
           const SizedBox(height: 30),
           Expanded(
-            child: _buildTacticalHUD(true, scrollPos),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                _buildTacticalHUD(true, scrollPos),
+                // Restore the interactive scroll bar for mobile
+                Positioned(
+                  right: 10, top: 40, bottom: 40,
+                  width: 4,
+                  child: _buildVerticalScrollIndicator(scrollPos, themeColor, isHUDCentered: true),
+                ),
+              ],
+            ),
           ),
+          const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: _buildDetailCard(test, themeColor, true),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
         ],
       ),
     );
@@ -545,8 +557,8 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
             final isSelected = absDiff < 0.5;
             
             // 3D Perspective Mapping
-            final double z = absDiff * 80; // Depth
-            final double y = diff * 110; // Vertical spread
+            final double z = absDiff * (isMob ? 60 : 80); // Tighter depth on mobile
+            final double y = diff * (isMob ? 90 : 110); // Tighter vertical spread
             final double scale = (1.0 - (absDiff * 0.15)).clamp(0.5, 1.0);
             final double opacity = (1.0 - (absDiff * 0.25)).clamp(0.0, 1.0);
   
