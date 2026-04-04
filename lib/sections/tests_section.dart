@@ -1119,49 +1119,131 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
 
   Widget _buildRefractionSimulation() {
     return Container(
-      color: Colors.white, // Match Visual Acuity (White Chart)
+      color: Colors.white,
       child: Column(
         children: [
           _buildSimulationAppBar('MOBILE REFRACTOMETRY', 'Adjusting Focus'),
+          
+          // Info Indicators
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.grey.withValues(alpha: 0.05),
+              border: Border(bottom: BorderSide(color: Colors.grey.withValues(alpha: 0.1))),
+            ),
+            child: Row(
+              children: [
+                _buildSimulationIndicator('LEVEL 4/12', Icons.layers_rounded, Colors.blue),
+                const SizedBox(width: 8),
+                _buildSimulationIndicator('RELIABILITY: 94%', Icons.verified_user_rounded, Colors.green),
+              ],
+            ),
+          ),
+
           Expanded(
-            child: Center(
-              child: Stack(
-                alignment: Alignment.center,
+            child: SingleChildScrollView(
+              child: Column(
                 children: [
-                  const Positioned(top: 20, child: Icon(Icons.arrow_drop_up, color: Colors.blue, size: 30)),
-                  const Positioned(bottom: 20, child: Icon(Icons.arrow_drop_down, color: Colors.blue, size: 30)),
-                  const Positioned(left: 20, child: Icon(Icons.arrow_left, color: Colors.blue, size: 30)),
-                  const Positioned(right: 20, child: Icon(Icons.arrow_right, color: Colors.blue, size: 30)),
-                  AnimatedBuilder(
-                    animation: _anim,
-                    builder: (context, _) {
-                      final blur = (math.sin(_anim.value * math.pi * 2) * 4.0).abs();
-                      return Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          ImageFiltered(
-                            imageFilter: ui.ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-                            child: Column(
-                                children: [
-                                  const Text('E', style: TextStyle(fontSize: 80, fontWeight: FontWeight.bold, color: Colors.black)),
-                                  const Text('F P', style: TextStyle(fontSize: 50, fontWeight: FontWeight.bold, color: Colors.black)),
-                                  const Text('T O Z', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.black, letterSpacing: 4)),
-                                ]
-                            ),
+                  Stack(
+                    children: [
+                      Container(
+                        height: 200, // Constrain height for optotype area
+                        alignment: Alignment.center,
+                        child: AnimatedBuilder(
+                          animation: _anim,
+                          builder: (context, _) {
+                            final blur = (math.sin(_anim.value * math.pi * 2) * 3.0).abs() + 0.5;
+                            final rotation = (_anim.value * 4).floor() * (math.pi / 2); // Rotate E every quarter-phase
+                            return ImageFiltered(
+                              imageFilter: ui.ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+                              child: Transform.rotate(
+                                angle: rotation,
+                                child: const Text(
+                                  'E', 
+                                  style: TextStyle(fontSize: 100, fontWeight: FontWeight.w900, color: Colors.black, height: 1.0)
+                                ),
+                              ),
+                            );
+                          }
+                        ),
+                      ),
+                      
+                      // Detailed Analysis Card (Bottom Left)
+                      Positioned(
+                        left: 12,
+                        bottom: 8,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.85),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.white10),
                           ),
-                          const SizedBox(height: 20),
-                          const Text('FOCUSING TEST AREA', style: TextStyle(color: Colors.black38, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 2)),
-                        ],
-                      );
-                    }
+                          child: const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _RefractionMetric('SPH', '-1.25', Colors.blue),
+                              SizedBox(height: 4),
+                              _RefractionMetric('CYL', '-0.50', Colors.cyan),
+                              SizedBox(height: 4),
+                              _RefractionMetric('AXIS', '95°', Colors.orange),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  // Clinical D-Pad
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                    color: Colors.white,
+                    child: Column(
+                      children: [
+                        _buildRefractionDpadBtn(Icons.keyboard_arrow_up),
+                        const SizedBox(height: 6),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _buildRefractionDpadBtn(Icons.keyboard_arrow_left),
+                            const SizedBox(width: 30),
+                            _buildRefractionDpadBtn(Icons.keyboard_arrow_right),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        _buildRefractionDpadBtn(Icons.keyboard_arrow_down),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: _buildSimulationActionButton(
+                            label: "BLURRY / CAN'T SEE",
+                            icon: Icons.visibility_off_rounded,
+                            color: Colors.indigo,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
           ),
+          
           _buildSimulationFooter(),
         ],
       ),
+    );
+  }
+
+  Widget _buildRefractionDpadBtn(IconData icon) {
+    return Container(
+      width: 44, height: 44,
+      decoration: BoxDecoration(
+        color: Colors.blue,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Colors.blue.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 3))],
+      ),
+      child: Icon(icon, color: Colors.white, size: 24),
     );
   }
 
@@ -1256,36 +1338,115 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
 
   Widget _buildHydrationSimulation() {
     return Container(
-      color: Colors.black,
+      color: Colors.white,
       child: Column(
         children: [
           _buildSimulationAppBar('EYE HYDRATION', 'Blink Rate Monitoring'),
-          const Spacer(),
-          Center(
-            child: Container(
-              width: 100, height: 100,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.blue, width: 2),
-                boxShadow: [BoxShadow(color: Colors.blue.withValues(alpha: 0.2), blurRadius: 10)],
+          
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  // Animation & Feedback Header
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.blue.withValues(alpha: 0.1)),
+                    ),
+                    child: Column(
+                      children: [
+                        // Scanning Viewport
+                        Container(
+                          width: 100, height: 100,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.blue, width: 2),
+                            boxShadow: [BoxShadow(color: Colors.blue.withValues(alpha: 0.2), blurRadius: 15)],
+                          ),
+                          child: ClipOval(
+                            child: Stack(
+                              children: [
+                                Positioned.fill(child: Container(color: Colors.grey[900])),
+                                AnimatedBuilder(
+                                  animation: _anim,
+                                  builder: (context, _) {
+                                    return Positioned(
+                                      top: _anim.value * 100,
+                                      left: 0, right: 0,
+                                      child: Container(height: 2, color: Colors.blue.withValues(alpha: 0.6)),
+                                    );
+                                  }
+                                ),
+                                const Center(child: Icon(Icons.remove_red_eye, color: Colors.blue, size: 40)),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildHydrationCounter('BLINKS DETECTED', '7', Colors.blue),
+                        const SizedBox(height: 8),
+                        const Text('MONITORING BLINKS...', style: TextStyle(color: Colors.green, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                  
+                  // Reading Content
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+                    ),
+                    child: const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Digital Eye Strain Assessment', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Colors.black)),
+                        SizedBox(height: 10),
+                        Text(
+                          'The Blink Rate test monitors your ocular surface hydration during focused reading. Digital eye strain occurs when blinking frequency drops significantly, often leading to dry eyes and blurry vision. This non-invasive assessment tracks your natural blink pattern to provide specialized wellness recommendations.',
+                          style: TextStyle(fontSize: 11, color: Colors.black87, height: 1.6, fontFamily: 'serif'),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Please continue reading until the test completes naturally.',
+                          style: TextStyle(fontSize: 10, color: Colors.blue, fontWeight: FontWeight.bold, height: 1.5, fontFamily: 'serif'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              child: const Icon(Icons.remove_red_eye, color: Colors.blue, size: 50),
             ),
           ),
-          const SizedBox(height: 20),
-          _buildBlinkFeedback(7),
-          const Spacer(),
+
+          // Action Button
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: _buildSimulationActionButton(
+              label: 'FINISH READING',
+              icon: Icons.check_circle_rounded,
+              color: Colors.blue,
+            ),
+          ),
+          
           _buildSimulationFooter(),
         ],
       ),
     );
   }
 
-  Widget _buildBlinkFeedback(int count) {
+  Widget _buildHydrationCounter(String label, String value, Color color) {
     return Column(
       children: [
-        Text('$count', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.blue)),
-        const Text('BLINKS DETECTED', style: TextStyle(fontSize: 8, color: Colors.white54, letterSpacing: 1.2)),
+        Text(value, style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: color, height: 1.1)),
+        Text(label, style: TextStyle(fontSize: 8, letterSpacing: 1.2, fontWeight: FontWeight.w800, color: Colors.grey.withValues(alpha: 0.7))),
       ],
     );
   }
@@ -1818,4 +1979,22 @@ class _DiagnosticGridPainter extends CustomPainter {
   }
   @override
   bool shouldRepaint(covariant _DiagnosticGridPainter oldDelegate) => false;
+}
+
+class _RefractionMetric extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+  const _RefractionMetric(this.label, this.value, this.color);
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(label, style: const TextStyle(color: Colors.white54, fontSize: 8, fontWeight: FontWeight.w900)),
+        const SizedBox(width: 8),
+        Text(value, style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.bold)),
+      ],
+    );
+  }
 }
