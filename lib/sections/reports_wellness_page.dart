@@ -44,7 +44,7 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage> {
             color: AppColors.background,
             child: Column(
               children: [
-                SizedBox(height: isMob ? 60 : 120),
+                SizedBox(height: isMob ? 100 : 120),
                 // Title Area (Delayed fade in/out)
                 Opacity(
                   opacity: ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0),
@@ -315,7 +315,7 @@ class _ConsultationLanguagesPageState extends State<ConsultationLanguagesPage> {
             color: AppColors.background,
             child: Column(
               children: [
-                SizedBox(height: isMob ? 60 : 120),
+                SizedBox(height: isMob ? 100 : 120),
                 // Title Area (Delayed fade in/out)
                 Opacity(
                   opacity: ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0),
