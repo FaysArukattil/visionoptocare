@@ -9,6 +9,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../widgets/phone_mockup.dart';
 import '../utils/responsive.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 enum TestTier { quick, full, personal, pro }
 
@@ -656,6 +657,13 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
   // Stereopsis (3D Vision) Mock State
   int _stereoRound = 1;
   int _stereoScore = 80;
+
+  // Visual Field (Perimetry) Mock State
+  bool _vfFeedbackMode = false;
+
+  // Cover Test (Muscle Alignment) Mock State
+  int _coverStep = 1; // 1 to 4
+  bool _coverRecording = false;
 
   @override
   void initState() {
@@ -1359,7 +1367,7 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
                                     progress: _anim.value,
                                     color: _shadowFlashOn ? Colors.blue : Colors.blueGrey,
                                     scleraColor: _shadowFlashOn ? Colors.white : Colors.grey[400]!,
-                                    pupilColor: const Color(0xFF000510),
+                                    pupilColor: Colors.black,
                                   ),
                                   size: const Size(80, 80),
                                 );
@@ -1582,7 +1590,7 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
                               progress: _anim.value,
                               color: Colors.blue,
                               scleraColor: Colors.white,
-                              pupilColor: const Color(0xFF000510),
+                              pupilColor: Colors.black,
                             ),
                             size: const Size(60, 60),
                           );
@@ -1845,35 +1853,106 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
       color: Colors.black,
       child: Column(
         children: [
-          _buildSimulationAppBar('VISUAL FIELD', 'Perimetry Grid'),
+          _buildSimulationAppBar('VISUAL FIELD TEST', 'Full Field Perimetry'),
+          
+          LinearProgressIndicator(
+            value: (_anim.value * 1.3).clamp(0, 1),
+            backgroundColor: Colors.white10,
+            color: Colors.blue,
+            minHeight: 2,
+          ),
+
           Expanded(
-            child: Center(
-              child: Container(
-                width: 160, height: 160,
-                decoration: BoxDecoration(border: Border.all(color: Colors.white10)),
-                child: Stack(
-                  children: [
-                    const Center(child: Icon(Icons.add, color: Colors.white24, size: 20)),
-                    Positioned(
-                      left: 40, top: 100,
-                      child: AnimatedBuilder(
-                        animation: _anim,
-                        builder: (context, _) {
-                          final show = (_anim.value * 10).floor() % 3 == 0;
-                          return Opacity(
-                            opacity: show ? 1.0 : 0.0,
-                            child: Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-                          );
-                        }
+            child: Container(
+              color: Colors.black,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // High-fidelity Grid lines (Dense Clinical Pattern)
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: _VFGridPainter(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        divisions: 12,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+
+                  // Center crosshair (Fixation target)
+                  const Icon(Icons.add, color: Colors.white24, size: 30),
+
+                  // Active Stimulus Animation
+                  AnimatedBuilder(
+                    animation: _anim,
+                    builder: (context, _) {
+                      // Cycle through 3 different positions
+                      final phase = (_anim.value * 9).floor() % 3;
+                      final show = (_anim.value * 9) % 3 > 0.5 && (_anim.value * 9) % 3 < 1.5;
+                      
+                      Offset pos;
+                      if (phase == 0) pos = const Offset(-50, -40);
+                      else if (phase == 1) pos = const Offset(60, 30);
+                      else pos = const Offset(-20, 70);
+
+                      return Opacity(
+                        opacity: show ? 1.0 : 0.0,
+                        child: Transform.translate(
+                          offset: pos,
+                          child: Container(
+                            width: 8, height: 8,
+                            decoration: BoxDecoration(
+                              color: Colors.blue,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(color: Colors.blue.withValues(alpha: 0.4), blurRadius: 6, spreadRadius: 1),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                  ),
+                ],
               ),
             ),
           ),
-          const Text('TAP WHEN YOU SEE A DOT', style: TextStyle(fontSize: 8, color: Colors.white54, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 10),
+
+          // Response Area (Matching reference)
+          GestureDetector(
+            onTapDown: (_) {
+              setState(() => _vfFeedbackMode = true);
+              Future.delayed(const Duration(milliseconds: 150), () {
+                if (mounted) setState(() => _vfFeedbackMode = false);
+              });
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 100),
+              width: double.infinity,
+              height: 100,
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+              decoration: BoxDecoration(
+                color: _vfFeedbackMode ? Colors.blue.withValues(alpha: 0.1) : Colors.white10,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: _vfFeedbackMode ? Colors.blue : Colors.blue.withValues(alpha: 0.3),
+                  width: 2,
+                ),
+              ),
+              child: const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.touch_app, size: 32, color: Colors.blue),
+                  SizedBox(height: 8),
+                  Text(
+                    'TAP HERE WHEN YOU SEE A DOT',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1.2, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
           _buildSimulationFooter(),
         ],
       ),
@@ -1881,63 +1960,390 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
   }
 
   Widget _buildCoverTestSimulation() {
+    String instruction = '';
+    String subInstruction = '';
+    bool coverRight = false;
+    bool coverLeft = false;
+
+    switch (_coverStep) {
+      case 1:
+        instruction = 'COVER THE RIGHT EYE';
+        subInstruction = 'Observe LEFT eye for movement';
+        coverRight = true;
+        break;
+      case 2:
+        instruction = 'UNCOVER THE RIGHT EYE';
+        subInstruction = 'Observe RIGHT eye for movement';
+        coverRight = false;
+        break;
+      case 3:
+        instruction = 'COVER THE LEFT EYE';
+        subInstruction = 'Observe RIGHT eye for movement';
+        coverLeft = true;
+        break;
+      case 4:
+        instruction = 'UNCOVER THE LEFT EYE';
+        subInstruction = 'Observe LEFT eye for movement';
+        coverLeft = false;
+        break;
+    }
+
     return Container(
-      color: Colors.white,
-      child: Column(
+      color: Colors.black,
+      child: Stack(
         children: [
-          _buildSimulationAppBar('COVER TEST', 'Muscle Alignment'),
-          const Spacer(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildEyeMockup(true),
-              const SizedBox(width: 40),
-              _buildEyeMockup(false),
-            ],
+          // Background "Viewfinder" Noise
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.02,
+              child: Image.network(
+                'https://upload.wikimedia.org/wikipedia/commons/b/b5/Static_noise.gif',
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
-          const Spacer(),
-          _buildSimulationFooter(),
+
+          // Main Simulation Column
+          Positioned.fill(
+            child: Column(
+              children: [
+                _buildSimulationAppBar('COVER TEST', 'Muscle Alignment Analysis'),
+                
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        // Diagnostic Progress Dots (Matching reference)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(4, (index) {
+                              final isActive = index + 1 == _coverStep;
+                              final isComplete = index + 1 < _coverStep;
+                              return Container(
+                                width: 22, height: 22,
+                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                decoration: BoxDecoration(
+                                  color: isComplete ? Colors.blue : (isActive ? Colors.blue.withValues(alpha: 0.2) : Colors.white10),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: isActive ? Colors.blue : Colors.transparent, width: 1.5),
+                                ),
+                                child: Center(
+                                  child: isComplete 
+                                      ? const Icon(Icons.check, color: Colors.white, size: 10) 
+                                      : Text('${index + 1}', style: TextStyle(color: isActive ? Colors.blue : Colors.white24, fontSize: 8, fontWeight: FontWeight.bold)),
+                                ),
+                              );
+                            }),
+                          ),
+                        ),
+
+                        // Instructions Card
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 20),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.white10,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                instruction,
+                                style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                subInstruction,
+                                style: const TextStyle(color: Colors.blue, fontSize: 10, fontWeight: FontWeight.bold),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Dual Eye Monitoring System
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _buildOcularMonitor('RIGHT', coverRight),
+                            const SizedBox(width: 24),
+                            _buildOcularMonitor('LEFT', coverLeft),
+                          ],
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // D-Pad Diagnostic Interface (Matching reference)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                          child: Column(
+                            children: [
+                              // Top: UPWARD
+                              _buildDPadBtn(Icons.keyboard_arrow_up_rounded, 'UPWARD'),
+                              const SizedBox(height: 8),
+                              // Middle: INWARD | NO MOVEMENT | OUTWARD
+                              Row(
+                                children: [
+                                  Expanded(child: _buildDPadBtn(Icons.keyboard_arrow_left_rounded, 'INWARD')),
+                                  const SizedBox(width: 8),
+                                  Expanded(child: _buildDPadBtn(Icons.do_not_disturb_on_rounded, 'NO MOVEMENT')),
+                                  const SizedBox(width: 8),
+                                  Expanded(child: _buildDPadBtn(Icons.keyboard_arrow_right_rounded, 'OUTWARD')),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              // Bottom: DOWNWARD
+                              _buildDPadBtn(Icons.keyboard_arrow_down_rounded, 'DOWNWARD'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                _buildSimulationFooter(),
+              ],
+            ),
+          ),
+
+          Positioned(
+            top: 100, left: 16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(20)),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 8, height: 8,
+                    decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                  ).animate(onPlay: (c) => c.repeat()).fadeIn(duration: 500.ms).fadeOut(delay: 500.ms),
+                  const SizedBox(width: 8),
+                  const Text('00:03s', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+          ),
+
+          Positioned(
+            bottom: 60, right: 20,
+            child: GestureDetector(
+              onTap: () {
+                setState(() => _coverRecording = !_coverRecording);
+              },
+              child: Container(
+                width: 52, height: 52,
+                decoration: BoxDecoration(
+                  color: _coverRecording ? Colors.red : Colors.blue,
+                  shape: BoxShape.circle,
+                  boxShadow: [BoxShadow(color: (_coverRecording ? Colors.red : Colors.blue).withValues(alpha: 0.3), blurRadius: 10)],
+                ),
+                child: Icon(_coverRecording ? Icons.stop_rounded : Icons.videocam_rounded, color: Colors.white, size: 24),
+              ).animate(target: _coverRecording ? 1 : 0).scale(begin: const Offset(1, 1), end: const Offset(1.1, 1.1), duration: 1000.ms, curve: Curves.easeInOut),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildEyeMockup(bool isCovered) {
-    return Container(
-      width: 60, height: 40,
-      decoration: BoxDecoration(
-        color: isCovered ? Colors.black87 : Colors.grey[200],
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.black12),
+  Widget _buildOcularMonitor(String label, bool isCovered) {
+    return Column(
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              width: 100, height: 60,
+              decoration: BoxDecoration(
+                border: Border.all(color: isCovered ? Colors.blue : Colors.white10, width: 2),
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(30),
+                child: Center(
+                  child: AnimatedBuilder(
+                    animation: _anim,
+                    builder: (context, _) {
+                      return CustomPaint(
+                        painter: _PremiumEyePainter(
+                          progress: _anim.value,
+                          color: Colors.blueGrey,
+                          scleraColor: Colors.white,
+                          pupilColor: Colors.black,
+                        ),
+                        size: const Size(60, 40),
+                      );
+                    }
+                  ),
+                ),
+              ),
+            ),
+            if (isCovered)
+              Container(
+                width: 100, height: 60,
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.85),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: const Icon(Icons.visibility_off_rounded, color: Colors.blue, size: 24),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: TextStyle(color: isCovered ? Colors.blue : Colors.white38, fontSize: 10, fontWeight: FontWeight.bold),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDPadBtn(IconData icon, String label) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _coverStep = (_coverStep % 4) + 1;
+        });
+      },
+      child: Container(
+        width: label.contains(' ') ? null : 100,
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: Colors.blue, size: 18),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w900),
+            ),
+          ],
+        ),
       ),
-      child: isCovered ? null : Center(child: Container(width: 20, height: 20, decoration: const BoxDecoration(color: Colors.brown, shape: BoxShape.circle))),
     );
   }
 
   Widget _buildTorchSimulation() {
     return Container(
       color: Colors.black,
-      child: Column(
+      child: Stack(
         children: [
-          _buildSimulationAppBar('TORCHLIGHT EXAM', 'Pupillary Reflex'),
-          const Spacer(),
-          Center(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(width: 80, height: 80, decoration: const BoxDecoration(color: Colors.white10, shape: BoxShape.circle)),
-                AnimatedBuilder(
-                  animation: _anim,
-                  builder: (context, _) {
-                    final size = 40.0 - (math.sin(_anim.value * math.pi * 2).abs() * 20);
-                    return Container(width: size, height: size, decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle));
-                  }
-                ),
-              ],
+          // Viewfinder Noise
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.02,
+              child: Image.network(
+                'https://upload.wikimedia.org/wikipedia/commons/b/b5/Static_noise.gif',
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-          const Spacer(),
-          _buildSimulationFooter(),
+
+          Column(
+            children: [
+              _buildSimulationAppBar('TORCHLIGHT EXAM', 'Pupillary Reflex Analysis'),
+              
+              const Spacer(),
+
+              // Clinical Eye Indicator
+              Center(
+                child: Container(
+                  width: 180, height: 180,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: _shadowFlashOn ? Colors.yellow.withValues(alpha: 0.3) : Colors.white10,
+                      width: 2,
+                    ),
+                  ),
+                  child: Center(
+                    child: AnimatedBuilder(
+                      animation: _anim,
+                      builder: (context, _) {
+                        // Pupil constricts when light is "on"
+                        final constriction = _shadowFlashOn ? 0.6 : 1.0;
+                        return CustomPaint(
+                          painter: _PremiumEyePainter(
+                            progress: _anim.value,
+                            color: Colors.brown,
+                            scleraColor: _shadowFlashOn ? Colors.white : Colors.grey[400]!,
+                            pupilColor: Colors.black,
+                            pupilSizeMultiplier: constriction,
+                          ),
+                          size: const Size(100, 100),
+                        );
+                      }
+                    ),
+                  ),
+                ).animate(target: _shadowFlashOn ? 1 : 0).shimmer(color: Colors.yellow.withValues(alpha: 0.1), duration: 2.seconds),
+              ),
+
+              const Spacer(),
+
+              // Interactive Flashlight Controlled by the state shared with Shadow Test
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                child: Column(
+                  children: [
+                    GestureDetector(
+                      onTap: () => setState(() => _shadowFlashOn = !_shadowFlashOn),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                        decoration: BoxDecoration(
+                          color: _shadowFlashOn ? Colors.yellow.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: _shadowFlashOn ? Colors.yellow : Colors.white10,
+                            width: 2,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _shadowFlashOn ? Icons.flashlight_on_rounded : Icons.flashlight_off_rounded,
+                              color: _shadowFlashOn ? Colors.yellow : Colors.white38,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              _shadowFlashOn ? 'LIGHT DIRECTED' : 'DIRECT LIGHT',
+                              style: TextStyle(
+                                color: _shadowFlashOn ? Colors.yellow : Colors.white38,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Observe for direct and consensual pupillary constriction',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 10, fontStyle: FontStyle.italic),
+                    ),
+                  ],
+                ),
+              ),
+
+              _buildSimulationFooter(),
+            ],
+          ),
         ],
       ),
     );
@@ -2362,12 +2768,14 @@ class _PremiumEyePainter extends CustomPainter {
   final Color color;
   final Color scleraColor;
   final Color pupilColor;
+  final double pupilSizeMultiplier;
 
   _PremiumEyePainter({
     required this.progress,
     required this.color,
     required this.scleraColor,
     required this.pupilColor,
+    this.pupilSizeMultiplier = 1.0,
   });
 
   @override
@@ -2464,7 +2872,7 @@ class _PremiumEyePainter extends CustomPainter {
       // Pupil with responsive dilation
       canvas.drawCircle(
         irisCenter,
-        irisRadius * 0.42 * pulseScale,
+        irisRadius * 0.42 * pulseScale * pupilSizeMultiplier,
         Paint()..color = pupilColor,
       );
 
@@ -2504,4 +2912,28 @@ class _PremiumEyePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _PremiumEyePainter old) =>
       old.progress != progress || old.color != color;
+}
+
+class _VFGridPainter extends CustomPainter {
+  final Color color;
+  final int divisions;
+  _VFGridPainter({required this.color, this.divisions = 4});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+
+    for (int i = 1; i < divisions; i++) {
+      double dx = size.width * (i / divisions);
+      canvas.drawLine(Offset(dx, 0), Offset(dx, size.height), paint);
+      double dy = size.height * (i / divisions);
+      canvas.drawLine(Offset(0, dy), Offset(size.width, dy), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
