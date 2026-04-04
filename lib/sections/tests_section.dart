@@ -466,16 +466,11 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
         _scrollCtrl.value -= d.delta.dx / 50;
       },
       onHorizontalDragEnd: (_) => _snapToNearest(),
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        alignment: Alignment.center,
-        child: SizedBox(
-          width: MediaQuery.of(context).size.width,
-          child: Column(
-            children: [
-          const SizedBox(height: 5), // Tightened
+      child: Column(
+        children: [
+          const SizedBox(height: 2), // Tighter integration to save pixels natively
           phoneObj,
-          const SizedBox(height: 10), // Reduced from 40
+          const SizedBox(height: 4), // Saved 6px
           // Header
           Text(
             'VISION TEST SUITE',
@@ -487,7 +482,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8), // Reduced from 16
+          const SizedBox(height: 2), // Saved 6px
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
@@ -503,13 +498,13 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
               // Removed maxLines: 1 to allow complete text wrap
             ),
           ),
-          const SizedBox(height: 10), 
+          const SizedBox(height: 6), // Saved 4px
           // The Tactical HUD is now combined with the detail card below for mobile
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: _buildDetailCard(test, themeColor, true),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 6), // Saved 6px
           // Progress Dots for Mobile
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -527,12 +522,10 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
               );
             }),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 6),
         ],
       ),
-    ),
-  ),
-);
+    );
   }
 
   Widget _buildTacticalHUD(bool isMob, double scrollPos) {
@@ -641,7 +634,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   Widget _buildDetailCard(TestData test, Color themeColor, bool isMob) {
     return Container(
       width: isMob ? double.infinity : 340,
-      padding: EdgeInsets.all(isMob ? 16 : 28),
+      padding: EdgeInsets.all(isMob ? 10 : 28), // Aggressively minimized mobile padding to save 12 vertical pixels
       decoration: BoxDecoration(
         color: AppColors.background.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(isMob ? 20 : 24),
