@@ -199,7 +199,10 @@ class _HomePageState extends State<HomePage> {
           scrollProgress: _rawScrollProgress,
         );
       case 4:
-        return ConsultationLanguagesPage(isActive: isActive);
+        return ConsultationLanguagesPage(
+          isActive: isActive,
+          scrollProgress: _rawScrollProgress,
+        );
       case 5:
         return B2BPage(isActive: isActive); // ← B2B before Philosophy
       case 6:

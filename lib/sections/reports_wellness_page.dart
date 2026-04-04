@@ -30,12 +30,14 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage> {
     return ValueListenableBuilder<double>(
       valueListenable: widget.scrollProgress!,
       builder: (context, raw, _) {
-        // Transition range: 2.0 (Clinical Tests) -> 3.0 (This Page)
-        final double t = (raw - 2.0).clamp(0.0, 1.0);
+        // Entry Range: 2.0 -> 3.0
+        final double tEntry = (raw - 2.0).clamp(0.0, 1.0);
+        // Exit Range: 3.0 -> 4.0
+        final double tExit = (raw - 3.0).clamp(0.0, 1.0);
         
         // Final section opacity
         return Opacity(
-          opacity: Curves.easeOut.transform(t),
+          opacity: (Curves.easeOut.transform(tEntry) * (1.0 - tExit)).clamp(0.0, 1.0),
           child: Container(
             width: size.width,
             height: size.height,
@@ -43,9 +45,9 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage> {
             child: Column(
               children: [
                 SizedBox(height: isMob ? 100 : 120),
-                // Title Area (Delayed fade in)
+                // Title Area (Delayed fade in/out)
                 Opacity(
-                  opacity: (t * 2 - 1).clamp(0.0, 1.0),
+                  opacity: (tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit),
                   child: Padding(
                     padding: Responsive.padding(context),
                     child: Column(
@@ -79,8 +81,8 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage> {
                   child: Padding(
                     padding: Responsive.padding(context).copyWith(top: 0),
                     child: isMob
-                        ? _buildMobileLayout(t)
-                        : _buildDesktopLayout(t),
+                        ? _buildMobileLayout(tEntry, tExit)
+                        : _buildDesktopLayout(tEntry, tExit),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -92,20 +94,25 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage> {
     );
   }
 
-  Widget _buildDesktopLayout(double t) {
+  Widget _buildDesktopLayout(double tEntry, double tExit) {
     // Coordinated Staggered Fly-ins
-    final leftX = (1.0 - Curves.easeOutCubic.transform(t)) * -400;
-    final rightX = (1.0 - Curves.easeOutCubic.transform(t)) * 400;
-    final bottomY = (1.0 - Curves.easeOutBack.transform(t)) * 400;
+    final entryLX = (1.0 - Curves.easeOutCubic.transform(tEntry)) * -400;
+    final entryRX = (1.0 - Curves.easeOutCubic.transform(tEntry)) * 400;
+    final entryBY = (1.0 - Curves.easeOutBack.transform(tEntry)) * 400;
+
+    // Coordinated Staggered Fly-outs (Symmetrical)
+    final exitLX = Curves.easeInCubic.transform(tExit) * -400;
+    final exitRX = Curves.easeInCubic.transform(tExit) * 400;
+    final exitBY = Curves.easeInBack.transform(tExit) * 400;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // ── Left: Education Reels (Slices from LEFT) ──
+        // ── Left: Education Reels ──
         Expanded(
           flex: 3,
           child: Transform.translate(
-            offset: Offset(leftX, 0),
+            offset: Offset(entryLX + exitLX, 0),
             child: _BentoCard(
               title: 'Education Reels',
               subtitle: 'TikTok-style eye care video tips.',
@@ -116,14 +123,14 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage> {
           ),
         ),
         const SizedBox(width: 20),
-        // ── Right: PDF Reports + Ocular Wellness (Slices from RIGHT/BOTTOM) ──
+        // ── Right: PDF Reports + Ocular Wellness ──
         Expanded(
           flex: 4,
           child: Column(
             children: [
               Expanded(
                 child: Transform.translate(
-                  offset: Offset(rightX, 0),
+                  offset: Offset(entryRX + exitRX, 0),
                   child: _BentoCard(
                     title: 'Smart Clinical PDF Reports',
                     subtitle: 'Auto-generate comprehensive PDF reports.',
@@ -136,7 +143,7 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage> {
               const SizedBox(height: 20),
               Expanded(
                 child: Transform.translate(
-                  offset: Offset(0, bottomY),
+                  offset: Offset(0, entryBY + exitBY),
                   child: _BentoCard(
                     title: 'Ocular Wellness',
                     subtitle: 'Interactive eye therapy games.',
@@ -153,15 +160,16 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage> {
     );
   }
 
-  Widget _buildMobileLayout(double t) {
-    final slideY = (1.0 - Curves.easeOutCubic.transform(t)) * 100;
+  Widget _buildMobileLayout(double tEntry, double tExit) {
+    final entrySY = (1.0 - Curves.easeOutCubic.transform(tEntry)) * 100;
+    final exitSY = Curves.easeInCubic.transform(tExit) * 100;
     
     return SingleChildScrollView(
       physics: const NeverScrollableScrollPhysics(),
       child: Opacity(
-        opacity: t,
+        opacity: tEntry * (1.0 - tExit),
         child: Transform.translate(
-          offset: Offset(0, slideY),
+          offset: Offset(0, entrySY + exitSY),
           child: Column(
             children: [
               SizedBox(
@@ -218,66 +226,43 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage> {
 // ─────────────────────────────────────────────
 class ConsultationLanguagesPage extends StatefulWidget {
   final bool isActive;
-  const ConsultationLanguagesPage({super.key, required this.isActive});
+  final ValueNotifier<double>? scrollProgress;
+  const ConsultationLanguagesPage({super.key, required this.isActive, this.scrollProgress});
 
   @override
   State<ConsultationLanguagesPage> createState() =>
       _ConsultationLanguagesPageState();
 }
 
-class _ConsultationLanguagesPageState extends State<ConsultationLanguagesPage>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  bool _hasStarted = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 900));
-    if (widget.isActive) _start();
-  }
-
-  @override
-  void didUpdateWidget(covariant ConsultationLanguagesPage old) {
-    super.didUpdateWidget(old);
-    if (widget.isActive && !_hasStarted) _start();
-  }
-
-  void _start() async {
-    _hasStarted = true;
-    await Future.delayed(const Duration(milliseconds: 200));
-    if (mounted) _ctrl.forward();
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
+class _ConsultationLanguagesPageState extends State<ConsultationLanguagesPage> {
   @override
   Widget build(BuildContext context) {
+    if (widget.scrollProgress == null) return const SizedBox.shrink();
+
     final size = MediaQuery.of(context).size;
     final isMob = Responsive.isMobile(context);
 
-    return AnimatedBuilder(
-      animation: _ctrl,
-      builder: (context, _) {
-        final t = CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic)
-            .value;
+    return ValueListenableBuilder<double>(
+      valueListenable: widget.scrollProgress!,
+      builder: (context, raw, _) {
+        // Entry Range: 3.0 -> 4.0
+        final double tEntry = (raw - 3.0).clamp(0.0, 1.0);
+        // Exit Range: 4.0 -> 5.0
+        final double tExit = (raw - 4.0).clamp(0.0, 1.0);
+
         return Opacity(
-          opacity: t.clamp(0.0, 1.0),
-          child: Transform.translate(
-            offset: Offset(0, 15 * (1 - t)),
-            child: Container(
-              width: size.width,
-              height: size.height,
-              color: AppColors.background,
-              child: Column(
-                children: [
-                  SizedBox(height: isMob ? 100 : 120),
-                  Padding(
+          opacity: (Curves.easeOut.transform(tEntry) * (1.0 - tExit)).clamp(0.0, 1.0),
+          child: Container(
+            width: size.width,
+            height: size.height,
+            color: AppColors.background,
+            child: Column(
+              children: [
+                SizedBox(height: isMob ? 100 : 120),
+                // Title Area (Delayed fade in/out)
+                Opacity(
+                  opacity: (tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit),
+                  child: Padding(
                     padding: Responsive.padding(context),
                     child: Column(
                       children: [
@@ -304,18 +289,18 @@ class _ConsultationLanguagesPageState extends State<ConsultationLanguagesPage>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: Padding(
-                      padding: Responsive.padding(context).copyWith(top: 0),
-                      child: isMob
-                          ? _buildMobileLayout()
-                          : _buildDesktopLayout(),
-                    ),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: Padding(
+                    padding: Responsive.padding(context).copyWith(top: 0),
+                    child: isMob
+                        ? _buildMobileLayout(tEntry, tExit)
+                        : _buildDesktopLayout(tEntry, tExit),
                   ),
-                  const SizedBox(height: 16),
-                ],
-              ),
+                ),
+                const SizedBox(height: 16),
+              ],
             ),
           ),
         );
@@ -323,72 +308,92 @@ class _ConsultationLanguagesPageState extends State<ConsultationLanguagesPage>
     );
   }
 
-  Widget _buildDesktopLayout() {
+  Widget _buildDesktopLayout(double tEntry, double tExit) {
+    // Symmetrical fly-ins (L/R)
+    final entryLX = (1.0 - Curves.easeOutCubic.transform(tEntry)) * -400;
+    final entryRX = (1.0 - Curves.easeOutCubic.transform(tEntry)) * 400;
+
+    // Symmetrical fly-outs (L/R)
+    final exitLX = Curves.easeInCubic.transform(tExit) * -400;
+    final exitRX = Curves.easeInCubic.transform(tExit) * 400;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Expanded(
-          child: _BentoCard(
-            title: 'Hybrid Consultations',
-            subtitle:
-                'Connect with experts seamlessly. Book an online video consultation directly via the app, or request a convenient offline home visit from an optometrist.',
-            icon: Icons.video_call_outlined,
-            color: const Color(0xFFF5C842),
-            child: const _AnimatedConsultationNetwork(
-                color: Color(0xFFF5C842)),
+          child: Transform.translate(
+            offset: Offset(entryLX + exitLX, 0),
+            child: _BentoCard(
+              title: 'Hybrid Consultations',
+              subtitle:
+                  'Connect with experts seamlessly. Book an online video consultation directly via the app, or request a convenient offline home visit from an optometrist.',
+              icon: Icons.video_call_outlined,
+              color: const Color(0xFFF5C842),
+              child: const _AnimatedConsultationNetwork(
+                  color: Color(0xFFF5C842)),
+            ),
           ),
         ),
         const SizedBox(width: 20),
         Expanded(
-          child: _BentoCard(
-            title: '13 Local Languages',
-            subtitle:
-                'Eye health without borders. The App natively supports 13 major languages to bring digital primary optometry to patients worldwide.',
-            icon: Icons.public,
-            color: const Color(0xFFFF5252),
-            child:
-                const _AnimatedLanguageGlobe(color: Color(0xFFFF5252)),
+          child: Transform.translate(
+            offset: Offset(entryRX + exitRX, 0),
+            child: _BentoCard(
+              title: '13 Local Languages',
+              subtitle:
+                  'Eye health without borders. The App natively supports 13 major languages to bring digital primary optometry to patients worldwide.',
+              icon: Icons.public,
+              color: const Color(0xFFFF5252),
+              child:
+                  const _AnimatedLanguageGlobe(color: Color(0xFFFF5252)),
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildMobileLayout() {
+  Widget _buildMobileLayout(double tEntry, double tExit) {
+    final entrySY = (1.0 - Curves.easeOutCubic.transform(tEntry)) * 100;
+    final exitSY = Curves.easeInCubic.transform(tExit) * 100;
+
     return SingleChildScrollView(
       physics: const NeverScrollableScrollPhysics(),
-      child: Column(
-        children: [
-          SizedBox(
-            height: 300,
-            child: _BentoCard(
-              title: 'Hybrid Consultations',
-              subtitle:
-                  'Book online video consults or request offline home visits.',
-              icon: Icons.video_call_outlined,
-              color: const Color(0xFFF5C842),
-              child: const SizedBox(
-                height: 140,
-                child: _AnimatedConsultationNetwork(
-                    color: Color(0xFFF5C842)),
+      child: Transform.translate(
+        offset: Offset(0, entrySY + exitSY),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 300,
+              child: _BentoCard(
+                title: 'Hybrid Consultations',
+                subtitle:
+                    'Book online video consults or request offline home visits.',
+                icon: Icons.video_call_outlined,
+                color: const Color(0xFFF5C842),
+                child: const SizedBox(
+                  height: 140,
+                  child: _AnimatedConsultationNetwork(
+                      color: Color(0xFFF5C842)),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 340,
-            child: _BentoCard(
-              title: '13 Local Languages',
-              subtitle: 'Natively localized into 13 major languages.',
-              icon: Icons.public,
-              color: const Color(0xFFFF5252),
-              child: const SizedBox(
-                height: 200,
-                child: _AnimatedLanguageGlobe(color: Color(0xFFFF5252)),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 340,
+              child: _BentoCard(
+                title: '13 Local Languages',
+                subtitle: 'Natively localized into 13 major languages.',
+                icon: Icons.public,
+                color: const Color(0xFFFF5252),
+                child: const SizedBox(
+                  height: 200,
+                  child: _AnimatedLanguageGlobe(color: Color(0xFFFF5252)),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

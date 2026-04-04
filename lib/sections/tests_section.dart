@@ -251,13 +251,25 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
       phoneObj = ValueListenableBuilder<double>(
         valueListenable: widget.scrollProgress!,
         builder: (context, v, child) {
+          final width = MediaQuery.of(context).size.width;
+          final height = MediaQuery.of(context).size.height;
+
+          // Entry (1.0 -> 2.0)
           final t12 = (v - 1.0).clamp(0.0, 1.0);
-          final distanceX = (MediaQuery.of(context).size.width / 2) - 20;
-          final translateX = -distanceX * (1.0 - t12);
-          final translateY = -(1.0 - t12) * MediaQuery.of(context).size.height;
+          final distanceX = (width / 2) - 20;
+          final entryTx = -distanceX * (1.0 - t12);
+          final entryTy = -(1.0 - t12) * height;
+
+          // Exit (2.0 -> 3.0)
+          final t23 = (v - 2.0).clamp(0.0, 1.0);
+          final exitTx = t23 * width * 1.2; // Glide completely out to the right
+
           return Transform.translate(
-            offset: Offset(translateX, translateY),
-            child: child,
+            offset: Offset(entryTx + exitTx, entryTy),
+            child: Opacity(
+              opacity: (1.0 - t23).clamp(0.0, 1.0),
+              child: child,
+            ),
           );
         },
         child: phoneObj,
@@ -386,11 +398,23 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
       phoneObj = ValueListenableBuilder<double>(
         valueListenable: widget.scrollProgress!,
         builder: (context, v, child) {
+          final width = MediaQuery.of(context).size.width;
+          final height = MediaQuery.of(context).size.height;
+
+          // Entry (1.0 -> 2.0)
           final t12 = (v - 1.0).clamp(0.0, 1.0);
-          final translateY = -(1.0 - t12) * MediaQuery.of(context).size.height;
+          final entryTy = -(1.0 - t12) * height;
+
+          // Exit (2.0 -> 3.0)
+          final t23 = (v - 2.0).clamp(0.0, 1.0);
+          final exitTx = t23 * width * 1.2;
+
           return Transform.translate(
-            offset: Offset(0, translateY),
-            child: child,
+            offset: Offset(exitTx, entryTy),
+            child: Opacity(
+              opacity: (1.0 - t23).clamp(0.0, 1.0),
+              child: child,
+            ),
           );
         },
         child: phoneObj,
@@ -689,27 +713,9 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
             child: CustomPaint(painter: _DiagnosticGridPainter(color: widget.themeColor.withValues(alpha: 0.1))),
           ),
           
-          if (widget.scrollProgress != null)
-            ValueListenableBuilder<double>(
-              valueListenable: widget.scrollProgress!,
-              builder: (context, raw, _) {
-                // Transition range: 2.0 (Clinical Tests) -> 3.0 (Next Page)
-                final double t = (raw - 2.0).clamp(0.0, 1.0);
-                return Opacity(
-                  opacity: (1.0 - t).clamp(0.0, 1.0),
-                  child: Transform.translate(
-                    offset: Offset(t * MediaQuery.of(context).size.width * 0.8, 0),
-                    child: Center(
-                      child: _buildSimulation(widget.test.number),
-                    ),
-                  ),
-                );
-              },
-            )
-          else
-            Center(
-              child: _buildSimulation(widget.test.number),
-            ),
+          Center(
+            child: _buildSimulation(widget.test.number),
+          ),
 
         ],
       ),
