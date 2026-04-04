@@ -653,6 +653,10 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
   bool _shadowFlashOn = false;
   bool _shadowCapturing = false;
 
+  // Stereopsis (3D Vision) Mock State
+  int _stereoRound = 1;
+  int _stereoScore = 80;
+
   @override
   void initState() {
     super.initState();
@@ -1675,32 +1679,155 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
 
   Widget _buildStereoSimulation() {
     return Container(
-      color: Colors.white,
+      color: Colors.black,
       child: Column(
         children: [
-          _buildSimulationAppBar('STEREOPSIS', 'Depth Perception'),
+          _buildSimulationAppBar('STEREOPSIS TEST', 'Depth Perception Assessment'),
+          
+          // Clinical Progress Header (Reference Matching)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Image $_stereoRound of 5',
+                      style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      'Score: $_stereoScore',
+                      style: const TextStyle(color: Colors.blue, fontSize: 13, fontWeight: FontWeight.w900),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                LinearProgressIndicator(
+                  value: _stereoRound / 5.0,
+                  backgroundColor: Colors.white10,
+                  color: Colors.blue,
+                  minHeight: 2,
+                ),
+              ],
+            ),
+          ),
+
+          // Instructions
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              children: [
+                const Text(
+                  'Does this image appear in 3D?',
+                  style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Look through your red-cyan glasses',
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 10, fontStyle: FontStyle.italic),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+
+          // Anaglyph 3D Simulated Visual
           Expanded(
             child: Center(
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  _buildStereoShape(const Offset(-20, -20), Colors.red.withValues(alpha: 0.5)),
-                  _buildStereoShape(const Offset(20, 20), Colors.blue.withValues(alpha: 0.5)),
-                  const Text('Identify the floating shape', style: TextStyle(fontSize: 8, color: Colors.grey)),
-                ],
+              child: AnimatedBuilder(
+                animation: _anim,
+                builder: (context, _) {
+                  // Simulate 3D Depth Shift Anaglyph (Red offset left, Cyan offset right)
+                  return Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Red Layer
+                      Transform.translate(
+                        offset: Offset(-3 - (math.sin(_anim.value * math.pi) * 2), 0),
+                        child: CustomPaint(
+                          painter: _PremiumEyePainter(
+                            progress: _anim.value,
+                            color: Colors.red.withValues(alpha: 0.7),
+                            scleraColor: Colors.white.withValues(alpha: 0.5),
+                            pupilColor: Colors.black,
+                          ),
+                          size: const Size(100, 100),
+                        ),
+                      ),
+                      // Cyan Layer
+                      Transform.translate(
+                        offset: Offset(3 + (math.sin(_anim.value * math.pi) * 2), 0),
+                        child: CustomPaint(
+                          painter: _PremiumEyePainter(
+                            progress: _anim.value,
+                            color: Colors.cyan.withValues(alpha: 0.7),
+                            scleraColor: Colors.white.withValues(alpha: 0.5),
+                            pupilColor: Colors.black,
+                          ),
+                          size: const Size(100, 100),
+                        ),
+                      ),
+                    ],
+                  );
+                }
               ),
             ),
           ),
+
+          // Choice Buttons (Reference Matching)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildChoiceButton(
+                    label: 'FLAT',
+                    icon: Icons.crop_square_rounded,
+                    color: Colors.grey.withValues(alpha: 0.2),
+                    onPressed: () {},
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildChoiceButton(
+                    label: '3D',
+                    icon: Icons.view_in_ar_rounded,
+                    color: Colors.blue,
+                    onPressed: () {},
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
           _buildSimulationFooter(),
         ],
       ),
     );
   }
 
-  Widget _buildStereoShape(Offset offset, Color color) {
-    return Transform.translate(
-      offset: offset,
-      child: Container(width: 60, height: 60, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+  Widget _buildChoiceButton({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onPressed,
+  }) {
+    return Container(
+      height: 48,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 18, color: Colors.white),
+          const SizedBox(width: 8),
+          Text(label, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+        ],
+      ),
     );
   }
 
