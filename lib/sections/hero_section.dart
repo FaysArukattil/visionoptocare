@@ -211,16 +211,13 @@ class _HeroSectionState extends State<HeroSection>
                                   if (!_typewriterDone)
                                     ValueListenableBuilder<bool>(
                                       valueListenable: _cursorVisible,
-                                      builder: (context, visible, _) => Opacity(
-                                        opacity: visible ? 1.0 : 0.0,
-                                        child: Text(
-                                          '|',
-                                          style: AppFonts.heading(
-                                            fontSize: isMob ? 60 : 110,
-                                            fontWeight: FontWeight.w900,
-                                            height: 0.88,
-                                            color: AppColors.accent2,
-                                          ),
+                                      builder: (context, visible, _) => Text(
+                                        '|',
+                                        style: AppFonts.heading(
+                                          fontSize: isMob ? 60 : 110,
+                                          fontWeight: FontWeight.w900,
+                                          height: 0.88,
+                                          color: visible ? AppColors.accent2 : AppColors.accent2.withValues(alpha: 0.0),
                                         ),
                                       ),
                                     ),
@@ -334,12 +331,9 @@ class _FadeSlide extends StatelessWidget {
       animation: controller,
       builder: (context, _) {
         final v = CurvedAnimation(parent: controller, curve: Curves.easeOutCubic).value;
-        return Opacity(
-          opacity: v.clamp(0.0, 1.0),
-          child: Transform.translate(
-            offset: Offset(0, 12 * (1 - v)),
-            child: child,
-          ),
+        return Transform.translate(
+          offset: Offset(0, 12 * (1 - v)),
+          child: child,
         );
       },
     );
@@ -384,15 +378,12 @@ class _PulsingScrollCtaState extends State<_PulsingScrollCta>
         final t = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut).value;
         return Column(
           children: [
-            Opacity(
-              opacity: 0.4 + t * 0.6,
-              child: Text(
-                'Scroll to Begin',
-                style: AppFonts.caption.copyWith(
-                  color: AppColors.accent2,
-                  letterSpacing: 3,
-                  fontSize: 11,
-                ),
+            Text(
+              'Scroll to Begin',
+              style: AppFonts.caption.copyWith(
+                color: AppColors.accent2.withValues(alpha: 0.4 + t * 0.6),
+                letterSpacing: 3,
+                fontSize: 11,
               ),
             ),
             const SizedBox(height: 8),

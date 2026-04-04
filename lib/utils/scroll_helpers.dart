@@ -24,7 +24,6 @@ class ScrollRevealWidget extends StatefulWidget {
 class _ScrollRevealWidgetState extends State<ScrollRevealWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
   bool _hasAnimated = false;
 
@@ -32,8 +31,6 @@ class _ScrollRevealWidgetState extends State<ScrollRevealWidget>
   void initState() {
     super.initState();
     _controller = AnimationController(vsync: this, duration: widget.duration);
-    _fadeAnim = Tween<double>(begin: 0, end: 1)
-        .animate(CurvedAnimation(parent: _controller, curve: widget.curve));
     _slideAnim = Tween<Offset>(
       begin: Offset(0, widget.slideOffset),
       end: Offset.zero,
@@ -66,7 +63,7 @@ class _ScrollRevealWidgetState extends State<ScrollRevealWidget>
           return RepaintBoundary(
             child: Transform.translate(
               offset: _slideAnim.value,
-              child: Opacity(opacity: _fadeAnim.value, child: child),
+              child: child,
             ),
           );
         },

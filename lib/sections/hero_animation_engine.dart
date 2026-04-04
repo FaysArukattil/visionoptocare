@@ -24,17 +24,15 @@ class HeroAnimationEngine extends StatelessWidget {
       children: [
         // ── Phase 1: Traditional Shatter Stage ──
         if (p < 0.50) ...[
-          Opacity(
-            opacity: _calculateOpacity(p, 0.0, 0.45),
-            child: _TraditionalShatterStage(p: p),
+          RepaintBoundary(
+            child: _TraditionalShatterStage(p: p, stageOpacity: _calculateOpacity(p, 0.0, 0.45)),
           ),
         ],
 
         // ── Phase 2: Pulsing Iris Hologram (bridge only) ──
         if (p > 0.25 && p < 0.80) ...[
-          Opacity(
-            opacity: _calculateOpacity(p, 0.25, 0.75, fadeInOut: true),
-            child: _IrisHologram(p: p),
+          RepaintBoundary(
+            child: _IrisHologram(p: p, stageOpacity: _calculateOpacity(p, 0.25, 0.75, fadeInOut: true)),
           ),
         ],
       ],
@@ -61,7 +59,8 @@ class HeroAnimationEngine extends StatelessWidget {
 /// ── THE ORIGIN: 3D Snellen Chart & Shatter Logic ──
 class _TraditionalShatterStage extends StatefulWidget {
   final double p;
-  const _TraditionalShatterStage({required this.p});
+  final double stageOpacity;
+  const _TraditionalShatterStage({required this.p, this.stageOpacity = 1.0});
 
   @override
   State<_TraditionalShatterStage> createState() =>
@@ -119,7 +118,7 @@ class _TraditionalShatterStageState extends State<_TraditionalShatterStage>
                       BoxShadow(
                         color: AppColors.accent2.withValues(
                             alpha:
-                                0.15 * (1 - shatterP).clamp(0.0, 1.0)),
+                                0.15 * (1 - shatterP).clamp(0.0, 1.0) * widget.stageOpacity),
                         blurRadius: 100,
                         offset: const Offset(0, 50),
                       ),
@@ -132,7 +131,7 @@ class _TraditionalShatterStageState extends State<_TraditionalShatterStage>
                   child: CustomPaint(
                     size: const Size(300, 420),
                     painter: _ShardPainter(
-                        shards: _shards, p: shatterP, scrollP: widget.p),
+                        shards: _shards, p: shatterP, scrollP: widget.p, stageOpacity: widget.stageOpacity),
                   ),
                 ),
               ],
@@ -190,9 +189,10 @@ class _ShardPainter extends CustomPainter {
   final List<_ShardData> shards;
   final double p;
   final double scrollP;
+  final double stageOpacity;
 
   _ShardPainter(
-      {required this.shards, required this.p, required this.scrollP});
+      {required this.shards, required this.p, required this.scrollP, this.stageOpacity = 1.0});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -211,7 +211,7 @@ class _ShardPainter extends CustomPainter {
       canvas.translate(-size.width / 2, -size.height / 2);
 
       final path = Path()..addPolygon(shard.points, true);
-      paint.color = shard.color.withValues(alpha: shard.color.a * opacity);
+      paint.color = shard.color.withValues(alpha: shard.color.a * opacity * stageOpacity);
       canvas.drawPath(path, paint);
 
       if (p < 0.1) {
@@ -279,14 +279,15 @@ class _ShardPainter extends CustomPainter {
 /// ── THE RUPTURE: Pulsing Iris Geometry ──
 class _IrisHologram extends StatelessWidget {
   final double p;
-  const _IrisHologram({required this.p});
+  final double stageOpacity;
+  const _IrisHologram({required this.p, this.stageOpacity = 1.0});
 
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
       child: CustomPaint(
         size: const Size(400, 400),
-        painter: _IrisPainter(p: p),
+        painter: _IrisPainter(p: p, stageOpacity: stageOpacity),
       ),
     );
   }
@@ -294,13 +295,14 @@ class _IrisHologram extends StatelessWidget {
 
 class _IrisPainter extends CustomPainter {
   final double p;
-  _IrisPainter({required this.p});
+  final double stageOpacity;
+  _IrisPainter({required this.p, this.stageOpacity = 1.0});
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = size.center(Offset.zero);
     final paint = Paint()
-      ..color = AppColors.accent2.withValues(alpha: 0.3)
+      ..color = AppColors.accent2.withValues(alpha: 0.3 * stageOpacity)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
@@ -310,7 +312,7 @@ class _IrisPainter extends CustomPainter {
     for (int i = 0; i < 5; i++) {
       final radius = (40 + i * 30) * breath;
       canvas.drawCircle(center, radius,
-          paint..color = AppColors.accent2.withValues(alpha: 0.1 * (5 - i)));
+          paint..color = AppColors.accent2.withValues(alpha: 0.1 * (5 - i) * stageOpacity));
 
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: radius),

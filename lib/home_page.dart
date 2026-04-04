@@ -145,10 +145,7 @@ class _HomePageState extends State<HomePage> {
               return Positioned.fill(
                 child: IgnorePointer(
                   child: RepaintBoundary(
-                    child: Opacity(
-                      opacity: _bellCurveOpacity(t, 0.05, 0.95, 0.6),
-                      child: HeroAnimationEngine(p: t, isMob: isMob),
-                    ),
+                    child: HeroAnimationEngine(p: t, isMob: isMob),
                   ),
                 ),
               );
@@ -264,23 +261,6 @@ class _HomePageState extends State<HomePage> {
           ),
       ],
     );
-  }
-
-  double _bellCurveOpacity(
-    double p,
-    double start,
-    double end,
-    double maxOpacity,
-  ) {
-    if (p <= start || p >= end) return 0.0;
-    final mid = (start + end) / 2;
-    if (p < mid) {
-      final t = (p - start) / (mid - start);
-      return maxOpacity * Curves.easeOutCubic.transform(t);
-    } else {
-      final t = (p - mid) / (end - mid);
-      return maxOpacity * (1.0 - Curves.easeInCubic.transform(t));
-    }
   }
 }
 

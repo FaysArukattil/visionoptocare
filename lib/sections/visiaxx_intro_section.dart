@@ -138,12 +138,9 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                 parent: _textCtrl,
                 curve: Curves.easeOutCubic,
               ).value.clamp(0.0, 1.0);
-              return Opacity(
-                opacity: t.clamp(0.0, 1.0),
-                child: Transform.translate(
-                  offset: Offset(30 * (1 - t), 0),
-                  child: _buildIntroText(false),
-                ),
+              return Transform.translate(
+                offset: Offset(30 * (1 - t), 0),
+                child: _buildIntroText(false, t),
               );
             },
           ),
@@ -163,20 +160,13 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
           AnimatedBuilder(
             animation: _phoneCtrl,
             builder: (_, _) {
-              final t = CurvedAnimation(
-                parent: _phoneCtrl,
-                curve: Curves.easeOutBack,
-              ).value.clamp(0.0, 1.0);
 
-              Widget phoneObj = Opacity(
-                opacity: t,
-                child: PhoneMockup(
-                  width: 180,
-                  height: 360,
-                  tiltX: 0.0, // Phone rendered straight
-                  tiltY: 0.0,
-                  screen: _buildPhoneScreen(h: 360, isMini: true),
-                ),
+              Widget phoneObj = PhoneMockup(
+                width: 180,
+                height: 360,
+                tiltX: 0.0,
+                tiltY: 0.0,
+                screen: _buildPhoneScreen(h: 360, isMini: true),
               );
 
               if (widget.scrollProgress != null) {
@@ -209,12 +199,9 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                 parent: _textCtrl,
                 curve: Curves.easeOutCubic,
               ).value.clamp(0.0, 1.0);
-              return Opacity(
-                opacity: t,
-                child: Transform.translate(
-                  offset: Offset(0, 15 * (1 - t)),
-                  child: _buildIntroText(true),
-                ),
+              return Transform.translate(
+                offset: Offset(0, 15 * (1 - t)),
+                child: _buildIntroText(true, t),
               );
             },
           ),
@@ -310,7 +297,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
     );
   }
 
-  Widget _buildIntroText(bool isMob) {
+  Widget _buildIntroText(bool isMob, [double animOp = 1.0]) {
     return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: isMob ? CrossAxisAlignment.center : CrossAxisAlignment.start,
@@ -350,7 +337,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
           Text(
             isMob ? 'Pioneering Digital Optometry.' : 'Pioneering Digital\nOptometry.',
             style: AppFonts.h2.copyWith(
-              color: AppColors.white,
+              color: AppColors.white.withValues(alpha: animOp),
               fontSize: isMob ? 22 : 52,
               height: 1.1,
               fontWeight: FontWeight.w800,

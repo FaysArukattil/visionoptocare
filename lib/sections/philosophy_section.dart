@@ -7,7 +7,11 @@ import '../utils/responsive.dart';
 class PhilosophySection extends StatefulWidget {
   final bool isActive;
   final ValueNotifier<double>? scrollProgress;
-  const PhilosophySection({super.key, this.isActive = false, this.scrollProgress});
+  const PhilosophySection({
+    super.key,
+    this.isActive = false,
+    this.scrollProgress,
+  });
 
   @override
   State<PhilosophySection> createState() => _PhilosophySectionState();
@@ -17,20 +21,24 @@ class _PhilosophySectionState extends State<PhilosophySection>
     with TickerProviderStateMixin {
   late AnimationController _floatCtrl;
   late AnimationController _pulseCtrl;
-  final PageController _pageCtrl = PageController(viewportFraction: 0.85);
 
   @override
   void initState() {
     super.initState();
-    _floatCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 12))..repeat(reverse: true);
-    _pulseCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 6))..repeat(reverse: true);
+    _floatCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 12),
+    )..repeat(reverse: true);
+    _pulseCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 6),
+    )..repeat(reverse: true);
   }
 
   @override
   void dispose() {
     _floatCtrl.dispose();
     _pulseCtrl.dispose();
-    _pageCtrl.dispose();
     super.dispose();
   }
 
@@ -45,10 +53,8 @@ class _PhilosophySectionState extends State<PhilosophySection>
       builder: (context, raw, _) {
         final tEntry = (raw - 5.0).clamp(0.0, 1.0);
         final tExit = (raw - 6.0).clamp(0.0, 1.0);
-        final overallOpacity = (Curves.easeOut.transform(tEntry) * (1.0 - tExit)).clamp(0.0, 1.0);
 
-        return Opacity(
-          opacity: overallOpacity,
+        return RepaintBoundary(
           child: Container(
             width: size.width,
             height: size.height,
@@ -80,55 +86,70 @@ class _PhilosophySectionState extends State<PhilosophySection>
                       child: Column(
                         children: [
                           // Header with float animation
-                          Opacity(
-                          opacity: ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0),
-                            child: Padding(
-                              padding: Responsive.padding(context),
-                              child: AnimatedBuilder(
-                                animation: _floatCtrl,
-                                builder: (context, child) {
-                                  final y = math.sin(_floatCtrl.value * math.pi) * 0.4;
-                                  return Transform.translate(
-                                    offset: Offset(0, y),
-                                    child: child,
-                                  );
-                                },
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      'OUR PHILOSOPHY',
-                                      style: AppFonts.caption.copyWith(
-                                        color: AppColors.accent2,
-                                        letterSpacing: 4,
-                                        fontWeight: FontWeight.w900,
-                                        fontSize: isMob ? 10 : 12,
+                          Builder(
+                            builder: (context) {
+                              final headerOp =
+                                  ((tEntry * 2 - 1).clamp(0.0, 1.0) *
+                                          (1.0 - tExit))
+                                      .clamp(0.0, 1.0);
+                              return Padding(
+                                padding: Responsive.padding(context),
+                                child: AnimatedBuilder(
+                                  animation: _floatCtrl,
+                                  builder: (context, child) {
+                                    final y =
+                                        math.sin(_floatCtrl.value * math.pi) *
+                                        0.4;
+                                    return Transform.translate(
+                                      offset: Offset(0, y),
+                                      child: child,
+                                    );
+                                  },
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        'OUR PHILOSOPHY',
+                                        style: AppFonts.caption.copyWith(
+                                          color: AppColors.accent2.withValues(
+                                            alpha: headerOp,
+                                          ),
+                                          letterSpacing: 4,
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: isMob ? 10 : 12,
+                                        ),
+                                        textAlign: TextAlign.center,
                                       ),
-                                      textAlign: TextAlign.center,
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        isMob
+                                            ? 'The Vision Behind Vision Optocare'
+                                            : 'The Vision Behind\nVision Optocare',
+                                        style: AppFonts.h2.copyWith(
+                                          color: AppColors.white.withValues(
+                                            alpha: headerOp,
+                                          ),
+                                          fontSize: isMob ? 22 : 48,
+                                          height: 1.1,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                        maxLines: isMob ? 2 : 2,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      isMob ? 'The Vision Behind Vision Optocare' : 'The Vision Behind\nVision Optocare',
-                                      style: AppFonts.h2.copyWith(
-                                        color: AppColors.white,
-                                        fontSize: isMob ? 20 : 48,
-                                        height: 1.1,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                      maxLines: isMob ? 1 : 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ),
+                              );
+                            },
                           ),
                           SizedBox(height: isMob ? 16 : 36),
                           // Cards — fully flexible
                           Expanded(
                             child: RepaintBoundary(
                               child: Padding(
-                                padding: Responsive.padding(context).copyWith(left: 0, right: 0),
+                                padding: Responsive.padding(
+                                  context,
+                                ).copyWith(left: 0, right: 0),
                                 child: isMob
                                     ? _buildMobileLayout(tEntry, tExit)
                                     : _buildDesktopLayout(tEntry, tExit),
@@ -180,7 +201,11 @@ class _PhilosophySectionState extends State<PhilosophySection>
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Transform.translate(
-              offset: Offset(0, 50 * (1.0 - Curves.easeOutCubic.transform(tEntry)) + 50 * Curves.easeInCubic.transform(tExit)),
+              offset: Offset(
+                0,
+                50 * (1.0 - Curves.easeOutCubic.transform(tEntry)) +
+                    50 * Curves.easeInCubic.transform(tExit),
+              ),
               child: _AnimatedCard(
                 progress: tEntry,
                 exitProgress: tExit,
@@ -214,65 +239,47 @@ class _PhilosophySectionState extends State<PhilosophySection>
 
   Widget _buildMobileLayout(double tEntry, double tExit) {
     return Column(
-      children: [
-        Expanded(
-          child: PageView.builder(
-            controller: _pageCtrl,
-            physics: const BouncingScrollPhysics(),
-            itemCount: _steps.length,
-            itemBuilder: (context, i) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: _AnimatedCard(
-                  progress: tEntry,
-                  exitProgress: tExit,
-                  floatCtrl: _floatCtrl,
-                  pulseCtrl: _pulseCtrl,
-                  step: _steps[i],
-                  index: i,
-                ),
-              );
-            },
+      children: _steps.map((step) {
+        final i = _steps.indexOf(step);
+        return Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+            child: _AnimatedCard(
+              progress: tEntry,
+              exitProgress: tExit,
+              floatCtrl: _floatCtrl,
+              pulseCtrl: _pulseCtrl,
+              step: step,
+              index: i,
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
-        AnimatedBuilder(
-          animation: _pageCtrl,
-          builder: (context, _) {
-            double page = 0;
-            if (_pageCtrl.hasClients) page = _pageCtrl.page ?? 0;
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(_steps.length, (i) {
-                final isCurrent = (page - i).abs() < 0.5;
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
-                  width: isCurrent ? 12 : 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: isCurrent ? AppColors.accent2 : Colors.white24,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                );
-              }),
-            );
-          },
-        ),
-      ],
+        );
+      }).toList(),
     );
   }
 
   static final _steps = [
-    _Step('01', 'Our Vision',
-        'A world where clinical-grade optometry is accessible to everyone through mobile technology.',
-        Icons.visibility, AppColors.accent2),
-    _Step('02', 'Our Mission',
-        'To decentralize global eye care by delivering AI-driven diagnostics directly to your smartphone.',
-        Icons.rocket_launch, const Color(0xFF00D4C8)),
-    _Step('03', 'Our Innovation',
-        'Fusing medical science with digital convenience — AI precision, hybrid care, and therapy in one platform.',
-        Icons.lightbulb_outline, const Color(0xFFF5C842)),
+    _Step(
+      '01',
+      'Our Vision',
+      'A world where clinical-grade optometry is accessible to everyone through mobile technology.',
+      Icons.visibility,
+      AppColors.accent2,
+    ),
+    _Step(
+      '02',
+      'Our Mission',
+      'To decentralize global eye care by delivering AI-driven diagnostics directly to your smartphone.',
+      Icons.rocket_launch,
+      const Color(0xFF00D4C8),
+    ),
+    _Step(
+      '03',
+      'Our Innovation',
+      'Fusing medical science with digital convenience — AI precision, hybrid care, and therapy in one platform.',
+      Icons.lightbulb_outline,
+      const Color(0xFFF5C842),
+    ),
   ];
 }
 
@@ -311,26 +318,23 @@ class _AnimatedCardState extends State<_AnimatedCard> {
   Widget build(BuildContext context) {
     final enter = Curves.easeOutBack.transform(widget.progress);
 
-    return Opacity(
-      opacity: (enter * (1.0 - widget.exitProgress)).clamp(0.0, 1.0),
-      child: RepaintBoundary(
-        child: AnimatedBuilder(
-          animation: Listenable.merge([widget.floatCtrl, widget.pulseCtrl]),
-          builder: (context, child) {
-            final floatPhase = widget.index * 0.8;
-            final floatY = math.sin((widget.floatCtrl.value * math.pi * 2) + floatPhase) * 0.4;
-            return Transform.translate(
-              offset: Offset(0, floatY),
-              child: child,
-            );
-          },
-          child: _buildCardBody(),
-        ),
+    final cardOp = (enter * (1.0 - widget.exitProgress)).clamp(0.0, 1.0);
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: Listenable.merge([widget.floatCtrl, widget.pulseCtrl]),
+        builder: (context, child) {
+          final floatPhase = widget.index * 0.8;
+          final floatY =
+              math.sin((widget.floatCtrl.value * math.pi * 2) + floatPhase) *
+              0.4;
+          return Transform.translate(offset: Offset(0, floatY), child: child);
+        },
+        child: _buildCardBody(cardOp),
       ),
     );
   }
 
-  Widget _buildCardBody() {
+  Widget _buildCardBody(double cardOp) {
     final isMob = Responsive.isMobile(context);
     return MouseRegion(
       onEnter: (_) => setState(() => _hov = true),
@@ -346,21 +350,25 @@ class _AnimatedCardState extends State<_AnimatedCard> {
               ..rotateY(0.02 * v),
             alignment: Alignment.center,
             child: Container(
-              padding: EdgeInsets.all(isMob ? 20 : 28),
+              padding: EdgeInsets.all(isMob ? 16 : 28),
               decoration: BoxDecoration(
-                color: AppColors.surface.withValues(alpha: 0.05 + 0.03 * v),
+                color: AppColors.surface.withValues(
+                  alpha: (0.05 + 0.03 * v) * cardOp,
+                ),
                 borderRadius: BorderRadius.circular(32),
                 border: Border.all(
                   color: Color.lerp(
-                    AppColors.white.withValues(alpha: 0.05),
-                    widget.step.color.withValues(alpha: 0.4),
+                    AppColors.white.withValues(alpha: 0.05 * cardOp),
+                    widget.step.color.withValues(alpha: 0.4 * cardOp),
                     v,
                   )!,
                   width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: widget.step.color.withValues(alpha: 0.08 * v + 0.02),
+                    color: widget.step.color.withValues(
+                      alpha: (0.08 * v + 0.02) * cardOp,
+                    ),
                     blurRadius: 40 + 20 * v,
                     spreadRadius: -5,
                   ),
@@ -376,9 +384,10 @@ class _AnimatedCardState extends State<_AnimatedCard> {
                       Text(
                         widget.step.number,
                         style: AppFonts.h1.copyWith(
-                          color: widget.step.color
-                              .withValues(alpha: 0.15 + v * 0.1),
-                          fontSize: isMob ? 40 : 56,
+                          color: widget.step.color.withValues(
+                            alpha: (0.15 + v * 0.1) * cardOp,
+                          ),
+                          fontSize: isMob ? 32 : 56,
                           fontWeight: FontWeight.w900,
                           letterSpacing: -2,
                         ),
@@ -386,7 +395,13 @@ class _AnimatedCardState extends State<_AnimatedCard> {
                       AnimatedBuilder(
                         animation: widget.pulseCtrl,
                         builder: (context, child) {
-                          final iconScale = 1.0 + math.sin((widget.pulseCtrl.value * math.pi * 2) + widget.index) * 0.015;
+                          final iconScale =
+                              1.0 +
+                              math.sin(
+                                    (widget.pulseCtrl.value * math.pi * 2) +
+                                        widget.index,
+                                  ) *
+                                  0.015;
                           return Transform.scale(
                             scale: iconScale,
                             child: child,
@@ -396,42 +411,47 @@ class _AnimatedCardState extends State<_AnimatedCard> {
                           padding: EdgeInsets.all(isMob ? 8 : 12),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: widget.step.color
-                                .withValues(alpha: 0.08 + 0.08 * v),
+                            color: widget.step.color.withValues(
+                              alpha: 0.08 + 0.08 * v,
+                            ),
                             boxShadow: [
                               BoxShadow(
-                                color: widget.step.color
-                                    .withValues(alpha: 0.2 * v),
+                                color: widget.step.color.withValues(
+                                  alpha: 0.2 * v,
+                                ),
                                 blurRadius: 20,
                                 spreadRadius: -5,
                               ),
                             ],
                           ),
-                          child: Icon(widget.step.icon,
-                              color: widget.step.color, size: isMob ? 22 : 28),
+                          child: Icon(
+                            widget.step.icon,
+                            color: widget.step.color,
+                            size: isMob ? 22 : 28,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: isMob ? 16 : 20),
+                  SizedBox(height: isMob ? 10 : 20),
                   Text(
                     widget.step.title,
                     style: AppFonts.h3.copyWith(
-                      color: AppColors.white,
-                      fontSize: isMob ? 20 : 26,
+                      color: AppColors.white.withValues(alpha: cardOp),
+                      fontSize: isMob ? 16 : 26,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: isMob ? 8 : 12),
+                  SizedBox(height: isMob ? 4 : 12),
                   Flexible(
                     child: Text(
                       widget.step.subtitle,
                       style: AppFonts.bodyLarge.copyWith(
-                        color: AppColors.muted,
-                        fontSize: isMob ? 13 : 15,
-                        height: 1.6,
+                        color: AppColors.muted.withValues(alpha: cardOp),
+                        fontSize: isMob ? 11 : 15,
+                        height: 1.4,
                       ),
-                      maxLines: isMob ? 4 : 5,
+                      maxLines: isMob ? 3 : 5,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -452,7 +472,11 @@ class _AmbientGlowPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final colors = [AppColors.accent2, const Color(0xFF00D4C8), const Color(0xFFF5C842)];
+    final colors = [
+      AppColors.accent2,
+      const Color(0xFF00D4C8),
+      const Color(0xFFF5C842),
+    ];
     final positions = [
       Offset(size.width * 0.2, size.height * 0.4),
       Offset(size.width * 0.5, size.height * 0.6),
@@ -462,7 +486,9 @@ class _AmbientGlowPainter extends CustomPainter {
     for (int i = 0; i < 3; i++) {
       final r = 80.0 + math.sin(pulse * math.pi + i * 1.2) * 30;
       final paint = Paint()
-        ..color = colors[i].withValues(alpha: 0.03 + math.sin(pulse * math.pi + i) * 0.01)
+        ..color = colors[i].withValues(
+          alpha: 0.03 + math.sin(pulse * math.pi + i) * 0.01,
+        )
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 60);
       canvas.drawCircle(positions[i], r, paint);
     }

@@ -21,11 +21,8 @@ class B2BSection extends StatelessWidget {
           children: [
             // Grid Pattern Background (3D Perspective feel)
             Positioned.fill(
-              child: Opacity(
-                opacity: 0.5,
-                child: CustomPaint(
-                  painter: _GridPainter(color: AppColors.gold.withValues(alpha: 0.05)),
-                ),
+              child: CustomPaint(
+                painter: _GridPainter(color: AppColors.gold.withValues(alpha: 0.05 * 0.5)),
               ),
             ),
             Container(
@@ -55,9 +52,8 @@ class B2BSection extends StatelessWidget {
             curve: Curves.easeOutQuart,
             builder: (_, v, child) => Transform.translate(
               offset: Offset(0, 30 * (1 - v)),
-              child: Opacity(opacity: v.clamp(0.0, 1.0), child: child),
+              child: _buildClinicIllustration(v),
             ),
-            child: _buildClinicIllustration(),
           ),
         ),
       ],
@@ -69,7 +65,7 @@ class B2BSection extends StatelessWidget {
       children: [
         _buildInfo(),
         const SizedBox(height: 60),
-        SizedBox(height: 300, child: _buildClinicIllustration()),
+        SizedBox(height: 300, child: _buildClinicIllustration(1.0)),
       ],
     );
   }
@@ -158,24 +154,28 @@ class B2BSection extends StatelessWidget {
     );
   }
 
-  Widget _buildClinicIllustration() {
+  Widget _buildClinicIllustration(double opacity) {
     return Center(
       child: CustomPaint(
         size: const Size(400, 320),
-        painter: _ClinicPainter(),
+        painter: _ClinicPainter(opacity: opacity),
       ),
     );
   }
 }
 
 class _ClinicPainter extends CustomPainter {
+  final double opacity;
+  _ClinicPainter({this.opacity = 1.0});
+
   @override
   void paint(Canvas canvas, Size size) {
+    final op = opacity.clamp(0.0, 1.0);
     final cx = size.width / 2;
     final cy = size.height / 2;
 
     // Isometric floor (Refined)
-    final floorPaint = Paint()..color = AppColors.surfaceLight.withValues(alpha: 0.4);
+    final floorPaint = Paint()..color = AppColors.surfaceLight.withValues(alpha: 0.4 * op);
     final floorPath = Path()
       ..moveTo(cx, cy + 80)
       ..lineTo(cx + 160, cy + 40)
@@ -185,7 +185,7 @@ class _ClinicPainter extends CustomPainter {
     canvas.drawPath(floorPath, floorPaint);
 
     // Desk (LIT style)
-    final deskPaint = Paint()..color = AppColors.accent1.withValues(alpha: 0.25);
+    final deskPaint = Paint()..color = AppColors.accent1.withValues(alpha: 0.25 * op);
     final desk = Path()
       ..moveTo(cx - 50, cy)
       ..lineTo(cx + 50, cy - 25)
@@ -202,30 +202,30 @@ class _ClinicPainter extends CustomPainter {
     // Outer glow
     canvas.drawRRect(
       tabletRect,
-      Paint()..color = AppColors.accent2.withValues(alpha: 0.1)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20),
+      Paint()..color = AppColors.accent2.withValues(alpha: 0.1 * op)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20),
     );
     canvas.drawRRect(tabletRect, Paint()..color = const Color(0xFF000000));
-    canvas.drawRRect(tabletRect, Paint()..color = AppColors.accent2.withValues(alpha: 0.5)..style = PaintingStyle.stroke..strokeWidth = 2);
+    canvas.drawRRect(tabletRect, Paint()..color = AppColors.accent2.withValues(alpha: 0.5 * op)..style = PaintingStyle.stroke..strokeWidth = 2);
 
     // Screen Content
-    canvas.drawCircle(Offset(cx, cy - 60), 15, Paint()..color = AppColors.accent2.withValues(alpha: 0.2));
+    canvas.drawCircle(Offset(cx, cy - 60), 15, Paint()..color = AppColors.accent2.withValues(alpha: 0.2 * op));
     canvas.drawCircle(Offset(cx, cy - 60), 6, Paint()..color = AppColors.accent2);
 
     // Wall Chart (Glowing)
     final chartRect = Rect.fromCenter(center: Offset(cx + 80, cy - 100), width: 50, height: 60);
-    canvas.drawRect(chartRect, Paint()..color = AppColors.surfaceLight.withValues(alpha: 0.8));
+    canvas.drawRect(chartRect, Paint()..color = AppColors.surfaceLight.withValues(alpha: 0.8 * op));
     for (int i = 0; i < 5; i++) {
       canvas.drawLine(
         Offset(cx + 65, cy - 118 + i * 10.0),
         Offset(cx + 95, cy - 118 + i * 10.0),
-        Paint()..color = AppColors.accent2.withValues(alpha: 0.2)..strokeWidth = 3,
+        Paint()..color = AppColors.accent2.withValues(alpha: 0.2 * op)..strokeWidth = 3,
       );
     }
 
     // Atmospheric Glow
     final glowPaint = Paint()
       ..shader = RadialGradient(
-        colors: [AppColors.gold.withValues(alpha: 0.15), Colors.transparent],
+        colors: [AppColors.gold.withValues(alpha: 0.15 * op), Colors.transparent],
       ).createShader(Rect.fromCircle(center: Offset(cx, cy - 60), radius: 120));
     canvas.drawCircle(Offset(cx, cy - 60), 120, glowPaint);
   }

@@ -407,23 +407,20 @@ class _AnimatedLanguageGlobeState extends State<_AnimatedLanguageGlobe> with Sin
                   offset: Offset(x, y),
                   child: Transform.scale(
                     scale: scale,
-                    child: Opacity(
-                      opacity: opacity,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: isMob ? 12 : 20, vertical: isMob ? 6 : 10),
-                        decoration: BoxDecoration(
-                          // Optimized Glass Look (removed BackdropFilter for performance)
-                          color: AppColors.background.withValues(alpha: 0.85),
-                          borderRadius: BorderRadius.circular(30),
-                          border: Border.all(color: widget.color.withValues(alpha: 0.5), width: 1.5),
-                          boxShadow: [
-                            BoxShadow(color: widget.color.withValues(alpha: 0.2), blurRadius: 15),
-                          ],
-                        ),
-                        child: Text(
-                          e.value.toUpperCase(),
-                          style: AppFonts.heading(color: Colors.white, fontSize: isMob ? 10 : 18, letterSpacing: 1.5),
-                        ),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: isMob ? 12 : 20, vertical: isMob ? 6 : 10),
+                      decoration: BoxDecoration(
+                        // Optimized Glass Look (removed BackdropFilter for performance)
+                        color: AppColors.background.withValues(alpha: 0.85 * opacity),
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(color: widget.color.withValues(alpha: 0.5 * opacity), width: 1.5),
+                        boxShadow: [
+                          BoxShadow(color: widget.color.withValues(alpha: 0.2 * opacity), blurRadius: 15),
+                        ],
+                      ),
+                      child: Text(
+                        e.value.toUpperCase(),
+                        style: AppFonts.heading(color: Colors.white.withValues(alpha: opacity), fontSize: isMob ? 10 : 18, letterSpacing: 1.5),
                       ),
                     ),
                   ),

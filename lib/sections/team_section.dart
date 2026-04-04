@@ -14,11 +14,9 @@ class TeamSection extends StatefulWidget {
 }
 
 class _TeamSectionState extends State<TeamSection> {
-  final PageController _teamCtrl = PageController(viewportFraction: 0.85);
 
   @override
   void dispose() {
-    _teamCtrl.dispose();
     super.dispose();
   }
 
@@ -34,10 +32,7 @@ class _TeamSectionState extends State<TeamSection> {
       builder: (context, raw, _) {
         final tEntry = (raw - 7.0).clamp(0.0, 1.0);
         final tExit = (raw - 8.0).clamp(0.0, 1.0);
-        final overallOpacity = (Curves.easeOut.transform(tEntry) * (1.0 - tExit)).clamp(0.0, 1.0);
-
-        return Opacity(
-          opacity: overallOpacity,
+        return RepaintBoundary(
           child: Container(
             width: size.width,
             height: size.height,
@@ -50,27 +45,29 @@ class _TeamSectionState extends State<TeamSection> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Opacity(
-                    opacity: ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0),
-                    child: Column(
-                      children: [
-                        Text(
-                          'TEAM MEMBERS',
-                          style: AppFonts.caption.copyWith(
-                            color: AppColors.accent2,
-                            letterSpacing: 6,
-                            fontWeight: FontWeight.w900,
-                            fontSize: isMob ? 10 : 12, // Compacted font
+                   Builder(
+                    builder: (context) {
+                      final headerOp = ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0);
+                      return Column(
+                        children: [
+                          Text(
+                            'TEAM MEMBERS',
+                            style: AppFonts.caption.copyWith(
+                              color: AppColors.accent2.withValues(alpha: headerOp),
+                              letterSpacing: 6,
+                              fontWeight: FontWeight.w900,
+                              fontSize: isMob ? 10 : 12,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          width: 40,
-                          height: 2,
-                          color: AppColors.accent2.withValues(alpha: 0.3),
-                        ),
-                      ],
-                    ),
+                          const SizedBox(height: 8),
+                          Container(
+                            width: 40,
+                            height: 2,
+                            color: AppColors.accent2.withValues(alpha: 0.3 * headerOp),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                   Expanded( // Replaced SingleChildScrollView + ConstrainedBox with Expanded container
                     child: Padding(
@@ -147,68 +144,41 @@ class _TeamSectionState extends State<TeamSection> {
     return Column(
       children: [
         Expanded(
-          child: PageView(
-            controller: _teamCtrl,
-            physics: const BouncingScrollPhysics(),
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: _CinematicProfile(
-                  progress: tEntry,
-                  exitProgress: tExit,
-                  name: 'Sherly Mary Daniel',
-                  role: 'CHIEF TECHNOLOGY OFFICER',
-                  imagePath: 'assets/images/Team_members/Cto.jpeg',
-                  credential: 'B.Tech ECE',
-                  experience: '9+ Years IT Expertise',
-                  tagline: 'Scalable Software Ops.',
-                  accent: const Color(0xFF9D4EDD),
-                  isMobile: true,
-                  alignment: Alignment.topCenter,
-                ),
-              ),
-              Padding(
-                 padding: const EdgeInsets.symmetric(horizontal: 8),
-                 child: _CinematicProfile(
-                  progress: tEntry,
-                  exitProgress: tExit,
-                  name: 'Fays Arukattil',
-                  role: 'SOFTWARE DEVELOPER',
-                  imagePath: 'assets/images/Team_members/Software_Dev.jpeg',
-                  credential: 'Full-Stack Architect',
-                  experience: 'Product · R&D',
-                  tagline: 'Architecting the Visiaxx core.',
-                  accent: const Color(0xFFF5C842),
-                  isMobile: true,
-                  alignment: Alignment.center,
-                ),
-              ),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _CinematicProfile(
+              progress: tEntry,
+              exitProgress: tExit,
+              name: 'Sherly Mary Daniel',
+              role: 'CHIEF TECHNOLOGY OFFICER',
+              imagePath: 'assets/images/Team_members/Cto.jpeg',
+              credential: 'B.Tech ECE',
+              experience: '9+ Years IT Expertise',
+              tagline: 'Scalable Software Ops.',
+              accent: const Color(0xFF9D4EDD),
+              isMobile: true,
+              alignment: Alignment.topCenter,
+            ),
           ),
         ),
-        const SizedBox(height: 12),
-        AnimatedBuilder(
-          animation: _teamCtrl,
-          builder: (context, _) {
-            double page = 0;
-            if (_teamCtrl.hasClients) page = _teamCtrl.page ?? 0;
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(2, (i) {
-                final isCurrent = (page - i).abs() < 0.5;
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
-                  width: isCurrent ? 12 : 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: isCurrent ? AppColors.accent2 : Colors.white24,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                );
-              }),
-            );
-          },
+        const SizedBox(height: 8),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _CinematicProfile(
+              progress: tEntry,
+              exitProgress: tExit,
+              name: 'Fays Arukattil',
+              role: 'SOFTWARE DEVELOPER',
+              imagePath: 'assets/images/Team_members/Software_Dev.jpeg',
+              credential: 'Full-Stack Architect',
+              experience: 'Product · R&D',
+              tagline: 'Architecting the Visiaxx core.',
+              accent: const Color(0xFFF5C842),
+              isMobile: true,
+              alignment: Alignment.center,
+            ),
+          ),
         ),
       ],
     );
@@ -242,11 +212,8 @@ class _CinematicProfile extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isMobile) return _buildMobileCard(context);
 
-    final enter = Curves.easeOutCubic.transform(progress);
-    return Opacity(
-      opacity: (enter * (1.0 - exitProgress)).clamp(0.0, 1.0),
-      child: Container(
-        padding: const EdgeInsets.all(20),
+    return Container(
+      padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: AppColors.surface.withValues(alpha: 0.03),
           borderRadius: BorderRadius.circular(32),
@@ -314,7 +281,6 @@ class _CinematicProfile extends StatelessWidget {
             ],
           ),
         ),
-      ),
     );
   }
 
@@ -363,77 +329,74 @@ class _CinematicProfile extends StatelessWidget {
   }
 
   Widget _buildMobileCard(BuildContext context) {
-    final enter = Curves.easeOutCubic.transform(progress);
-    return Opacity(
-      opacity: (enter * (1.0 - exitProgress)).clamp(0.0, 1.0),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center, // Center contents if smaller
-          children: [
-            Container(
-              width: 220, // Slightly reduced
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: accent.withValues(alpha: 0.15),
-                    blurRadius: 30,
-                    spreadRadius: -8,
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: AspectRatio(
-                  aspectRatio: 0.9, // Make it a bit shorter
-                  child: Image.asset(
-                    imagePath,
-                    fit: BoxFit.cover,
-                    alignment: alignment,
-                  ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 140,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: accent.withValues(alpha: 0.15),
+                  blurRadius: 30,
+                  spreadRadius: -8,
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: AspectRatio(
+                aspectRatio: 0.9,
+                child: Image.asset(
+                  imagePath,
+                  fit: BoxFit.cover,
+                  alignment: alignment,
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            _TitleChip(role: role, accent: accent),
-            const SizedBox(height: 12),
-            Text(
-              name,
-              style: AppFonts.h4.copyWith(
-                color: AppColors.white,
-                fontWeight: FontWeight.w900,
-                fontSize: 20, // Reduced from 22
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 12),
+          _TitleChip(role: role, accent: accent),
+          const SizedBox(height: 8),
+          Text(
+            name,
+            style: AppFonts.h4.copyWith(
+              color: AppColors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 18,
             ),
-            const SizedBox(height: 6),
-            Text(
-              '$credential  ·  $experience',
-              style: AppFonts.caption.copyWith(
-                color: AppColors.muted,
-                fontWeight: FontWeight.w600,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '$credential  ·  $experience',
+            style: AppFonts.caption.copyWith(
+              color: AppColors.muted,
+              fontWeight: FontWeight.w600,
+              fontSize: 10,
             ),
-            const SizedBox(height: 8),
-            Text(
-              tagline,
-              style: AppFonts.bodySmall.copyWith(
-                color: AppColors.white.withValues(alpha: 0.8),
-                fontSize: 13, // Reduced from 14
-                fontStyle: FontStyle.italic,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            tagline,
+            style: AppFonts.bodySmall.copyWith(
+              color: AppColors.white.withValues(alpha: 0.8),
+              fontSize: 11,
+              fontStyle: FontStyle.italic,
             ),
-          ],
-        ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }

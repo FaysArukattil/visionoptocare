@@ -57,10 +57,7 @@ class _VisionTeamSectionState extends State<VisionTeamSection>
         children: [
           // ── Background Grid ──
           Positioned.fill(
-            child: Opacity(
-              opacity: 0.04,
-              child: CustomPaint(painter: _ArchitecturalGridPainter()),
-            ),
+            child: CustomPaint(painter: _ArchitecturalGridPainter(opacity: 0.04)),
           ),
 
           // ── Content ──
@@ -435,19 +432,26 @@ class _FadeIn extends StatelessWidget {
     );
     return AnimatedBuilder(
       animation: anim,
-      builder: (context, _) => Opacity(
-        opacity: anim.value.clamp(0.0, 1.0),
-        child: Transform.translate(offset: Offset(0, 30 * (1 - anim.value)), child: child),
-      ),
+      builder: (context, child) {
+        final v = anim.value.clamp(0.0, 1.0);
+        return Transform.translate(
+          offset: Offset(0, 30 * (1 - v)),
+          child: child,
+        );
+      },
+      child: child,
     );
   }
 }
 
 class _ArchitecturalGridPainter extends CustomPainter {
+  final double opacity;
+  _ArchitecturalGridPainter({this.opacity = 1.0});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.white.withValues(alpha: 0.1)
+      ..color = AppColors.white.withValues(alpha: 0.1 * opacity)
       ..strokeWidth = 0.5;
     for (double i = 0; i < size.width; i += 40) {
       canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);

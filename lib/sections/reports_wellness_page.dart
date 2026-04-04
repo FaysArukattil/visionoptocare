@@ -35,9 +35,8 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage> {
         // Exit Range: 3.0 -> 4.0
         final double tExit = (raw - 3.0).clamp(0.0, 1.0);
         
-        // Final section opacity
-        return Opacity(
-          opacity: (Curves.easeOut.transform(tEntry) * (1.0 - tExit)).clamp(0.0, 1.0),
+        // Removed page-level Opacity to prevent Impeller crashes
+        return RepaintBoundary(
           child: Container(
             width: size.width,
             height: size.height,
@@ -45,37 +44,39 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage> {
             child: Column(
               children: [
                 SizedBox(height: isMob ? 100 : 120),
-                // Title Area (Delayed fade in/out)
-                Opacity(
-                  opacity: ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0),
-                  child: Padding(
-                    padding: Responsive.padding(context),
-                    child: Column(
-                      children: [
-                        Text(
-                          'INSIGHT ENGINE',
-                          style: AppFonts.caption.copyWith(
-                            color: AppColors.accent2,
-                            letterSpacing: 4,
-                            fontWeight: FontWeight.w900,
-                            fontSize: isMob ? 10 : 12,
+                // Title Area (Delayed fade in/out implemented via color blending)
+                Builder(
+                  builder: (context) {
+                    final titleOp = ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0);
+                    return Padding(
+                      padding: Responsive.padding(context),
+                      child: Column(
+                        children: [
+                          Text(
+                            'INSIGHT ENGINE',
+                            style: AppFonts.caption.copyWith(
+                              color: AppColors.accent2.withValues(alpha: titleOp),
+                              letterSpacing: 4,
+                              fontWeight: FontWeight.w900,
+                              fontSize: isMob ? 10 : 12,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Smart Reports, Eye Education & Wellness',
-                          style: AppFonts.h2.copyWith(
-                            color: AppColors.white,
-                            fontSize: isMob ? 18 : 38, // Reduced for mobile
-                            fontWeight: FontWeight.w800,
-                            height: 1.1,
+                          const SizedBox(height: 12),
+                          Text(
+                            'Smart Reports, Eye Education & Wellness',
+                            style: AppFonts.h2.copyWith(
+                              color: AppColors.white.withValues(alpha: titleOp),
+                              fontSize: isMob ? 26 : 38, // Increased for mobile
+                              fontWeight: FontWeight.w800,
+                              height: 1.1,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
+                        ],
+                      ),
+                    );
+                  }
                 ),
                 const SizedBox(height: 16),
                 Expanded(
@@ -307,8 +308,8 @@ class _ConsultationLanguagesPageState extends State<ConsultationLanguagesPage> {
         // Exit Range: 4.0 -> 5.0
         final double tExit = (raw - 4.0).clamp(0.0, 1.0);
 
-        return Opacity(
-          opacity: (Curves.easeOut.transform(tEntry) * (1.0 - tExit)).clamp(0.0, 1.0),
+        // Removed page-level Opacity to prevent Impeller crashes
+        return RepaintBoundary(
           child: Container(
             width: size.width,
             height: size.height,
@@ -316,36 +317,38 @@ class _ConsultationLanguagesPageState extends State<ConsultationLanguagesPage> {
             child: Column(
               children: [
                 SizedBox(height: isMob ? 100 : 120),
-                // Title Area (Delayed fade in/out)
-                Opacity(
-                  opacity: ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0),
-                  child: Padding(
-                    padding: Responsive.padding(context),
-                    child: Column(
-                      children: [
-                        Text(
-                          'CONNECTED CARE',
-                          style: AppFonts.caption.copyWith(
-                            color: AppColors.accent2,
-                            letterSpacing: 4,
-                            fontWeight: FontWeight.w900,
+                // Title Area (Delayed fade in/out via color blending)
+                Builder(
+                  builder: (context) {
+                    final titleOp = ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0);
+                    return Padding(
+                      padding: Responsive.padding(context),
+                      child: Column(
+                        children: [
+                          Text(
+                            'CONNECTED CARE',
+                            style: AppFonts.caption.copyWith(
+                              color: AppColors.accent2.withValues(alpha: titleOp),
+                              letterSpacing: 4,
+                              fontWeight: FontWeight.w900,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Hybrid Consultations & Global Languages',
-                          style: AppFonts.h2.copyWith(
-                            color: AppColors.white,
-                            fontSize: isMob ? 18 : 38, // Reduced for mobile
-                            fontWeight: FontWeight.w800,
-                            height: 1.1,
+                          const SizedBox(height: 12),
+                          Text(
+                            'Hybrid Consultations & Global Languages',
+                            style: AppFonts.h2.copyWith(
+                              color: AppColors.white.withValues(alpha: titleOp),
+                              fontSize: isMob ? 26 : 38, // Increased for mobile
+                              fontWeight: FontWeight.w800,
+                              height: 1.1,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
+                        ],
+                      ),
+                    );
+                  }
                 ),
                 const SizedBox(height: 16),
                 Expanded(
@@ -410,72 +413,60 @@ class _ConsultationLanguagesPageState extends State<ConsultationLanguagesPage> {
     );
   }
 
-  final PageController _consultCtrl = PageController(viewportFraction: 0.85);
-
   Widget _buildMobileLayout(double tEntry, double tExit) {
     final entrySY = (1.0 - Curves.easeOutCubic.transform(tEntry)) * 100;
     final exitSY = Curves.easeInCubic.transform(tExit) * 100;
 
-    return Column(
-      children: [
-        Expanded(
-          child: Transform.translate(
-            offset: Offset(0, entrySY + exitSY),
-            child: PageView(
-              controller: _consultCtrl,
-              physics: const BouncingScrollPhysics(),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: _BentoCard(
-                    title: 'Hybrid Consultations',
-                    subtitle: 'Book online video consults or request offline home visits.',
-                    icon: Icons.video_call_outlined,
-                    color: const Color(0xFFF5C842),
-                    child: const _AnimatedConsultationNetwork(color: Color(0xFFF5C842)),
+    return Transform.translate(
+      offset: Offset(0, entrySY + exitSY),
+      child: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _BentoCard(
+                title: 'Hybrid Consultations',
+                subtitle: 'Book online video consults or request offline home visits.',
+                icon: Icons.video_call_outlined,
+                color: const Color(0xFFF5C842),
+                child: Center(
+                  child: FittedBox(
+                    fit: BoxFit.contain,
+                    alignment: Alignment.center,
+                    child: const SizedBox(
+                      width: 280, height: 160,
+                      child: _AnimatedConsultationNetwork(color: Color(0xFFF5C842))
+                    )
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: _BentoCard(
-                    title: '13 Local Languages',
-                    subtitle: 'Natively localized into 13 major languages.',
-                    icon: Icons.public,
-                    color: const Color(0xFFFF5252),
-                    child: const _AnimatedLanguageGlobe(color: Color(0xFFFF5252)),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 16),
-        // Progress Dots
-        AnimatedBuilder(
-          animation: _consultCtrl,
-          builder: (context, _) {
-            double page = 0;
-            if (_consultCtrl.hasClients) page = _consultCtrl.page ?? 0;
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(2, (i) {
-                final isCurrent = (page - i).abs() < 0.5;
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
-                  width: isCurrent ? 12 : 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: isCurrent ? AppColors.accent2 : Colors.white24,
-                    borderRadius: BorderRadius.circular(4),
+          const SizedBox(height: 12),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _BentoCard(
+                title: '13 Local Languages',
+                subtitle: 'Natively localized into 13 major languages.',
+                icon: Icons.public,
+                color: const Color(0xFFFF5252),
+                child: Center(
+                  child: FittedBox(
+                    fit: BoxFit.contain,
+                    alignment: Alignment.center,
+                    child: const SizedBox(
+                      width: 290, height: 210, // Expanded to let it be bigger
+                      child: _AnimatedLanguageGlobe(color: Color(0xFFFF5252))
+                    )
                   ),
-                );
-              }),
-            );
-          },
-        ),
-        const SizedBox(height: 20),
-      ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
     );
   }
 }
@@ -804,19 +795,19 @@ class _AnimatedPdfGeneratorState extends State<_AnimatedPdfGenerator>
   }
 
   Widget _scoreChip(String label, double opacity, Color color, bool isMob) {
-    return Opacity(
-      opacity: opacity.clamp(0.0, 1.0),
+    final op = opacity.clamp(0.0, 1.0);
+    return RepaintBoundary(
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: isMob ? 6 : 10, vertical: isMob ? 2 : 4),
+          padding: EdgeInsets.symmetric(horizontal: isMob ? 6 : 10, vertical: isMob ? 2 : 4),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
+          color: color.withValues(alpha: 0.1 * op),
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3 * op)),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: color,
+            color: color.withValues(alpha: op),
             fontSize: isMob ? 7 : 9,
             fontWeight: FontWeight.w700,
           ),
@@ -1288,9 +1279,11 @@ class _AnimatedConsultationNetworkState
                     bottom: 0,
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 400),
-                      child: Container(
+                      transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
+                      child: RepaintBoundary(
                         key: ValueKey(isOnline),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                         decoration: BoxDecoration(
                           color: widget.color.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
@@ -1317,7 +1310,7 @@ class _AnimatedConsultationNetworkState
                           ],
                         ),
                       ),
-                    ),
+                    )),
                   ),
                 ],
               ),
@@ -1386,10 +1379,10 @@ class _AnimatedLanguageGlobeState extends State<_AnimatedLanguageGlobe>
             final angle = (e.key / langs.length) * math.pi * 2 +
                 (_ctrl.value * math.pi * 2 * dir);
             final xR = isMob
-                ? (isOuter ? 120.0 : 65.0)
+                ? (isOuter ? 145.0 : 80.0) // Increased for larger appearance
                 : (isOuter ? 240.0 : 110.0);
             final yR = isMob
-                ? (isOuter ? 25.0 : 15.0)
+                ? (isOuter ? 35.0 : 22.0)
                 : (isOuter ? 55.0 : 28.0);
             final x = math.cos(angle) * xR;
             final y = math.sin(angle) * yR;
@@ -1400,34 +1393,29 @@ class _AnimatedLanguageGlobeState extends State<_AnimatedLanguageGlobe>
               offset: Offset(x, y),
               child: Transform.scale(
                   scale: scale,
-                  child: Opacity(
-                    opacity: opacity,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: isMob ? 8 : 14,
-                          vertical: isMob ? 4 : 8),
-                      decoration: BoxDecoration(
-                        color: AppColors.background
-                            .withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(
-                            color:
-                                widget.color.withValues(alpha: 0.5),
-                            width: 1.5),
-                        boxShadow: [
-                          BoxShadow(
-                              color: widget.color
-                                  .withValues(alpha: 0.2),
-                              blurRadius: 12)
-                        ],
-                      ),
-                      child: Text(e.value.toUpperCase(),
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: isMob ? 8 : 13,
-                              letterSpacing: 1.2,
-                              fontWeight: FontWeight.w700)),
+                  // Removed Opacity widget wrapper to prevent Impeller mask rendering crash
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: isMob ? 8 : 14,
+                        vertical: isMob ? 4 : 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.background.withValues(alpha: 0.9 * opacity),
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(
+                          color: widget.color.withValues(alpha: 0.5 * opacity),
+                          width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                            color: widget.color.withValues(alpha: 0.2 * opacity),
+                            blurRadius: 12)
+                      ],
                     ),
+                    child: Text(e.value.toUpperCase(),
+                        style: TextStyle(
+                            color: Colors.white.withValues(alpha: opacity), // Alpha baked into color directly
+                            fontSize: isMob ? 8 : 13,
+                            letterSpacing: 1.2,
+                            fontWeight: FontWeight.w700)),
                   )),
             );
           }),

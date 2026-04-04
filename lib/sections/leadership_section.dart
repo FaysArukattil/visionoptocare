@@ -14,11 +14,9 @@ class LeadershipSection extends StatefulWidget {
 }
 
 class _LeadershipSectionState extends State<LeadershipSection> {
-  final PageController _leadCtrl = PageController(viewportFraction: 0.85);
 
   @override
   void dispose() {
-    _leadCtrl.dispose();
     super.dispose();
   }
 
@@ -33,10 +31,7 @@ class _LeadershipSectionState extends State<LeadershipSection> {
       builder: (context, raw, _) {
         final tEntry = (raw - 6.0).clamp(0.0, 1.0);
         final tExit = (raw - 7.0).clamp(0.0, 1.0);
-        final overallOpacity = (Curves.easeOut.transform(tEntry) * (1.0 - tExit)).clamp(0.0, 1.0);
-
-        return Opacity(
-          opacity: overallOpacity,
+        return RepaintBoundary(
           child: Container(
             width: size.width,
             height: size.height,
@@ -45,11 +40,8 @@ class _LeadershipSectionState extends State<LeadershipSection> {
               children: [
                 Positioned.fill(
                   child: RepaintBoundary(
-                    child: Opacity(
-                      opacity: 0.05,
-                      child: CustomPaint(
-                        painter: _GridPainter(),
-                      ),
+                    child: CustomPaint(
+                      painter: _GridPainter(),
                     ),
                   ),
                 ),
@@ -62,27 +54,29 @@ class _LeadershipSectionState extends State<LeadershipSection> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Opacity(
-                          opacity: ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0),
-                          child: Column(
-                            children: [
-                              Text(
-                                'THE LEADERSHIP',
-                                style: AppFonts.caption.copyWith(
-                                  color: AppColors.accent2,
-                                  letterSpacing: 6,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: isMob ? 10 : 12,
+                        Builder(
+                          builder: (context) {
+                            final headerOp = ((tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit)).clamp(0.0, 1.0);
+                            return Column(
+                              children: [
+                                Text(
+                                  'THE LEADERSHIP',
+                                  style: AppFonts.caption.copyWith(
+                                    color: AppColors.accent2.withValues(alpha: headerOp),
+                                    letterSpacing: 6,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: isMob ? 10 : 12,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              Container(
-                                width: 40,
-                                height: 2,
-                                color: AppColors.accent2.withValues(alpha: 0.3),
-                              ),
-                            ],
-                          ),
+                                const SizedBox(height: 8),
+                                Container(
+                                  width: 40,
+                                  height: 2,
+                                  color: AppColors.accent2.withValues(alpha: 0.3 * headerOp),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                         Expanded(
                           child: Padding(
@@ -164,67 +158,40 @@ class _LeadershipSectionState extends State<LeadershipSection> {
     return Column(
       children: [
         Expanded(
-          child: PageView(
-            controller: _leadCtrl,
-            physics: const BouncingScrollPhysics(),
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: _CinematicProfile(
-                  progress: tEntry,
-                  exitProgress: tExit,
-                  name: 'Aben Thomas Angadiyil',
-                  role: 'FOUNDER & CEO',
-                  imagePath: 'assets/images/Founders/Founder_1.jpeg',
-                  credential: 'B.Optom · BMS',
-                  experience: '14+ Years in Vision Care',
-                  tagline: 'Healthcare Innovation',
-                  accent: AppColors.accent2,
-                  isMobile: true,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: _CinematicProfile(
-                  progress: tEntry,
-                  exitProgress: tExit,
-                  name: 'Thomas Angadiyil Philip',
-                  role: 'CO-FOUNDER & DIRECTOR',
-                  imagePath: 'assets/images/Founders/Founder_2.jpeg',
-                  credential: 'Rajan Optics',
-                  experience: '44+ Years Optical Expertise',
-                  tagline: 'Legacy of Trust',
-                  accent: const Color(0xFF4F6AFF),
-                  isMobile: true,
-                  isReverse: true,
-                ),
-              ),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _CinematicProfile(
+              progress: tEntry,
+              exitProgress: tExit,
+              name: 'Aben Thomas Angadiyil',
+              role: 'FOUNDER & CEO',
+              imagePath: 'assets/images/Founders/Founder_1.jpeg',
+              credential: 'B.Optom · BMS',
+              experience: '14+ Years in Vision Care',
+              tagline: 'Healthcare Innovation',
+              accent: AppColors.accent2,
+              isMobile: true,
+            ),
           ),
         ),
-        const SizedBox(height: 12),
-        AnimatedBuilder(
-          animation: _leadCtrl,
-          builder: (context, _) {
-            double page = 0;
-            if (_leadCtrl.hasClients) page = _leadCtrl.page ?? 0;
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(2, (i) {
-                final isCurrent = (page - i).abs() < 0.5;
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
-                  width: isCurrent ? 12 : 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: isCurrent ? AppColors.accent2 : Colors.white24,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                );
-              }),
-            );
-          },
+        const SizedBox(height: 8),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _CinematicProfile(
+              progress: tEntry,
+              exitProgress: tExit,
+              name: 'Thomas Angadiyil Philip',
+              role: 'CO-FOUNDER & DIRECTOR',
+              imagePath: 'assets/images/Founders/Founder_2.jpeg',
+              credential: 'Rajan Optics',
+              experience: '44+ Years Optical Expertise',
+              tagline: 'Legacy of Trust',
+              accent: const Color(0xFF4F6AFF),
+              isMobile: true,
+              isReverse: true,
+            ),
+          ),
         ),
       ],
     );
@@ -253,12 +220,8 @@ class _CinematicProfile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final entry = Curves.easeOutQuart.transform(progress);
-    final opacity = (entry * (1.0 - exitProgress)).clamp(0.0, 1.0);
 
-    return Opacity(
-      opacity: opacity,
-      child: Container(
+    return Container(
         padding: EdgeInsets.all(isMobile ? 16 : 30),
         decoration: BoxDecoration(
           color: AppColors.surface.withValues(alpha: 0.05),
@@ -270,7 +233,7 @@ class _CinematicProfile extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 _buildImage(),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 _buildInfo(),
               ],
             )
@@ -279,16 +242,15 @@ class _CinematicProfile extends StatelessWidget {
                 ? [_buildInfo(), const SizedBox(width: 40), _buildImage()]
                 : [_buildImage(), const SizedBox(width: 40), _buildInfo()],
             ),
-      ),
     );
   }
 
   Widget _buildImage() {
     return Container(
-      width: isMobile ? 180 : 220,
-      height: isMobile ? 180 : 280,
+      width: isMobile ? 120 : 220,
+      height: isMobile ? 120 : 280,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(isMobile ? 20 : 30),
         boxShadow: [
           BoxShadow(
             color: accent.withValues(alpha: 0.2),

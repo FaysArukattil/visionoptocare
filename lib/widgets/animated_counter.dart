@@ -75,20 +75,17 @@ class _AnimatedCounterState extends State<AnimatedCounter>
                 alignment: Alignment.center,
                 children: [
                    // Glow
-                  Opacity(
-                    opacity: (0.5 * val).clamp(0.0, 1.0),
-                    child: Container(
-                      width: 50, height: 50,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.accent2.withValues(alpha: 0.8),
-                            blurRadius: 30,
-                            spreadRadius: 10 * val,
-                          ),
-                        ],
-                      ),
+                  Container(
+                    width: 50, height: 50,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.accent2.withValues(alpha: 0.8 * (0.5 * val).clamp(0.0, 1.0)),
+                          blurRadius: 30,
+                          spreadRadius: 10 * val,
+                        ),
+                      ],
                     ),
                   ),
                   Text(
