@@ -960,7 +960,7 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
             child: Row(
               children: [
                 Expanded(
-                  child: _buildSimulationActionButton(
+                  child: _buildSimulationSolidActionButton(
                     label: 'CAN READ',
                     icon: Icons.check_circle_outline,
                     color: Colors.green,
@@ -968,7 +968,7 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: _buildSimulationActionButton(
+                  child: _buildSimulationSolidActionButton(
                     label: 'CANNOT READ',
                     icon: Icons.highlight_off_rounded,
                     color: Colors.red,
@@ -1019,6 +1019,38 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSimulationSolidActionButton({
+    required String label,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
+      ),
+      child: Center(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 14,
+                letterSpacing: 1,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1075,7 +1107,7 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
             child: Row(
               children: [
                 Expanded(
-                  child: _buildSimulationActionButton(
+                  child: _buildSimulationSolidActionButton(
                     label: 'VISIBLE',
                     icon: Icons.visibility_rounded,
                     color: Colors.green,
@@ -1083,7 +1115,7 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: _buildSimulationActionButton(
+                  child: _buildSimulationSolidActionButton(
                     label: 'NOT VISIBLE',
                     icon: Icons.visibility_off_rounded,
                     color: Colors.red,
@@ -1152,8 +1184,9 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
                         child: AnimatedBuilder(
                           animation: _anim,
                           builder: (context, _) {
-                            final blur = (math.sin(_anim.value * math.pi * 2) * 3.0).abs() + 0.5;
-                            final rotation = (_anim.value * 4).floor() * (math.pi / 2); // Rotate E every quarter-phase
+                            // Reduced blur max sigma for better visibility
+                            final blur = (math.sin(_anim.value * math.pi * 2) * 2.2).abs() + 0.3;
+                            final rotation = (_anim.value * 4).floor() * (math.pi / 2); 
                             return ImageFiltered(
                               imageFilter: ui.ImageFilter.blur(sigmaX: blur, sigmaY: blur),
                               child: Transform.rotate(
@@ -1215,7 +1248,8 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
                         const SizedBox(height: 12),
                         SizedBox(
                           width: double.infinity,
-                          child: _buildSimulationActionButton(
+                          height: 56, // Enforced height for visibility
+                          child: _buildSimulationSolidActionButton(
                             label: "BLURRY / CAN'T SEE",
                             icon: Icons.visibility_off_rounded,
                             color: Colors.indigo,
@@ -1338,89 +1372,95 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
 
   Widget _buildHydrationSimulation() {
     return Container(
-      color: Colors.white,
+      color: const Color(0xFFF8F9FA),
       child: Column(
         children: [
           _buildSimulationAppBar('EYE HYDRATION', 'Blink Rate Monitoring'),
           
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
-                  // Animation & Feedback Header
+                  const SizedBox(height: 16),
+                  // Animation Header
                   Container(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    width: 100,
+                    height: 100,
                     decoration: BoxDecoration(
-                      color: Colors.blue.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.blue.withValues(alpha: 0.1)),
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                      border: Border.all(color: Colors.blue.withValues(alpha: 0.3), width: 2),
+                      boxShadow: [BoxShadow(color: Colors.blue.withValues(alpha: 0.1), blurRadius: 10)],
                     ),
-                    child: Column(
-                      children: [
-                        // Scanning Viewport
-                        Container(
-                          width: 100, height: 100,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.blue, width: 2),
-                            boxShadow: [BoxShadow(color: Colors.blue.withValues(alpha: 0.2), blurRadius: 15)],
-                          ),
-                          child: ClipOval(
-                            child: Stack(
-                              children: [
-                                Positioned.fill(child: Container(color: Colors.grey[900])),
-                                AnimatedBuilder(
-                                  animation: _anim,
-                                  builder: (context, _) {
-                                    return Positioned(
-                                      top: _anim.value * 100,
-                                      left: 0, right: 0,
-                                      child: Container(height: 2, color: Colors.blue.withValues(alpha: 0.6)),
-                                    );
-                                  }
-                                ),
-                                const Center(child: Icon(Icons.remove_red_eye, color: Colors.blue, size: 40)),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        _buildHydrationCounter('BLINKS DETECTED', '7', Colors.blue),
-                        const SizedBox(height: 8),
-                        const Text('MONITORING BLINKS...', style: TextStyle(color: Colors.green, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 1)),
-                      ],
+                    child: Center(
+                      child: AnimatedBuilder(
+                        animation: _anim,
+                        builder: (context, _) {
+                          // Simulate blinking (closed every few seconds)
+                          final isBlinking = _anim.value > 0.8 && _anim.value < 0.9;
+                          return Icon(
+                            isBlinking ? Icons.remove_red_eye_outlined : Icons.remove_red_eye,
+                            color: Colors.blue,
+                            size: 50,
+                          );
+                        }
+                      ),
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
                   
+                  // Blink Counter
+                  _buildHydrationCounter('BLINKS DETECTED', '7', Colors.blue),
+                  
+                  // Detection Warning
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: AnimatedBuilder(
+                      animation: _anim,
+                      builder: (context, child) {
+                        return Opacity(
+                          opacity: (math.sin(_anim.value * 10) + 1) / 2,
+                          child: const Text(
+                            'MONITORING BLINKS...',
+                            style: TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
                   // Reading Content
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.grey.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
                     ),
                     child: const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Digital Eye Strain Assessment', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Colors.black)),
-                        SizedBox(height: 10),
                         Text(
-                          'The Blink Rate test monitors your ocular surface hydration during focused reading. Digital eye strain occurs when blinking frequency drops significantly, often leading to dry eyes and blurry vision. This non-invasive assessment tracks your natural blink pattern to provide specialized wellness recommendations.',
-                          style: TextStyle(fontSize: 11, color: Colors.black87, height: 1.6, fontFamily: 'serif'),
+                          'Digital Eye Strain Assessment',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
                         ),
-                        SizedBox(height: 8),
+                        SizedBox(height: 12),
                         Text(
-                          'Please continue reading until the test completes naturally.',
-                          style: TextStyle(fontSize: 10, color: Colors.blue, fontWeight: FontWeight.bold, height: 1.5, fontFamily: 'serif'),
+                          'Reading from digital screens significantly reduces our natural blink rate, often by over 60%. This leads to increased tear evaporation and ocular surface dryness. Clinical monitoring helps assess individual susceptibility to digital eye strain.',
+                          style: TextStyle(fontSize: 12, color: Colors.black54, height: 1.6, fontFamily: 'serif'),
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          'The Blink Rate test monitors your ocular surface hydration during focused reading. This non-invasive assessment tracks your natural blink pattern to provide specialized wellness recommendations.',
+                          style: TextStyle(fontSize: 12, color: Colors.black54, height: 1.6, fontFamily: 'serif'),
                         ),
                       ],
                     ),
                   ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -1428,11 +1468,15 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
 
           // Action Button
           Padding(
-            padding: const EdgeInsets.all(20),
-            child: _buildSimulationActionButton(
-              label: 'FINISH READING',
-              icon: Icons.check_circle_rounded,
-              color: Colors.blue,
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+            child: SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: _buildSimulationSolidActionButton(
+                label: 'FINISH READING',
+                icon: Icons.check_circle_rounded,
+                color: Colors.blue,
+              ),
             ),
           ),
           
