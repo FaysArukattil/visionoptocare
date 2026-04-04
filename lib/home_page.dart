@@ -106,8 +106,9 @@ class _HomePageState extends State<HomePage> {
                       return SizedBox(
                         height: size.height,
                         child: RepaintBoundary(
-                          child: ValueListenableBuilder<int>(
-                            valueListenable: _currentPage,
+                          child: ClipRect(
+                            child: ValueListenableBuilder<int>(
+                              valueListenable: _currentPage,
                             builder: (context, activeIdx, child) {
                               // Enable tickers for active page ± 1 for smooth transitions
                               final bool isNearActive = (activeIdx - i).abs() <= 1;
@@ -116,6 +117,7 @@ class _HomePageState extends State<HomePage> {
                                 child: _buildSection(i, activeIdx == i),
                               );
                             },
+                           ),
                           ),
                         ),
                       );
