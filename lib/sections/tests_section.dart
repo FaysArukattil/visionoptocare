@@ -620,8 +620,8 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     // Only animate float when active to save GPU cycles
     return RepaintBoundary(
       child: PhoneMockup(
-        width: isMob ? 150 : 260,
-        height: isMob ? 300 : 500,
+        width: isMob ? 180 : 260,
+        height: isMob ? 360 : 500,
         tiltX: 0.0,
         tiltY: 0.0,
         screen: _TestSimulationEngine(test: test, themeColor: themeColor, scrollProgress: scrollProgress),
@@ -699,7 +699,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
               height: 1.5,
               fontSize: isMob ? 13 : 16,
             ),
-            maxLines: isMob ? 2 : 4,
+            maxLines: isMob ? 4 : 4, // Increased to fit full text
             overflow: TextOverflow.ellipsis,
           ),
         ],

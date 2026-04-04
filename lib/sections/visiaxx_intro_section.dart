@@ -171,11 +171,11 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
               Widget phoneObj = Opacity(
                 opacity: t,
                 child: PhoneMockup(
-                  width: 150,
-                  height: 300,
+                  width: 180,
+                  height: 360,
                   tiltX: 0.0, // Phone rendered straight
                   tiltY: 0.0,
-                  screen: _buildPhoneScreen(h: 300, isMini: true),
+                  screen: _buildPhoneScreen(h: 360, isMini: true),
                 ),
               );
 
