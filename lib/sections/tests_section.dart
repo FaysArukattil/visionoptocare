@@ -907,14 +907,14 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
           _buildSimulationAppBar('READING TEST', 'Near Vision Clarity'),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Column(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.grey.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
                     ),
                     child: const Text(
@@ -923,13 +923,13 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.black,
-                        height: 1.6,
+                        height: 1.5,
                         fontWeight: FontWeight.w500,
                         fontFamily: 'serif',
                       ),
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 16),
                   const Text(
                     'READ THE SENTENCE ALOUD',
                     style: TextStyle(
@@ -1067,7 +1067,7 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.grey.withValues(alpha: 0.05),
+              color: Colors.grey.withValues(alpha: 0.03),
               border: Border(bottom: BorderSide(color: Colors.grey.withValues(alpha: 0.1))),
             ),
             child: Row(
@@ -1081,16 +1081,16 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
 
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 20),
+              padding: const EdgeInsets.symmetric(vertical: 10),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildSloanTriplet('V R S', 1.0, isCurrent: _pelliTripletIndex == 0),
-                  const SizedBox(height: 15),
+                  const SizedBox(height: 10),
                   _buildSloanTriplet('K H Z', 0.45, isCurrent: _pelliTripletIndex == 1),
-                  const SizedBox(height: 15),
+                  const SizedBox(height: 10),
                   _buildSloanTriplet('N O C', 0.15, isCurrent: _pelliTripletIndex == 2),
-                  const SizedBox(height: 15),
+                  const SizedBox(height: 12),
                   const Text('READ THE LETTERS ALOUD', style: TextStyle(fontSize: 8, color: Colors.blue, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
                 ],
               ),
@@ -1099,7 +1099,7 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
           
           // Large Clinical Buttons
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5))],
@@ -1179,7 +1179,7 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
                   Stack(
                     children: [
                       Container(
-                        height: 200, // Constrain height for optotype area
+                        height: 160, // Significantly reduced height to ensure button visibility
                         alignment: Alignment.center,
                         child: AnimatedBuilder(
                           animation: _anim,
@@ -1193,7 +1193,7 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
                                 angle: rotation,
                                 child: const Text(
                                   'E', 
-                                  style: TextStyle(fontSize: 100, fontWeight: FontWeight.w900, color: Colors.black, height: 1.0)
+                                  style: TextStyle(fontSize: 80, fontWeight: FontWeight.w900, color: Colors.black, height: 1.0)
                                 ),
                               ),
                             );
@@ -1204,22 +1204,19 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
                       // Detailed Analysis Card (Bottom Left)
                       Positioned(
                         left: 12,
-                        bottom: 8,
+                        bottom: 6,
                         child: Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.85),
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.white10),
                           ),
                           child: const Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _RefractionMetric('SPH', '-1.25', Colors.blue),
-                              SizedBox(height: 4),
+                              SizedBox(height: 2),
                               _RefractionMetric('CYL', '-0.50', Colors.cyan),
-                              SizedBox(height: 4),
-                              _RefractionMetric('AXIS', '95°', Colors.orange),
                             ],
                           ),
                         ),
@@ -1383,26 +1380,28 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
               child: Column(
                 children: [
                   const SizedBox(height: 16),
-                  // Animation Header
+                  // Animation Header (EyeLoader Integration)
                   Container(
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white,
-                      border: Border.all(color: Colors.blue.withValues(alpha: 0.3), width: 2),
+                      border: Border.all(color: Colors.blue.withValues(alpha: 0.2), width: 2),
                       boxShadow: [BoxShadow(color: Colors.blue.withValues(alpha: 0.1), blurRadius: 10)],
                     ),
                     child: Center(
                       child: AnimatedBuilder(
                         animation: _anim,
                         builder: (context, _) {
-                          // Simulate blinking (closed every few seconds)
-                          final isBlinking = _anim.value > 0.8 && _anim.value < 0.9;
-                          return Icon(
-                            isBlinking ? Icons.remove_red_eye_outlined : Icons.remove_red_eye,
-                            color: Colors.blue,
-                            size: 50,
+                          return CustomPaint(
+                            painter: _PremiumEyePainter(
+                              progress: _anim.value,
+                              color: Colors.blue,
+                              scleraColor: Colors.white,
+                              pupilColor: const Color(0xFF000510),
+                            ),
+                            size: const Size(60, 60),
                           );
                         }
                       ),
@@ -2041,4 +2040,153 @@ class _RefractionMetric extends StatelessWidget {
       ],
     );
   }
+}
+
+class _PremiumEyePainter extends CustomPainter {
+  final double progress;
+  final Color color;
+  final Color scleraColor;
+  final Color pupilColor;
+
+  _PremiumEyePainter({
+    required this.progress,
+    required this.color,
+    required this.scleraColor,
+    required this.pupilColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final eyeWidth = size.width * 0.95;
+    final baseEyeHeight = size.height * 0.52;
+
+    // ── 1. ANIMATION PHASES ──
+    // a) Iris movement (look-around)
+    double irisXOffset = 0;
+    const lookCurve = Curves.easeInOutCubic;
+    if (progress < 0.15) {
+      irisXOffset = 0;
+    } else if (progress < 0.35) {
+      double t = lookCurve.transform((progress - 0.15) / 0.2);
+      irisXOffset = -t * (eyeWidth * 0.28);
+    } else if (progress < 0.65) {
+      double t = lookCurve.transform((progress - 0.35) / 0.3);
+      irisXOffset = -(eyeWidth * 0.28) + (t * eyeWidth * 0.56);
+    } else if (progress < 0.85) {
+      double t = lookCurve.transform((progress - 0.65) / 0.2);
+      irisXOffset = (eyeWidth * 0.28) - (t * eyeWidth * 0.28);
+    }
+
+    // b) Pupil pulse (breathing)
+    double pulseScale = 1.0;
+    if (progress < 0.15) {
+      final t = progress / 0.15;
+      pulseScale = 1.8 - (Curves.easeOutExpo.transform(t) * 0.8);
+    } else {
+      pulseScale = 1.0 + 0.1 * math.sin(progress * 2 * math.pi);
+    }
+
+    // c) Periodic blinks
+    double blinkFactor = 1.0;
+    final blinkMarkers = [0.2, 0.5, 0.8];
+    const blinkWindow = 0.07;
+    for (final marker in blinkMarkers) {
+      if (progress > marker - blinkWindow && progress < marker + blinkWindow) {
+        final t = (progress - (marker - blinkWindow)) / (blinkWindow * 2);
+        blinkFactor = 1.0 - math.sin(t * math.pi);
+        break;
+      }
+    }
+
+    // ── 2. PAINTING ──
+    final currentHeight = baseEyeHeight * blinkFactor;
+    final scleraCenter = center + Offset(irisXOffset * 0.15, 0);
+
+    // Eye shape path
+    final eyePath = Path();
+    eyePath.moveTo(scleraCenter.dx - eyeWidth / 2, scleraCenter.dy);
+    eyePath.quadraticBezierTo(
+        scleraCenter.dx, scleraCenter.dy - currentHeight,
+        scleraCenter.dx + eyeWidth / 2, scleraCenter.dy);
+    eyePath.quadraticBezierTo(
+        scleraCenter.dx, scleraCenter.dy + currentHeight,
+        scleraCenter.dx - eyeWidth / 2, scleraCenter.dy);
+    eyePath.close();
+
+    // 2.1 Draw Sclera
+    canvas.drawPath(
+      eyePath,
+      Paint()
+        ..color = scleraColor
+        ..style = PaintingStyle.fill,
+    );
+
+    // 2.2 Draw Subtle Glow/Shadow Stroke
+    canvas.drawPath(
+      eyePath,
+      Paint()
+        ..color = color.withValues(alpha: 0.15)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+
+    // 2.3 Draw Internal Content (Iris & Pupil)
+    if (blinkFactor > 0.05) {
+      canvas.save();
+      canvas.clipPath(eyePath);
+
+      final irisCenter = center + Offset(irisXOffset, 0);
+      final irisRadius = (size.width / 2) * 0.52;
+
+      // Iris with Radial Gradient (for depth)
+      final irisPaint = Paint()
+        ..shader = RadialGradient(
+          colors: [color.withValues(alpha: 1.0), color.withValues(alpha: 0.7)],
+        ).createShader(Rect.fromCircle(center: irisCenter, radius: irisRadius));
+      canvas.drawCircle(irisCenter, irisRadius, irisPaint);
+
+      // Pupil with responsive dilation
+      canvas.drawCircle(
+        irisCenter,
+        irisRadius * 0.42 * pulseScale,
+        Paint()..color = pupilColor,
+      );
+
+      // High-quality reflections
+      final reflectPaint = Paint()..color = Colors.white.withValues(alpha: 0.45);
+      canvas.drawCircle(
+        irisCenter + Offset(irisRadius * 0.3, -irisRadius * 0.3),
+        irisRadius * 0.16,
+        reflectPaint,
+      );
+      canvas.drawCircle(
+        irisCenter + Offset(-irisRadius * 0.2, irisRadius * 0.2),
+        irisRadius * 0.08,
+        Paint()..color = Colors.white.withValues(alpha: 0.2),
+      );
+
+      canvas.restore();
+    }
+
+    // 2.4 Eyelashes (detailed when closing)
+    if (blinkFactor < 0.4) {
+      final lashPaint = Paint()
+        ..color = color.withValues(alpha: 0.8 * (1.0 - blinkFactor))
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0
+        ..strokeCap = StrokeCap.round;
+
+      final lashRect = Rect.fromCenter(
+        center: center,
+        width: eyeWidth * 0.8,
+        height: size.height * 0.08,
+      );
+      canvas.drawArc(lashRect, 0.1, math.pi - 0.2, false, lashPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _PremiumEyePainter old) =>
+      old.progress != progress || old.color != color;
 }
