@@ -168,9 +168,8 @@ class _FooterSectionState extends State<FooterSection> {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: isMob ? MainAxisAlignment.center : MainAxisAlignment.start,
       children: [
-        // EyeLogo removed as per user request to remove unnecessary branding above/in footer
-        const SizedBox(width: 8), 
-        const SizedBox(width: 24),
+        const EyeLogo(size: 60, showGlow: false),
+        const SizedBox(width: 20),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
