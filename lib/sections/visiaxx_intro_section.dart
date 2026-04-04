@@ -106,8 +106,8 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                       
                       // Moves from Center of Left Half (0.25w) to Left-of-Center Column (0.80w approx)
                       // Exact Target: (w * 0.805 - 24.4) - (0.25w) = 0.555w - 24.4
-                      // simplified as: 0.55w - 18
-                      final distanceX = width * 0.55 - 18.0;
+                      // splitting the difference: 18 -> 21 => use 19.5 for the perfect float
+                      final distanceX = width * 0.55 - 19.5;
                       final translateX = -800.0 * Curves.easeIn.transform(t01) + distanceX * t12;
                       final translateY = MediaQuery.of(context).size.height * t12;
                       
