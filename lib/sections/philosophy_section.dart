@@ -6,7 +6,8 @@ import '../utils/responsive.dart';
 
 class PhilosophySection extends StatefulWidget {
   final bool isActive;
-  const PhilosophySection({super.key, this.isActive = false});
+  final ValueNotifier<double>? scrollProgress;
+  const PhilosophySection({super.key, this.isActive = false, this.scrollProgress});
 
   @override
   State<PhilosophySection> createState() => _PhilosophySectionState();
@@ -14,70 +15,38 @@ class PhilosophySection extends StatefulWidget {
 
 class _PhilosophySectionState extends State<PhilosophySection>
     with TickerProviderStateMixin {
-  late AnimationController _enterCtrl;
   late AnimationController _floatCtrl;
   late AnimationController _pulseCtrl;
-  late AnimationController _card1Ctrl;
-  late AnimationController _card2Ctrl;
-  late AnimationController _card3Ctrl;
-  bool _hasStarted = false;
 
   @override
   void initState() {
     super.initState();
-    _enterCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
     _floatCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 12))..repeat(reverse: true);
     _pulseCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 6))..repeat(reverse: true);
-    _card1Ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
-    _card2Ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
-    _card3Ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
-    if (widget.isActive) _start();
-  }
-
-  @override
-  void didUpdateWidget(covariant PhilosophySection old) {
-    super.didUpdateWidget(old);
-    if (widget.isActive && !_hasStarted) _start();
-  }
-
-  void _start() async {
-    _hasStarted = true;
-    await Future.delayed(const Duration(milliseconds: 200));
-    if (!mounted) return;
-    _enterCtrl.forward();
-    await Future.delayed(const Duration(milliseconds: 300));
-    if (!mounted) return;
-    _card1Ctrl.forward();
-    await Future.delayed(const Duration(milliseconds: 200));
-    if (!mounted) return;
-    _card2Ctrl.forward();
-    await Future.delayed(const Duration(milliseconds: 200));
-    if (!mounted) return;
-    _card3Ctrl.forward();
   }
 
   @override
   void dispose() {
-    _enterCtrl.dispose();
     _floatCtrl.dispose();
     _pulseCtrl.dispose();
-    _card1Ctrl.dispose();
-    _card2Ctrl.dispose();
-    _card3Ctrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (widget.scrollProgress == null) return const SizedBox.shrink();
     final size = MediaQuery.of(context).size;
     final isMob = Responsive.isMobile(context);
 
-    return AnimatedBuilder(
-      animation: _enterCtrl,
-      builder: (context, _) {
-        final t = CurvedAnimation(parent: _enterCtrl, curve: Curves.easeOutCubic).value;
+    return ValueListenableBuilder<double>(
+      valueListenable: widget.scrollProgress!,
+      builder: (context, raw, _) {
+        final tEntry = (raw - 5.0).clamp(0.0, 1.0);
+        final tExit = (raw - 6.0).clamp(0.0, 1.0);
+        final overallOpacity = (Curves.easeOut.transform(tEntry) * (1.0 - tExit)).clamp(0.0, 1.0);
+
         return Opacity(
-          opacity: t.clamp(0.0, 1.0),
+          opacity: overallOpacity,
           child: Container(
             width: size.width,
             height: size.height,
@@ -109,40 +78,43 @@ class _PhilosophySectionState extends State<PhilosophySection>
                       child: Column(
                         children: [
                           // Header with float animation
-                          Padding(
-                            padding: Responsive.padding(context),
-                            child: AnimatedBuilder(
-                              animation: _floatCtrl,
-                              builder: (context, child) {
-                                final y = math.sin(_floatCtrl.value * math.pi) * 0.4;
-                                return Transform.translate(
-                                  offset: Offset(0, y),
-                                  child: child,
-                                );
-                              },
-                              child: Column(
-                                children: [
-                                  Text(
-                                    'OUR PHILOSOPHY',
-                                    style: AppFonts.caption.copyWith(
-                                      color: AppColors.accent2,
-                                      letterSpacing: 4,
-                                      fontWeight: FontWeight.w900,
+                          Opacity(
+                            opacity: (tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit),
+                            child: Padding(
+                              padding: Responsive.padding(context),
+                              child: AnimatedBuilder(
+                                animation: _floatCtrl,
+                                builder: (context, child) {
+                                  final y = math.sin(_floatCtrl.value * math.pi) * 0.4;
+                                  return Transform.translate(
+                                    offset: Offset(0, y),
+                                    child: child,
+                                  );
+                                },
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      'OUR PHILOSOPHY',
+                                      style: AppFonts.caption.copyWith(
+                                        color: AppColors.accent2,
+                                        letterSpacing: 4,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'The Vision Behind\nVision Optocare',
+                                      style: AppFonts.h2.copyWith(
+                                        color: AppColors.white,
+                                        fontSize: isMob ? 28 : 48,
+                                        height: 1.1,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                      textAlign: TextAlign.center,
                                     ),
-                                    textAlign: TextAlign.center,
-                                    ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'The Vision Behind\nVision Optocare',
-                                    style: AppFonts.h2.copyWith(
-                                      color: AppColors.white,
-                                      fontSize: isMob ? 28 : 48,
-                                      height: 1.1,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -153,8 +125,8 @@ class _PhilosophySectionState extends State<PhilosophySection>
                               child: Padding(
                                 padding: Responsive.padding(context),
                                 child: isMob
-                                    ? _buildMobileLayout()
-                                    : _buildDesktopLayout(),
+                                    ? _buildMobileLayout(tEntry, tExit)
+                                    : _buildDesktopLayout(tEntry, tExit),
                               ),
                             ),
                           ),
@@ -172,41 +144,80 @@ class _PhilosophySectionState extends State<PhilosophySection>
     );
   }
 
-  Widget _buildDesktopLayout() {
-    final ctrls = [_card1Ctrl, _card2Ctrl, _card3Ctrl];
+  Widget _buildDesktopLayout(double tEntry, double tExit) {
+    // Symmetrical glides
+    final entryLX = (1.0 - Curves.easeOutCubic.transform(tEntry)) * -500;
+    final exitLX = Curves.easeInCubic.transform(tExit) * -500;
+
+    final entryRX = (1.0 - Curves.easeOutCubic.transform(tEntry)) * 500;
+    final exitRX = Curves.easeInCubic.transform(tExit) * 500;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: _steps.asMap().entries.map((entry) {
-        final i = entry.key;
-        final s = entry.value;
-        return Expanded(
+      children: [
+        Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: _AnimatedCard(
-              ctrl: ctrls[i],
-              floatCtrl: _floatCtrl,
-              pulseCtrl: _pulseCtrl,
-              step: s,
-              index: i,
+            child: Transform.translate(
+              offset: Offset(entryLX + exitLX, 0),
+              child: _AnimatedCard(
+                progress: tEntry,
+                exitProgress: tExit,
+                floatCtrl: _floatCtrl,
+                pulseCtrl: _pulseCtrl,
+                step: _steps[0],
+                index: 0,
+              ),
             ),
           ),
-        );
-      }).toList(),
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Transform.translate(
+              offset: Offset(0, 50 * (1.0 - Curves.easeOutCubic.transform(tEntry)) + 50 * Curves.easeInCubic.transform(tExit)),
+              child: _AnimatedCard(
+                progress: tEntry,
+                exitProgress: tExit,
+                floatCtrl: _floatCtrl,
+                pulseCtrl: _pulseCtrl,
+                step: _steps[1],
+                index: 1,
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Transform.translate(
+              offset: Offset(entryRX + exitRX, 0),
+              child: _AnimatedCard(
+                progress: tEntry,
+                exitProgress: tExit,
+                floatCtrl: _floatCtrl,
+                pulseCtrl: _pulseCtrl,
+                step: _steps[2],
+                index: 2,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildMobileLayout() {
-    final ctrls = [_card1Ctrl, _card2Ctrl, _card3Ctrl];
-    // Use ListView for overflow safety on mobile
+  Widget _buildMobileLayout(double tEntry, double tExit) {
     return ListView.builder(
-      physics: const NeverScrollableScrollPhysics(),
+      physics: const BouncingScrollPhysics(),
       padding: EdgeInsets.zero,
       itemCount: _steps.length,
       itemBuilder: (context, i) {
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: _AnimatedCard(
-            ctrl: ctrls[i],
+            progress: tEntry,
+            exitProgress: tExit,
             floatCtrl: _floatCtrl,
             pulseCtrl: _pulseCtrl,
             step: _steps[i],
@@ -238,14 +249,16 @@ class _Step {
 }
 
 class _AnimatedCard extends StatefulWidget {
-  final AnimationController ctrl;
+  final double progress;
+  final double exitProgress;
   final AnimationController floatCtrl;
   final AnimationController pulseCtrl;
   final _Step step;
   final int index;
 
   const _AnimatedCard({
-    required this.ctrl,
+    required this.progress,
+    required this.exitProgress,
     required this.floatCtrl,
     required this.pulseCtrl,
     required this.step,
@@ -261,32 +274,24 @@ class _AnimatedCardState extends State<_AnimatedCard> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: widget.ctrl,
-      builder: (context, _) {
-        final enter = CurvedAnimation(parent: widget.ctrl, curve: Curves.easeOutBack).value.clamp(0.0, 1.0);
+    final enter = Curves.easeOutBack.transform(widget.progress);
 
-        return Opacity(
-          opacity: enter,
-          child: Transform.translate(
-            offset: Offset(0, 30 * (1 - enter)),
-            child: RepaintBoundary(
-              child: AnimatedBuilder(
-                animation: Listenable.merge([widget.floatCtrl, widget.pulseCtrl]),
-                builder: (context, child) {
-                  final floatPhase = widget.index * 0.8;
-                  final floatY = math.sin((widget.floatCtrl.value * math.pi * 2) + floatPhase) * 0.4;
-                  return Transform.translate(
-                    offset: Offset(0, floatY),
-                    child: child,
-                  );
-                },
-                child: _buildCardBody(),
-              ),
-            ),
-          ),
-        );
-      },
+    return Opacity(
+      opacity: (enter * (1.0 - widget.exitProgress)).clamp(0.0, 1.0),
+      child: RepaintBoundary(
+        child: AnimatedBuilder(
+          animation: Listenable.merge([widget.floatCtrl, widget.pulseCtrl]),
+          builder: (context, child) {
+            final floatPhase = widget.index * 0.8;
+            final floatY = math.sin((widget.floatCtrl.value * math.pi * 2) + floatPhase) * 0.4;
+            return Transform.translate(
+              offset: Offset(0, floatY),
+              child: child,
+            );
+          },
+          child: _buildCardBody(),
+        ),
+      ),
     );
   }
 

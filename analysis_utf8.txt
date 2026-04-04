@@ -1,0 +1,15 @@
+﻿Analyzing visionoptocare...                                     
+
+  error - Expected to find ';' - lib\sections\b2b_page.dart:391:9 - expected_token
+warning - Dead code - lib\sections\b2b_page.dart:391:10 - dead_code
+  error - Expected an identifier - lib\sections\b2b_page.dart:391:10 - missing_identifier
+  error - Expected to find ';' - lib\sections\b2b_page.dart:391:10 - expected_token
+  error - Unexpected text ';' - lib\sections\b2b_page.dart:391:10 - unexpected_token
+  error - Expected an identifier - lib\sections\b2b_page.dart:392:7 - missing_identifier
+  error - Unexpected text ';' - lib\sections\b2b_page.dart:392:7 - unexpected_token
+   info - Unnecessary empty statement - lib\sections\b2b_page.dart:392:8 - empty_statements
+   info - The private field _pelliTripletIndex could be 'final' - lib\sections\tests_section.dart:679:7 - prefer_final_fields
+   info - Statements in an if should be enclosed in a block - lib\sections\tests_section.dart:1921:39 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\sections\tests_section.dart:1922:44 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\sections\tests_section.dart:1923:28 - curly_braces_in_flow_control_structures
+

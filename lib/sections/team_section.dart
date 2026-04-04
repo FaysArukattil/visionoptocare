@@ -6,153 +6,160 @@ import '../utils/responsive.dart';
 /// Page 8: The Team — Founding Engineer and technical leadership.
 class TeamSection extends StatefulWidget {
   final bool isActive;
-  const TeamSection({super.key, this.isActive = false});
+  final ValueNotifier<double>? scrollProgress;
+  const TeamSection({super.key, this.isActive = false, this.scrollProgress});
 
   @override
   State<TeamSection> createState() => _TeamSectionState();
 }
 
-class _TeamSectionState extends State<TeamSection>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  bool _hasStarted = false;
-
+class _TeamSectionState extends State<TeamSection> {
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1000));
-    if (widget.isActive) _start();
-  }
-
-  @override
-  void didUpdateWidget(covariant TeamSection old) {
-    super.didUpdateWidget(old);
-    if (widget.isActive && !_hasStarted) _start();
-  }
-
-  void _start() async {
-    _hasStarted = true;
-    await Future.delayed(const Duration(milliseconds: 200));
-    if (mounted) _ctrl.forward();
   }
 
   @override
   void dispose() {
-    _ctrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (widget.scrollProgress == null) return const SizedBox.shrink();
     final size = MediaQuery.of(context).size;
     final isMob = Responsive.isMobile(context);
 
-    return Container(
-      width: size.width,
-      height: size.height,
-      color: AppColors.background,
-      child: Padding(
-        padding: EdgeInsets.only(
-          top: isMob ? 80 : 100,
-          bottom: isMob ? 16 : 24,
-        ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              physics: const NeverScrollableScrollPhysics(),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _FadeSlide(
-                      ctrl: _ctrl,
-                      delay: 0.0,
+    return ValueListenableBuilder<double>(
+      valueListenable: widget.scrollProgress!,
+      builder: (context, raw, _) {
+        final tEntry = (raw - 7.0).clamp(0.0, 1.0);
+        final tExit = (raw - 8.0).clamp(0.0, 1.0);
+        final overallOpacity = (Curves.easeOut.transform(tEntry) * (1.0 - tExit)).clamp(0.0, 1.0);
+
+        return Opacity(
+          opacity: overallOpacity,
+          child: Container(
+            width: size.width,
+            height: size.height,
+            color: AppColors.background,
+            child: Padding(
+              padding: EdgeInsets.only(
+                top: isMob ? 80 : 100,
+                bottom: isMob ? 16 : 24,
+              ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            'TEAM MEMBERS',
-                            style: AppFonts.caption.copyWith(
-                              color: AppColors.accent2,
-                              letterSpacing: 6,
-                              fontWeight: FontWeight.w900,
+                          Opacity(
+                            opacity: (tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit),
+                            child: Column(
+                              children: [
+                                Text(
+                                  'TEAM MEMBERS',
+                                  style: AppFonts.caption.copyWith(
+                                    color: AppColors.accent2,
+                                    letterSpacing: 6,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Container(
+                                  width: 40,
+                                  height: 2,
+                                  color: AppColors.accent2.withValues(alpha: 0.3),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Container(
-                            width: 40,
-                            height: 2,
-                            color: AppColors.accent2.withValues(alpha: 0.3),
+                          SizedBox(height: isMob ? 24 : 60),
+                          Padding(
+                            padding: Responsive.padding(context),
+                            child: isMob 
+                                ? _buildMobile(tEntry, tExit) 
+                                : _buildDesktop(tEntry, tExit),
                           ),
+                          SizedBox(height: isMob ? 16 : 40),
                         ],
                       ),
                     ),
-                    SizedBox(height: isMob ? 24 : 60),
-                    Padding(
-                      padding: Responsive.padding(context),
-                      child: isMob ? _buildMobile() : _buildDesktop(),
-                    ),
-                    SizedBox(height: isMob ? 16 : 40),
-                  ],
-                ),
+                  );
+                },
               ),
-            );
-          },
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildDesktop() {
+  Widget _buildDesktop(double tEntry, double tExit) {
+    final entryLX = (1.0 - Curves.easeOutCubic.transform(tEntry)) * -500;
+    final exitLX = Curves.easeInCubic.transform(tExit) * -500;
+
+    final entryRX = (1.0 - Curves.easeOutCubic.transform(tEntry)) * 500;
+    final exitRX = Curves.easeInCubic.transform(tExit) * 500;
+
     return Wrap(
       alignment: WrapAlignment.center,
       spacing: 40,
       runSpacing: 40,
       children: [
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500),
-          child: _CinematicProfile(
-            ctrl: _ctrl,
-            delay: 0.2,
-            name: 'Sherly Mary Daniel',
-            role: 'CHIEF TECHNOLOGY OFFICER',
-            imagePath: 'assets/images/Team_members/Cto.jpeg',
-            credential: 'B.Tech ECE',
-            experience: '9+ Years IT Expertise',
-            tagline: 'Scalable Software Ops.',
-            accent: const Color(0xFF9D4EDD),
-            alignment: Alignment.topCenter,
+        Transform.translate(
+          offset: Offset(entryLX + exitLX, 0),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: _CinematicProfile(
+              progress: tEntry,
+              exitProgress: tExit,
+              name: 'Sherly Mary Daniel',
+              role: 'CHIEF TECHNOLOGY OFFICER',
+              imagePath: 'assets/images/Team_members/Cto.jpeg',
+              credential: 'B.Tech ECE',
+              experience: '9+ Years IT Expertise',
+              tagline: 'Scalable Software Ops.',
+              accent: const Color(0xFF9D4EDD),
+              alignment: Alignment.topCenter,
+            ),
           ),
         ),
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500),
-          child: _CinematicProfile(
-            ctrl: _ctrl,
-            delay: 0.4,
-            name: 'Fays Arukattil',
-            role: 'SOFTWARE DEVELOPER',
-            imagePath: 'assets/images/Team_members/Software_Dev.jpeg',
-            credential: 'Full-Stack Architect',
-            experience: 'Product · R&D',
-            tagline: 'Architecting the Visiaxx core.',
-            accent: const Color(0xFFF5C842),
-            isReverse: true,
-            alignment: Alignment.center,
+        Transform.translate(
+          offset: Offset(entryRX + exitRX, 0),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: _CinematicProfile(
+              progress: tEntry,
+              exitProgress: tExit,
+              name: 'Fays Arukattil',
+              role: 'SOFTWARE DEVELOPER',
+              imagePath: 'assets/images/Team_members/Software_Dev.jpeg',
+              credential: 'Full-Stack Architect',
+              experience: 'Product · R&D',
+              tagline: 'Architecting the Visiaxx core.',
+              accent: const Color(0xFFF5C842),
+              isReverse: true,
+              alignment: Alignment.center,
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildMobile() {
+  Widget _buildMobile(double tEntry, double tExit) {
     return Column(
       children: [
         _CinematicProfile(
-          ctrl: _ctrl,
-          delay: 0.2,
+          progress: tEntry,
+          exitProgress: tExit,
           name: 'Sherly Mary Daniel',
           role: 'CHIEF TECHNOLOGY OFFICER',
           imagePath: 'assets/images/Team_members/Cto.jpeg',
@@ -165,8 +172,8 @@ class _TeamSectionState extends State<TeamSection>
         ),
         const SizedBox(height: 24),
         _CinematicProfile(
-          ctrl: _ctrl,
-          delay: 0.4,
+          progress: tEntry,
+          exitProgress: tExit,
           name: 'Fays Arukattil',
           role: 'SOFTWARE DEVELOPER',
           imagePath: 'assets/images/Team_members/Software_Dev.jpeg',
@@ -183,16 +190,16 @@ class _TeamSectionState extends State<TeamSection>
 }
 
 class _CinematicProfile extends StatelessWidget {
-  final AnimationController ctrl;
-  final double delay;
+  final double progress;
+  final double exitProgress;
   final String name, role, imagePath, credential, experience, tagline;
   final Color accent;
   final bool isReverse, isMobile;
   final AlignmentGeometry alignment;
 
   const _CinematicProfile({
-    required this.ctrl,
-    required this.delay,
+    required this.progress,
+    required this.exitProgress,
     required this.name,
     required this.role,
     required this.imagePath,
@@ -209,9 +216,9 @@ class _CinematicProfile extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isMobile) return _buildMobileCard(context);
 
-    return _FadeSlide(
-      ctrl: ctrl,
-      delay: delay,
+    final enter = Curves.easeOutCubic.transform(progress);
+    return Opacity(
+      opacity: (enter * (1.0 - exitProgress)).clamp(0.0, 1.0),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
@@ -330,9 +337,9 @@ class _CinematicProfile extends StatelessWidget {
   }
 
   Widget _buildMobileCard(BuildContext context) {
-    return _FadeSlide(
-      ctrl: ctrl,
-      delay: delay,
+    final enter = Curves.easeOutCubic.transform(progress);
+    return Opacity(
+      opacity: (enter * (1.0 - exitProgress)).clamp(0.0, 1.0),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
@@ -427,30 +434,4 @@ class _TitleChip extends StatelessWidget {
 }
 
 
-class _FadeSlide extends StatelessWidget {
-  final AnimationController ctrl;
-  final double delay;
-  final Widget child;
-
-  const _FadeSlide(
-      {required this.ctrl, required this.delay, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    final anim = CurvedAnimation(
-      parent: ctrl,
-      curve: Interval(delay, (delay + 0.5).clamp(0, 1), curve: Curves.easeOutCubic),
-    );
-
-    return AnimatedBuilder(
-      animation: anim,
-      builder: (context, _) => Opacity(
-        opacity: anim.value,
-        child: Transform.translate(
-          offset: Offset(0, 20 * (1 - anim.value)),
-          child: child,
-        ),
-      ),
-    );
-  }
-}
+// Removed _FadeSlide as it's replaced by direct opacity/transform logic

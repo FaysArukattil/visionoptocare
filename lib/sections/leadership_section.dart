@@ -6,128 +6,129 @@ import '../utils/responsive.dart';
 /// Page 7: Leadership — Cinematic showcase of the visionaries.
 class LeadershipSection extends StatefulWidget {
   final bool isActive;
-  const LeadershipSection({super.key, this.isActive = false});
+  final ValueNotifier<double>? scrollProgress;
+  const LeadershipSection({super.key, this.isActive = false, this.scrollProgress});
 
   @override
   State<LeadershipSection> createState() => _LeadershipSectionState();
 }
 
-class _LeadershipSectionState extends State<LeadershipSection>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  bool _hasStarted = false;
-
+class _LeadershipSectionState extends State<LeadershipSection> {
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1200));
-    if (widget.isActive) _start();
-  }
-
-  @override
-  void didUpdateWidget(covariant LeadershipSection old) {
-    super.didUpdateWidget(old);
-    if (widget.isActive && !_hasStarted) _start();
-  }
-
-  void _start() async {
-    _hasStarted = true;
-    await Future.delayed(const Duration(milliseconds: 300));
-    if (mounted) _ctrl.forward();
   }
 
   @override
   void dispose() {
-    _ctrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (widget.scrollProgress == null) return const SizedBox.shrink();
     final size = MediaQuery.of(context).size;
     final isMob = Responsive.isMobile(context);
 
-    return Container(
-      width: size.width,
-      height: size.height,
-      color: AppColors.background,
-      child: Stack(
-        children: [
-          // ── Background Accent ──
-          Positioned.fill(
-            child: RepaintBoundary(
-              child: Opacity(
-                opacity: 0.05,
-                child: CustomPaint(
-                  painter: _GridPainter(),
-                ),
-              ),
-            ),
-          ),
+    return ValueListenableBuilder<double>(
+      valueListenable: widget.scrollProgress!,
+      builder: (context, raw, _) {
+        final tEntry = (raw - 6.0).clamp(0.0, 1.0);
+        final tExit = (raw - 7.0).clamp(0.0, 1.0);
+        final overallOpacity = (Curves.easeOut.transform(tEntry) * (1.0 - tExit)).clamp(0.0, 1.0);
 
-          // ── Content ──
-          Positioned.fill(
-            child: Padding(
-              padding: EdgeInsets.only(
-                top: isMob ? 80 : 100,
-                bottom: isMob ? 16 : 24,
-              ),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return SingleChildScrollView(
-                    physics: const NeverScrollableScrollPhysics(),
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: constraints.maxHeight,
+        return Opacity(
+          opacity: overallOpacity,
+          child: Container(
+            width: size.width,
+            height: size.height,
+            color: AppColors.background,
+            child: Stack(
+              children: [
+                // ── Background Accent ──
+                Positioned.fill(
+                  child: RepaintBoundary(
+                    child: Opacity(
+                      opacity: 0.05,
+                      child: CustomPaint(
+                        painter: _GridPainter(),
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Header
-                          _FadeSlide(
-                            ctrl: _ctrl,
-                            delay: 0.0,
+                    ),
+                  ),
+                ),
+
+                // ── Content ──
+                Positioned.fill(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      top: isMob ? 80 : 100,
+                      bottom: isMob ? 16 : 24,
+                    ),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return SingleChildScrollView(
+                          physics: const NeverScrollableScrollPhysics(),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: constraints.maxHeight,
+                            ),
                             child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(
-                                  'THE LEADERSHIP',
-                                  style: AppFonts.caption.copyWith(
-                                    color: AppColors.accent2,
-                                    letterSpacing: 6,
-                                    fontWeight: FontWeight.w900,
+                                // Header
+                                Opacity(
+                                  opacity: (tEntry * 2 - 1).clamp(0.0, 1.0) * (1.0 - tExit),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        'THE LEADERSHIP',
+                                        style: AppFonts.caption.copyWith(
+                                          color: AppColors.accent2,
+                                          letterSpacing: 6,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Container(
+                                        width: 40,
+                                        height: 2,
+                                        color: AppColors.accent2.withValues(alpha: 0.3),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                Container(
-                                  width: 40,
-                                  height: 2,
-                                  color: AppColors.accent2.withValues(alpha: 0.3),
+                                
+                                // Profiles
+                                Padding(
+                                  padding: EdgeInsets.symmetric(vertical: isMob ? 20 : 40),
+                                  child: isMob 
+                                      ? _buildMobileLayout(tEntry, tExit) 
+                                      : _buildDesktopLayout(tEntry, tExit),
                                 ),
+                                SizedBox(height: isMob ? 16 : 40),
                               ],
                             ),
                           ),
-                          
-                          // Profiles
-                          Padding(
-                            padding: EdgeInsets.symmetric(vertical: isMob ? 20 : 40),
-                            child: isMob ? _buildMobileLayout() : _buildDesktopLayout(),
-                          ),
-                          SizedBox(height: isMob ? 16 : 40),
-                        ],
-                      ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildDesktopLayout() {
+  Widget _buildDesktopLayout(double tEntry, double tExit) {
+    final entryLX = (1.0 - Curves.easeOutCubic.transform(tEntry)) * -500;
+    final exitLX = Curves.easeInCubic.transform(tExit) * -500;
+
+    final entryRX = (1.0 - Curves.easeOutCubic.transform(tEntry)) * 500;
+    final exitRX = Curves.easeInCubic.transform(tExit) * 500;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40),
       child: Center(
@@ -136,34 +137,40 @@ class _LeadershipSectionState extends State<LeadershipSection>
           runSpacing: 40,
           alignment: WrapAlignment.center,
           children: [
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 580),
-              child: _CinematicProfile(
-                ctrl: _ctrl,
-                delay: 0.2,
-                name: 'Aben Thomas Angadiyil',
-                role: 'FOUNDER & CEO',
-                imagePath: 'assets/images/Founders/Founder_1.jpeg',
-                credential: 'B.Optom · BMS',
-                experience: '14+ Years in Vision Care',
-                tagline: 'Driving global healthcare innovation.',
-                accent: AppColors.accent2,
+            Transform.translate(
+              offset: Offset(entryLX + exitLX, 0),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 580),
+                child: _CinematicProfile(
+                  progress: tEntry,
+                  exitProgress: tExit,
+                  name: 'Aben Thomas Angadiyil',
+                  role: 'FOUNDER & CEO',
+                  imagePath: 'assets/images/Founders/Founder_1.jpeg',
+                  credential: 'B.Optom · BMS',
+                  experience: '14+ Years in Vision Care',
+                  tagline: 'Driving global healthcare innovation.',
+                  accent: AppColors.accent2,
+                ),
               ),
             ),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 580),
-              child: _CinematicProfile(
-                ctrl: _ctrl,
-                delay: 0.4,
-                name: 'Thomas Angadiyil Philip',
-                role: 'CO-FOUNDER & DIRECTOR',
-                imagePath: 'assets/images/Founders/Founder_2.jpeg',
-                credential: 'Rajan Optics',
-                experience: '44+ Years Optical Expertise',
-                tagline: 'Legacy of trust and diagnostic precision.',
-                accent: const Color(0xFF4F6AFF),
-                isReverse: true,
-                alignment: Alignment.center,
+            Transform.translate(
+              offset: Offset(entryRX + exitRX, 0),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 580),
+                child: _CinematicProfile(
+                  progress: tEntry,
+                  exitProgress: tExit,
+                  name: 'Thomas Angadiyil Philip',
+                  role: 'CO-FOUNDER & DIRECTOR',
+                  imagePath: 'assets/images/Founders/Founder_2.jpeg',
+                  credential: 'Rajan Optics',
+                  experience: '44+ Years Optical Expertise',
+                  tagline: 'Legacy of trust and diagnostic precision.',
+                  accent: const Color(0xFF4F6AFF),
+                  isReverse: true,
+                  alignment: Alignment.center,
+                ),
               ),
             ),
           ],
@@ -172,12 +179,12 @@ class _LeadershipSectionState extends State<LeadershipSection>
     );
   }
 
-  Widget _buildMobileLayout() {
+  Widget _buildMobileLayout(double tEntry, double tExit) {
     return Column(
       children: [
         _CinematicProfile(
-          ctrl: _ctrl,
-          delay: 0.2,
+          progress: tEntry,
+          exitProgress: tExit,
           name: 'Aben Thomas Angadiyil',
           role: 'FOUNDER & CEO',
           imagePath: 'assets/images/Founders/Founder_1.jpeg',
@@ -189,8 +196,8 @@ class _LeadershipSectionState extends State<LeadershipSection>
         ),
         const SizedBox(height: 24),
         _CinematicProfile(
-          ctrl: _ctrl,
-          delay: 0.4,
+          progress: tEntry,
+          exitProgress: tExit,
           name: 'Thomas Angadiyil Philip',
           role: 'CO-FOUNDER & DIRECTOR',
           imagePath: 'assets/images/Founders/Founder_2.jpeg',
@@ -207,16 +214,16 @@ class _LeadershipSectionState extends State<LeadershipSection>
 }
 
 class _CinematicProfile extends StatelessWidget {
-  final AnimationController ctrl;
-  final double delay;
+  final double progress;
+  final double exitProgress;
   final String name, role, imagePath, credential, experience, tagline;
   final Color accent;
   final bool isReverse, isMobile;
   final AlignmentGeometry alignment;
 
   const _CinematicProfile({
-    required this.ctrl,
-    required this.delay,
+    required this.progress,
+    required this.exitProgress,
     required this.name,
     required this.role,
     required this.imagePath,
@@ -233,9 +240,10 @@ class _CinematicProfile extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isMobile) return _buildMobileCard(context);
 
-    return _FadeSlide(
-      ctrl: ctrl,
-      delay: delay,
+    final enter = Curves.easeOutCubic.transform(progress);
+
+    return Opacity(
+      opacity: (enter * (1.0 - exitProgress)).clamp(0.0, 1.0),
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
@@ -351,9 +359,9 @@ class _CinematicProfile extends StatelessWidget {
   }
 
   Widget _buildMobileCard(BuildContext context) {
-    return _FadeSlide(
-      ctrl: ctrl,
-      delay: delay,
+    final enter = Curves.easeOutCubic.transform(progress);
+    return Opacity(
+      opacity: (enter * (1.0 - exitProgress)).clamp(0.0, 1.0),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
@@ -424,33 +432,7 @@ class _TitleChip extends StatelessWidget {
   }
 }
 
-class _FadeSlide extends StatelessWidget {
-  final AnimationController ctrl;
-  final double delay;
-  final Widget child;
-
-  const _FadeSlide(
-      {required this.ctrl, required this.delay, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    final anim = CurvedAnimation(
-      parent: ctrl,
-      curve: Interval(delay, (delay + 0.5).clamp(0, 1), curve: Curves.easeOutCubic),
-    );
-
-    return AnimatedBuilder(
-      animation: anim,
-      builder: (context, _) => Opacity(
-        opacity: anim.value,
-        child: Transform.translate(
-          offset: Offset(0, 20 * (1 - anim.value)),
-          child: child,
-        ),
-      ),
-    );
-  }
-}
+// Removed _FadeSlide as it's replaced by direct opacity/transform logic
 
 class _GridPainter extends CustomPainter {
   @override

@@ -491,8 +491,12 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
           children: (_tests.asMap().entries.map((entry) {
             final int i = entry.key;
             double diff = i - scrollPos;
-            while (diff > 6.0) { diff -= 12.0; }
-            while (diff < -6.0) { diff += 12.0; }
+            while (diff > 6.0) {
+              diff -= 12.0;
+            }
+            while (diff < -6.0) {
+              diff += 12.0;
+            }
   
             final absDiff = diff.abs();
             final isSelected = absDiff < 0.5;
@@ -676,7 +680,7 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
   bool? _amslerHasDistortions;
 
   // Pelli-Robson Mock State
-  int _pelliTripletIndex = 0;
+  final int _pelliTripletIndex = 0;
   
   // Shadow Test (Cataract) Mock State
   bool _shadowFlashOn = false;

@@ -204,13 +204,25 @@ class _HomePageState extends State<HomePage> {
           scrollProgress: _rawScrollProgress,
         );
       case 5:
-        return B2BPage(isActive: isActive); // ← B2B before Philosophy
+        return B2BPage(
+          isActive: isActive,
+          scrollProgress: _rawScrollProgress,
+        );
       case 6:
-        return PhilosophySection(isActive: isActive); // ← Philosophy after B2B
+        return PhilosophySection(
+          isActive: isActive,
+          scrollProgress: _rawScrollProgress,
+        );
       case 7:
-        return LeadershipSection(isActive: isActive);
+        return LeadershipSection(
+          isActive: isActive,
+          scrollProgress: _rawScrollProgress,
+        );
       case 8:
-        return TeamSection(isActive: isActive);
+        return TeamSection(
+          isActive: isActive,
+          scrollProgress: _rawScrollProgress,
+        );
       case 9:
         return const FooterSection();
       default:

@@ -42,30 +42,6 @@ class _FooterSectionState extends State<FooterSection> {
       height: size.height,
       child: Column(
         children: [
-          // ── Static Branding Divider (replaces animated eye) ──
-          const SizedBox(height: 32),
-          // Static brand icon — no animation
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: const Color(0xFF050A18),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.accent2.withValues(alpha: 0.15),
-                width: 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.accent2.withValues(alpha: 0.08),
-                  blurRadius: 20,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: const EyeLogo(size: 50, showGlow: false),
-          ),
-          const SizedBox(height: 8),
-
           // ── Divider Line ──
           Container(
             margin: Responsive.padding(context),
