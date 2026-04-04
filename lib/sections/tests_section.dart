@@ -225,8 +225,8 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
               final themeColor = _getTierColor(test.tier);
 
               return isMob 
-                  ? _buildMobileLayout(test, themeColor, sIdx, pos) 
-                  : _buildDesktopLayout(test, themeColor, sIdx, pos);
+                  ? _buildMobileLayout(test, themeColor, sIdx, pos, widget.scrollProgress) 
+                  : _buildDesktopLayout(test, themeColor, sIdx, pos, widget.scrollProgress);
             },
           ),
         ],
@@ -244,8 +244,8 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     }
   }
 
-  Widget _buildDesktopLayout(TestData test, Color themeColor, int selectedIndex, double scrollPos) {
-    Widget phoneObj = _buildFloatingPhone(test, themeColor);
+  Widget _buildDesktopLayout(TestData test, Color themeColor, int selectedIndex, double scrollPos, ValueNotifier<double>? scrollProgress) {
+    Widget phoneObj = _buildFloatingPhone(test, themeColor, scrollProgress);
     
     if (widget.scrollProgress != null) {
       phoneObj = ValueListenableBuilder<double>(
@@ -379,8 +379,8 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     );
   }
 
-  Widget _buildMobileLayout(TestData test, Color themeColor, int selectedIndex, double scrollPos) {
-    Widget phoneObj = _buildFloatingPhone(test, themeColor, isMob: true);
+  Widget _buildMobileLayout(TestData test, Color themeColor, int selectedIndex, double scrollPos, ValueNotifier<double>? scrollProgress) {
+    Widget phoneObj = _buildFloatingPhone(test, themeColor, scrollProgress, isMob: true);
 
     if (widget.scrollProgress != null) {
       phoneObj = ValueListenableBuilder<double>(
@@ -520,7 +520,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
     );
   }
 
-  Widget _buildFloatingPhone(TestData test, Color themeColor, {bool isMob = false}) {
+  Widget _buildFloatingPhone(TestData test, Color themeColor, ValueNotifier<double>? scrollProgress, {bool isMob = false}) {
     // Only animate float when active to save GPU cycles
     return RepaintBoundary(
       child: PhoneMockup(
@@ -528,7 +528,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
         height: isMob ? 450 : 500,
         tiltX: 0.0,
         tiltY: 0.0,
-        screen: _TestSimulationEngine(test: test, themeColor: themeColor),
+        screen: _TestSimulationEngine(test: test, themeColor: themeColor, scrollProgress: scrollProgress),
       ),
     );
   }
@@ -632,7 +632,8 @@ class _HUDItem extends StatelessWidget {
 class _TestSimulationEngine extends StatefulWidget {
   final TestData test;
   final Color themeColor;
-  const _TestSimulationEngine({required this.test, required this.themeColor});
+  final ValueNotifier<double>? scrollProgress;
+  const _TestSimulationEngine({required this.test, required this.themeColor, this.scrollProgress});
 
   @override
   State<_TestSimulationEngine> createState() => _TestSimulationEngineState();
@@ -688,9 +689,27 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
             child: CustomPaint(painter: _DiagnosticGridPainter(color: widget.themeColor.withValues(alpha: 0.1))),
           ),
           
-          Center(
-            child: _buildSimulation(widget.test.number),
-          ),
+          if (widget.scrollProgress != null)
+            ValueListenableBuilder<double>(
+              valueListenable: widget.scrollProgress!,
+              builder: (context, raw, _) {
+                // Transition range: 2.0 (Clinical Tests) -> 3.0 (Next Page)
+                final double t = (raw - 2.0).clamp(0.0, 1.0);
+                return Opacity(
+                  opacity: (1.0 - t).clamp(0.0, 1.0),
+                  child: Transform.translate(
+                    offset: Offset(t * MediaQuery.of(context).size.width * 0.8, 0),
+                    child: Center(
+                      child: _buildSimulation(widget.test.number),
+                    ),
+                  ),
+                );
+              },
+            )
+          else
+            Center(
+              child: _buildSimulation(widget.test.number),
+            ),
 
         ],
       ),

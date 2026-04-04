@@ -12,65 +12,41 @@ import '../widgets/animated_counter.dart';
 // ─────────────────────────────────────────────
 class ReportsWellnessPage extends StatefulWidget {
   final bool isActive;
-  const ReportsWellnessPage({super.key, required this.isActive});
+  final ValueNotifier<double>? scrollProgress;
+  const ReportsWellnessPage({super.key, required this.isActive, this.scrollProgress});
 
   @override
   State<ReportsWellnessPage> createState() => _ReportsWellnessPageState();
 }
 
-class _ReportsWellnessPageState extends State<ReportsWellnessPage>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  bool _hasStarted = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 900));
-    if (widget.isActive) _start();
-  }
-
-  @override
-  void didUpdateWidget(covariant ReportsWellnessPage old) {
-    super.didUpdateWidget(old);
-    if (widget.isActive && !_hasStarted) _start();
-  }
-
-  void _start() async {
-    _hasStarted = true;
-    await Future.delayed(const Duration(milliseconds: 200));
-    if (mounted) _ctrl.forward();
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
+class _ReportsWellnessPageState extends State<ReportsWellnessPage> {
   @override
   Widget build(BuildContext context) {
+    if (widget.scrollProgress == null) return const SizedBox.shrink();
+
     final size = MediaQuery.of(context).size;
     final isMob = Responsive.isMobile(context);
 
-    return AnimatedBuilder(
-      animation: _ctrl,
-      builder: (context, _) {
-        final t = CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic)
-            .value;
+    return ValueListenableBuilder<double>(
+      valueListenable: widget.scrollProgress!,
+      builder: (context, raw, _) {
+        // Transition range: 2.0 (Clinical Tests) -> 3.0 (This Page)
+        final double t = (raw - 2.0).clamp(0.0, 1.0);
+        
+        // Final section opacity
         return Opacity(
-          opacity: t.clamp(0.0, 1.0),
-          child: Transform.translate(
-            offset: Offset(0, 15 * (1 - t)),
-            child: Container(
-              width: size.width,
-              height: size.height,
-              color: AppColors.background,
-              child: Column(
-                children: [
-                  SizedBox(height: isMob ? 100 : 120),
-                  Padding(
+          opacity: Curves.easeOut.transform(t),
+          child: Container(
+            width: size.width,
+            height: size.height,
+            color: AppColors.background,
+            child: Column(
+              children: [
+                SizedBox(height: isMob ? 100 : 120),
+                // Title Area (Delayed fade in)
+                Opacity(
+                  opacity: (t * 2 - 1).clamp(0.0, 1.0),
+                  child: Padding(
                     padding: Responsive.padding(context),
                     child: Column(
                       children: [
@@ -97,18 +73,18 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: Padding(
-                      padding: Responsive.padding(context).copyWith(top: 0),
-                      child: isMob
-                          ? _buildMobileLayout()
-                          : _buildDesktopLayout(),
-                    ),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: Padding(
+                    padding: Responsive.padding(context).copyWith(top: 0),
+                    child: isMob
+                        ? _buildMobileLayout(t)
+                        : _buildDesktopLayout(t),
                   ),
-                  const SizedBox(height: 16),
-                ],
-              ),
+                ),
+                const SizedBox(height: 16),
+              ],
             ),
           ),
         );
@@ -116,49 +92,58 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage>
     );
   }
 
-  Widget _buildDesktopLayout() {
+  Widget _buildDesktopLayout(double t) {
+    // Coordinated Staggered Fly-ins
+    final leftX = (1.0 - Curves.easeOutCubic.transform(t)) * -400;
+    final rightX = (1.0 - Curves.easeOutCubic.transform(t)) * 400;
+    final bottomY = (1.0 - Curves.easeOutBack.transform(t)) * 400;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // ── Left: Education Reels (phone mockup) ──
+        // ── Left: Education Reels (Slices from LEFT) ──
         Expanded(
           flex: 3,
-          child: _BentoCard(
-            title: 'Education Reels',
-            subtitle:
-                'Watch and learn with short, TikTok-style eye care video tips — curated to educate patients on vision health.',
-            icon: Icons.play_circle_outline,
-            color: const Color(0xFF4F6AFF),
-            child:
-                const _AnimatedReelsFeed(color: Color(0xFF4F6AFF)),
+          child: Transform.translate(
+            offset: Offset(leftX, 0),
+            child: _BentoCard(
+              title: 'Education Reels',
+              subtitle: 'TikTok-style eye care video tips.',
+              icon: Icons.play_circle_outline,
+              color: const Color(0xFF4F6AFF),
+              child: const _AnimatedReelsFeed(color: Color(0xFF4F6AFF)),
+            ),
           ),
         ),
         const SizedBox(width: 20),
-        // ── Right: PDF Reports + Ocular Wellness stacked ──
+        // ── Right: PDF Reports + Ocular Wellness (Slices from RIGHT/BOTTOM) ──
         Expanded(
           flex: 4,
           child: Column(
             children: [
               Expanded(
-                child: _BentoCard(
-                  title: 'Smart Clinical PDF Reports',
-                  subtitle:
-                      'Auto-generate comprehensive, shareable PDF reports featuring detailed diagnostic breakdowns, prescription data, and clinical risk analysis.',
-                  icon: Icons.picture_as_pdf_outlined,
-                  color: const Color(0xFF00D4C8),
-                  child: const _AnimatedPdfGenerator(color: Color(0xFF00D4C8)),
+                child: Transform.translate(
+                  offset: Offset(rightX, 0),
+                  child: _BentoCard(
+                    title: 'Smart Clinical PDF Reports',
+                    subtitle: 'Auto-generate comprehensive PDF reports.',
+                    icon: Icons.picture_as_pdf_outlined,
+                    color: const Color(0xFF00D4C8),
+                    child: const _AnimatedPdfGenerator(color: Color(0xFF00D4C8)),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
               Expanded(
-                child: _BentoCard(
-                  title: 'Ocular Wellness',
-                  subtitle:
-                      'Interactive eye therapy games with AI-generated therapeutic music for relaxation and rehabilitation.',
-                  icon: Icons.headphones_outlined,
-                  color: const Color(0xFF9D4EDD),
-                  child: const _AnimatedOcularWellness(
-                      color: Color(0xFF9D4EDD)),
+                child: Transform.translate(
+                  offset: Offset(0, bottomY),
+                  child: _BentoCard(
+                    title: 'Ocular Wellness',
+                    subtitle: 'Interactive eye therapy games.',
+                    icon: Icons.headphones_outlined,
+                    color: const Color(0xFF9D4EDD),
+                    child: const _AnimatedOcularWellness(color: Color(0xFF9D4EDD)),
+                  ),
                 ),
               ),
             ],
@@ -168,54 +153,61 @@ class _ReportsWellnessPageState extends State<ReportsWellnessPage>
     );
   }
 
-  Widget _buildMobileLayout() {
+  Widget _buildMobileLayout(double t) {
+    final slideY = (1.0 - Curves.easeOutCubic.transform(t)) * 100;
+    
     return SingleChildScrollView(
       physics: const NeverScrollableScrollPhysics(),
-      child: Column(
-        children: [
-          SizedBox(
-            height: 300,
-            child: _BentoCard(
-              title: 'Education Reels',
-              subtitle: 'Eye care video tips in a TikTok-style feed.',
-              icon: Icons.play_circle_outline,
-              color: const Color(0xFF4F6AFF),
-              child: const SizedBox(
-                height: 160,
-                child: _AnimatedReelsFeed(color: Color(0xFF4F6AFF)),
+      child: Opacity(
+        opacity: t,
+        child: Transform.translate(
+          offset: Offset(0, slideY),
+          child: Column(
+            children: [
+              SizedBox(
+                height: 300,
+                child: _BentoCard(
+                  title: 'Education Reels',
+                  subtitle: 'Eye care video tips in a TikTok-style feed.',
+                  icon: Icons.play_circle_outline,
+                  color: const Color(0xFF4F6AFF),
+                  child: const SizedBox(
+                    height: 160,
+                    child: _AnimatedReelsFeed(color: Color(0xFF4F6AFF)),
+                  ),
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 280,
-            child: _BentoCard(
-              title: 'Smart Clinical PDF Reports',
-              subtitle: 'Auto-generate comprehensive, shareable PDF reports.',
-              icon: Icons.picture_as_pdf_outlined,
-              color: const Color(0xFF00D4C8),
-              child: const SizedBox(
-                height: 120,
-                child: _AnimatedPdfGenerator(color: Color(0xFF00D4C8)),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 280,
+                child: _BentoCard(
+                  title: 'Smart Clinical PDF Reports',
+                  subtitle: 'Auto-generate comprehensive PDF reports.',
+                  icon: Icons.picture_as_pdf_outlined,
+                  color: const Color(0xFF00D4C8),
+                  child: const SizedBox(
+                    height: 120,
+                    child: _AnimatedPdfGenerator(color: Color(0xFF00D4C8)),
+                  ),
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 220,
-            child: _BentoCard(
-              title: 'Ocular Wellness',
-              subtitle:
-                  'Interactive eye therapy games with AI-generated music.',
-              icon: Icons.headphones_outlined,
-              color: const Color(0xFF9D4EDD),
-              child: const SizedBox(
-                height: 100,
-                child: _AnimatedOcularWellness(color: Color(0xFF9D4EDD)),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 220,
+                child: _BentoCard(
+                  title: 'Ocular Wellness',
+                  subtitle: 'Interactive eye therapy games.',
+                  icon: Icons.headphones_outlined,
+                  color: const Color(0xFF9D4EDD),
+                  child: const SizedBox(
+                    height: 100,
+                    child: _AnimatedOcularWellness(color: Color(0xFF9D4EDD)),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
