@@ -429,6 +429,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
   }
 
   Widget _buildMobileLayout(TestData test, Color themeColor, int selectedIndex, double scrollPos, ValueNotifier<double>? scrollProgress) {
+    const isMob = true; // Hardcoded scope for mobile layout method
     Widget phoneObj = _buildFloatingPhone(test, themeColor, scrollProgress, isMob: true);
 
     if (widget.scrollProgress != null) {
@@ -468,9 +469,9 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
       onHorizontalDragEnd: (_) => _snapToNearest(),
       child: Column(
         children: [
-          const SizedBox(height: 20),
+          const SizedBox(height: 5), // Tightened
           phoneObj,
-          const SizedBox(height: 40),
+          const SizedBox(height: 10), // Reduced from 40
           // Header
           Text(
             'VISION TEST SUITE',
@@ -482,18 +483,18 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8), // Reduced from 16
           Text(
-            '12 Clinical-Grade Diagnostics',
+            '12 Precision Diagnostics',
             style: AppFonts.h2.copyWith(
               color: AppColors.white,
-              fontSize: 32,
+            fontSize: 24, // Optimized for mobile
               height: 1.1,
               fontWeight: FontWeight.w800,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 10), // Reduced from 30
           Expanded(
             child: Stack(
               alignment: Alignment.center,
@@ -508,12 +509,12 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: _buildDetailCard(test, themeColor, true),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 5),
         ],
       ),
     );
@@ -670,7 +671,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
               height: 1.5,
               fontSize: isMob ? 12 : 16,
             ),
-            maxLines: isMob ? 2 : 4,
+            maxLines: isMob ? 1 : 4,
             overflow: TextOverflow.ellipsis,
           ),
         ],

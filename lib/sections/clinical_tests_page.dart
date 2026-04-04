@@ -29,10 +29,10 @@ class _ClinicalTestsPageState extends State<ClinicalTestsPage> {
           // ── Main Content ──
           Padding(
             padding: EdgeInsets.only(
-              top: isMob ? 80 : 90, // Clear the navbar
+              top: isMob ? 60 : 90, // Clear the navbar
               left: isMob ? 24 : 60,
               right: isMob ? 24 : 60,
-              bottom: 24,
+              bottom: 12, // Reduced bottom
             ),
             child: TestsSection(
               isActive: widget.isActive, 
