@@ -1733,45 +1733,32 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
             ),
           ),
 
-          // Anaglyph 3D Simulated Visual
+          // Actual Clinical Anaglyph Image
           Expanded(
-            child: Center(
-              child: AnimatedBuilder(
-                animation: _anim,
-                builder: (context, _) {
-                  // Simulate 3D Depth Shift Anaglyph (Red offset left, Cyan offset right)
-                  return Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Red Layer
-                      Transform.translate(
-                        offset: Offset(-3 - (math.sin(_anim.value * math.pi) * 2), 0),
-                        child: CustomPaint(
-                          painter: _PremiumEyePainter(
-                            progress: _anim.value,
-                            color: Colors.red.withValues(alpha: 0.7),
-                            scleraColor: Colors.white.withValues(alpha: 0.5),
-                            pupilColor: Colors.black,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  'assets/images/Test_images/stereo_$_stereoRound.jpg',
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.broken_image_outlined, color: Colors.white24, size: 48),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Image assets/images/Test_images/stereo_$_stereoRound.jpg not found',
+                            style: const TextStyle(color: Colors.white24, fontSize: 10),
+                            textAlign: TextAlign.center,
                           ),
-                          size: const Size(100, 100),
-                        ),
+                        ],
                       ),
-                      // Cyan Layer
-                      Transform.translate(
-                        offset: Offset(3 + (math.sin(_anim.value * math.pi) * 2), 0),
-                        child: CustomPaint(
-                          painter: _PremiumEyePainter(
-                            progress: _anim.value,
-                            color: Colors.cyan.withValues(alpha: 0.7),
-                            scleraColor: Colors.white.withValues(alpha: 0.5),
-                            pupilColor: Colors.black,
-                          ),
-                          size: const Size(100, 100),
-                        ),
-                      ),
-                    ],
-                  );
-                }
+                    );
+                  },
+                ),
               ),
             ),
           ),
@@ -1786,7 +1773,16 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
                     label: 'FLAT',
                     icon: Icons.crop_square_rounded,
                     color: Colors.grey.withValues(alpha: 0.2),
-                    onPressed: () {},
+                    onPressed: () {
+                      setState(() {
+                        // Pick a random image but ensure it's different from the current one
+                        int next;
+                        do {
+                          next = math.Random().nextInt(5) + 1;
+                        } while (next == _stereoRound);
+                        _stereoRound = next;
+                      });
+                    },
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -1795,7 +1791,17 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
                     label: '3D',
                     icon: Icons.view_in_ar_rounded,
                     color: Colors.blue,
-                    onPressed: () {},
+                    onPressed: () {
+                      setState(() {
+                        // Pick a random image but ensure it's different from the current one
+                        int next;
+                        do {
+                          next = math.Random().nextInt(5) + 1;
+                        } while (next == _stereoRound);
+                        _stereoRound = next;
+                        if (_stereoScore < 100) _stereoScore += 4;
+                      });
+                    },
                   ),
                 ),
               ],
@@ -1814,19 +1820,22 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
     required Color color,
     required VoidCallback onPressed,
   }) {
-    return Container(
-      height: 48,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 18, color: Colors.white),
-          const SizedBox(width: 8),
-          Text(label, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
-        ],
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        height: 48,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 18, color: Colors.white),
+            const SizedBox(width: 8),
+            Text(label, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+          ],
+        ),
       ),
     );
   }
