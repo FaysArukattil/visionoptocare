@@ -171,11 +171,11 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
               Widget phoneObj = Opacity(
                 opacity: t,
                 child: PhoneMockup(
-                  width: 140,
-                  height: 280,
+                  width: 110,
+                  height: 220,
                   tiltX: 0.0, // Phone rendered straight
                   tiltY: 0.0,
-                  screen: _buildPhoneScreen(h: 280, isMini: true),
+                  screen: _buildPhoneScreen(h: 220, isMini: true),
                 ),
               );
 
@@ -316,36 +316,38 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: isMob ? CrossAxisAlignment.center : CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: AppColors.accent2.withValues(alpha: 0.1),
-              border:
-                  Border.all(color: AppColors.accent2.withValues(alpha: 0.3)),
-            ),
-            child: Text(
-              'WHAT IS VISIAXX?',
-              style: AppFonts.caption.copyWith(
-                color: AppColors.accent2,
-                letterSpacing: 3,
-                fontWeight: FontWeight.w900,
-                fontSize: 11,
+          if (!isMob) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: AppColors.accent2.withValues(alpha: 0.1),
+                border:
+                    Border.all(color: AppColors.accent2.withValues(alpha: 0.3)),
+              ),
+              child: Text(
+                'WHAT IS VISIAXX?',
+                style: AppFonts.caption.copyWith(
+                  color: AppColors.accent2,
+                  letterSpacing: 3,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 11,
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            isMob ? 'AI-POWERED VISION DIAGNOSTICS' : 'AN APP FOR STANDARDIZED VISION DISEASE DETECTION',
-            style: AppFonts.caption.copyWith(
-              color: AppColors.white.withValues(alpha: 0.5),
-              letterSpacing: 1.5,
-              fontWeight: FontWeight.w700,
-              fontSize: isMob ? 9 : 11,
+            const SizedBox(height: 16),
+            Text(
+              'AN APP FOR STANDARDIZED VISION DISEASE DETECTION',
+              style: AppFonts.caption.copyWith(
+                color: AppColors.white.withValues(alpha: 0.5),
+                letterSpacing: 1.5,
+                fontWeight: FontWeight.w700,
+                fontSize: 11,
+              ),
+              textAlign: TextAlign.start,
             ),
-            textAlign: isMob ? TextAlign.center : TextAlign.start,
-          ),
-          const SizedBox(height: 24),
+          ],
+          SizedBox(height: isMob ? 10 : 24),
           Text(
             isMob ? 'Pioneering Digital Optometry.' : 'Pioneering Digital\nOptometry.',
             style: AppFonts.h2.copyWith(
@@ -416,7 +418,7 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                 _FeatureChip(icon: Icons.picture_as_pdf, label: 'PDF Reports'),
               ],
             ),
-          const SizedBox(height: 20),
+          SizedBox(height: isMob ? 10 : 20),
           // Store Buttons (Row for one-line behavior)
           FittedBox(
             child: Row(
@@ -483,7 +485,7 @@ class _FeatureChip extends StatelessWidget {
     final isMob = Responsive.isMobile(context);
     return Container(
       padding: EdgeInsets.symmetric(
-          horizontal: isMob ? 10 : 14, vertical: 8), // Reduced mobile padding
+          horizontal: isMob ? 10 : 14, vertical: isMob ? 6 : 8), // Tightened for mobile
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(50),
         color: AppColors.white.withValues(alpha: 0.04),
