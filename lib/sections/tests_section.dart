@@ -270,7 +270,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
 
           // Entry (1.0 -> 2.0)
           final t12 = (v - 1.0).clamp(0.0, 1.0);
-          final distanceX = width * 0.75 - 170;
+          final distanceX = width * 0.55 - 18.0;
           final entryTx = -distanceX * (1.0 - t12);
           final entryTy = -(1.0 - t12) * height;
 
@@ -353,7 +353,7 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
               Expanded(
                 flex: 3,
                 child: Container(
-                  alignment: Alignment.centerRight,
+                  alignment: const Alignment(-0.3, 0.0), // Nudge significantly left
                   child: phoneObj,
                 ),
               ),
