@@ -647,7 +647,6 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
   bool? _amslerHasDistortions;
 
   // Pelli-Robson Mock State
-  int _pelliScreenIndex = 0;
   int _pelliTripletIndex = 0;
 
   @override
@@ -901,61 +900,69 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
   
   Widget _buildReadingSimulation() {
     return Container(
-      color: Colors.white,
+      color: AppColors.background.withValues(alpha: 0.9),
       child: Column(
         children: [
           _buildSimulationAppBar('READING TEST', 'Near Vision Clarity'),
+          
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
-                    ),
-                    child: const Text(
-                      'The quick brown fox jumps over the lazy dog. This sentence contains every letter of the English alphabet exactly once. Clinical reading tests often use specialized paragraphs to assess near vision acuity at standard reading distances (40cm).',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.black,
-                        height: 1.5,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: 'serif',
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            const Text(
+                              'The quick brown fox jumps over the lazy dog. This sentence contains every letter of the English alphabet exactly once. Clinical reading tests often use specialized paragraphs to assess near vision acuity at standard reading distances (40cm).',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.black,
+                                height: 1.4,
+                                fontWeight: FontWeight.w500,
+                                fontFamily: 'serif',
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Near vision acuity is critical for daily tasks like reading and device usage.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 11, color: Colors.grey[600], fontStyle: FontStyle.italic),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'READ THE SENTENCE ALOUD',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.blue,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2,
+                    const SizedBox(height: 8),
+                    const Text(
+                      'READ THE SENTENCE ALOUD',
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: Colors.blue,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.5,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
           
-          // Action Buttons (MATCHING CLINICAL SCREEN)
+          // Action Buttons
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, -5),
-                ),
-              ],
+              color: AppColors.surface,
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5))],
             ),
             child: Row(
               children: [
@@ -966,7 +973,7 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
                     color: Colors.green,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 8),
                 Expanded(
                   child: _buildSimulationSolidActionButton(
                     label: 'CANNOT READ',
@@ -1058,50 +1065,41 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
 
   Widget _buildPelliRobsonSimulation() {
     return Container(
-      color: Colors.white,
+      color: AppColors.background.withValues(alpha: 0.9),
       child: Column(
         children: [
           _buildSimulationAppBar('CONTRAST SENSITIVITY', 'Pelli-Robson Triplet'),
           
-          // Info Indicators
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.grey.withValues(alpha: 0.03),
-              border: Border(bottom: BorderSide(color: Colors.grey.withValues(alpha: 0.1))),
-            ),
-            child: Row(
-              children: [
-                _buildSimulationIndicator('SCREEN ${_pelliScreenIndex + 1}/8', Icons.grid_view_rounded, Colors.blue),
-                const SizedBox(width: 8),
-                _buildSimulationIndicator('RIGHT EYE', Icons.remove_red_eye_rounded, Colors.indigo),
-              ],
-            ),
-          ),
-
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildSloanTriplet('V R S', 1.0, isCurrent: _pelliTripletIndex == 0),
-                  const SizedBox(height: 10),
-                  _buildSloanTriplet('K H Z', 0.45, isCurrent: _pelliTripletIndex == 1),
-                  const SizedBox(height: 10),
-                  _buildSloanTriplet('N O C', 0.15, isCurrent: _pelliTripletIndex == 2),
-                  const SizedBox(height: 12),
-                  const Text('READ THE LETTERS ALOUD', style: TextStyle(fontSize: 8, color: Colors.blue, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
-                ],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildSloanTriplet('V R S', 1.0, isCurrent: _pelliTripletIndex == 0),
+                    const SizedBox(height: 6),
+                    _buildSloanTriplet('K H Z', 0.45, isCurrent: _pelliTripletIndex == 1),
+                    const SizedBox(height: 6),
+                    _buildSloanTriplet('N O C', 0.15, isCurrent: _pelliTripletIndex == 2),
+                    const SizedBox(height: 12),
+                    const Text('READ THE LETTERS ALOUD', style: TextStyle(fontSize: 8, color: Colors.blue, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+                  ],
+                ),
               ),
             ),
           ),
           
-          // Large Clinical Buttons
+          // Action Buttons
           Container(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.surface,
               boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5))],
             ),
             child: Row(
@@ -1151,17 +1149,17 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
 
   Widget _buildRefractionSimulation() {
     return Container(
-      color: Colors.white,
+      color: AppColors.background.withValues(alpha: 0.9),
       child: Column(
         children: [
           _buildSimulationAppBar('MOBILE REFRACTOMETRY', 'Adjusting Focus'),
           
-          // Info Indicators
+          // Level Head Data (Acuity Style)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.grey.withValues(alpha: 0.05),
-              border: Border(bottom: BorderSide(color: Colors.grey.withValues(alpha: 0.1))),
+              color: AppColors.surface,
+              border: Border(bottom: BorderSide(color: widget.themeColor.withValues(alpha: 0.2))),
             ),
             child: Row(
               children: [
@@ -1172,111 +1170,110 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
             ),
           ),
 
+          // Central Refraction Chart (White Box like Acuity)
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Stack(
-                    children: [
-                      Container(
-                        height: 160, // Significantly reduced height to ensure button visibility
-                        alignment: Alignment.center,
-                        child: AnimatedBuilder(
-                          animation: _anim,
-                          builder: (context, _) {
-                            // Reduced blur max sigma for better visibility
-                            final blur = (math.sin(_anim.value * math.pi * 2) * 2.2).abs() + 0.3;
-                            final rotation = (_anim.value * 4).floor() * (math.pi / 2); 
-                            return ImageFiltered(
-                              imageFilter: ui.ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-                              child: Transform.rotate(
-                                angle: rotation,
-                                child: const Text(
-                                  'E', 
-                                  style: TextStyle(fontSize: 80, fontWeight: FontWeight.w900, color: Colors.black, height: 1.0)
-                                ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Stack(
+                  children: [
+                    // Centered E with Blur (User requested "blur on top of E")
+                    Center(
+                      child: AnimatedBuilder(
+                        animation: _anim,
+                        builder: (context, _) {
+                          final blur = (math.sin(_anim.value * math.pi * 2) * 2.2).abs() + 0.3;
+                          final rotation = (_anim.value * 4).floor() * (math.pi / 2); 
+                          return ImageFiltered(
+                            imageFilter: ui.ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+                            child: Transform.rotate(
+                              angle: rotation,
+                              child: const Text(
+                                'E', 
+                                style: TextStyle(fontSize: 80, fontWeight: FontWeight.w900, color: Colors.black, height: 1.0)
                               ),
-                            );
-                          }
-                        ),
+                            ),
+                          );
+                        }
                       ),
-                      
-                      // Detailed Analysis Card (Bottom Left)
-                      Positioned(
-                        left: 12,
-                        bottom: 6,
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.85),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _RefractionMetric('SPH', '-1.25', Colors.blue),
-                              SizedBox(height: 2),
-                              _RefractionMetric('CYL', '-0.50', Colors.cyan),
-                            ],
-                          ),
+                    ),
+                    
+                    // Side Diagnostics (User requested "show the sph cyl etc in the side as well")
+                    Positioned(
+                      right: 12,
+                      top: 12,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
                         ),
-                      ),
-                    ],
-                  ),
-                  
-                  // Clinical D-Pad
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                    color: Colors.white,
-                    child: Column(
-                      children: [
-                        _buildRefractionDpadBtn(Icons.keyboard_arrow_up),
-                        const SizedBox(height: 6),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        child: const Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            _buildRefractionDpadBtn(Icons.keyboard_arrow_left),
-                            const SizedBox(width: 30),
-                            _buildRefractionDpadBtn(Icons.keyboard_arrow_right),
+                            _RefractionMetric('SPH', '-1.25', Colors.blue),
+                            SizedBox(height: 4),
+                            _RefractionMetric('CYL', '-0.50', Colors.cyan),
+                            SizedBox(height: 4),
+                            _RefractionMetric('AXIS', '95°', Colors.orange),
                           ],
                         ),
-                        const SizedBox(height: 6),
-                        _buildRefractionDpadBtn(Icons.keyboard_arrow_down),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 56, // Enforced height for visibility
-                          child: _buildSimulationSolidActionButton(
-                            label: "BLURRY / CAN'T SEE",
-                            icon: Icons.visibility_off_rounded,
-                            color: Colors.indigo,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
           
+          // Control Pad (Standardized to match Acuity/Refraction needs)
+          Container(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 20, offset: const Offset(0, -5))],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildVaBtn(Icons.arrow_upward),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildVaBtn(Icons.arrow_back),
+                    const SizedBox(width: 32),
+                    _buildVaBtn(Icons.arrow_forward),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                _buildVaBtn(Icons.arrow_downward),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: _buildSimulationSolidActionButton(
+                    label: "BLURRY / CAN'T SEE",
+                    icon: Icons.visibility_off_rounded,
+                    color: Colors.indigo,
+                  ),
+                ),
+              ],
+            ),
+          ),
           _buildSimulationFooter(),
         ],
       ),
     );
   }
 
-  Widget _buildRefractionDpadBtn(IconData icon) {
-    return Container(
-      width: 44, height: 44,
-      decoration: BoxDecoration(
-        color: Colors.blue,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.blue.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 3))],
-      ),
-      child: Icon(icon, color: Colors.white, size: 24),
-    );
-  }
 
   Widget _buildShadowTestSimulation() {
     return Container(
