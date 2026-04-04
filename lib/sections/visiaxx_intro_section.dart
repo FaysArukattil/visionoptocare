@@ -9,8 +9,9 @@ import '../widgets/phone_mockup.dart';
 
 class VisiaxxIntroSection extends StatefulWidget {
   final bool isActive;
+  final ValueNotifier<double>? scrollProgress;
 
-  const VisiaxxIntroSection({super.key, required this.isActive});
+  const VisiaxxIntroSection({super.key, required this.isActive, this.scrollProgress});
 
   @override
   State<VisiaxxIntroSection> createState() => _VisiaxxIntroSectionState();
@@ -92,7 +93,8 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                   parent: _phoneCtrl,
                   curve: Curves.easeOutBack,
                 ).value.clamp(0.0, 1.0);
-                return Opacity(
+                
+                Widget phoneObj = Opacity(
                   opacity: t.clamp(0.0, 1.0),
                   child: Transform(
                     transform: Matrix4.identity()
@@ -109,6 +111,27 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                     ),
                   ),
                 );
+
+                if (widget.scrollProgress != null) {
+                  return ValueListenableBuilder<double>(
+                    valueListenable: widget.scrollProgress!,
+                    builder: (context, scrollVal, child) {
+                      final t01 = (1.0 - scrollVal).clamp(0.0, 1.0);
+                      final t12 = (scrollVal - 1.0).clamp(0.0, 1.0);
+                      
+                      final translateX = -800.0 * Curves.easeIn.transform(t01);
+                      final translateY = (MediaQuery.of(context).size.height * 0.8) * Curves.easeIn.transform(t12);
+                      
+                      return Transform.translate(
+                        offset: Offset(translateX, translateY),
+                        child: child,
+                      );
+                    },
+                    child: phoneObj,
+                  );
+                }
+
+                return phoneObj;
               },
             ),
           ),
@@ -154,7 +177,8 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                 parent: _phoneCtrl,
                 curve: Curves.easeOutBack,
               ).value.clamp(0.0, 1.0);
-              return Opacity(
+              
+              Widget phoneObj = Opacity(
                 opacity: t,
                 child: PhoneMockup(
                   width: 230,
@@ -164,6 +188,27 @@ class _VisiaxxIntroSectionState extends State<VisiaxxIntroSection>
                   screen: _buildPhoneScreen(),
                 ),
               );
+
+              if (widget.scrollProgress != null) {
+                return ValueListenableBuilder<double>(
+                  valueListenable: widget.scrollProgress!,
+                  builder: (context, scrollVal, child) {
+                    final t01 = (1.0 - scrollVal).clamp(0.0, 1.0);
+                    final t12 = (scrollVal - 1.0).clamp(0.0, 1.0);
+                    
+                    final translateX = -500.0 * Curves.easeIn.transform(t01);
+                    final translateY = (MediaQuery.of(context).size.height * 0.8) * Curves.easeIn.transform(t12);
+                    
+                    return Transform.translate(
+                      offset: Offset(translateX, translateY),
+                      child: child,
+                    );
+                  },
+                  child: phoneObj,
+                );
+              }
+
+              return phoneObj;
             },
           ),
           const SizedBox(height: 40),

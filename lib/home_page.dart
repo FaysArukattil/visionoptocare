@@ -182,7 +182,10 @@ class _HomePageState extends State<HomePage> {
           onScrollDown: () => _goToPage(1),
         );
       case 1:
-        return VisiaxxIntroSection(isActive: isActive);
+        return VisiaxxIntroSection(
+          isActive: isActive,
+          scrollProgress: _rawScrollProgress,
+        );
       case 2:
         return ClinicalTestsPage(isActive: isActive);
       case 3:
