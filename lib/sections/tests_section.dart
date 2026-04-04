@@ -321,8 +321,11 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
             // ── Right: Interactive 3D Phone ──
             Expanded(
               flex: 5,
-              child: Center(
-                child: phoneObj,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  phoneObj, // phoneObj is a RepaintBoundary wrapping PhoneMockup
+                ],
               ),
             ),
           ],
@@ -331,8 +334,8 @@ class _TestsSectionState extends State<TestsSection> with TickerProviderStateMix
 
         // 🟢 Top-Layer Detail Card: Absolute Positioned
         Positioned(
-          right: 40, // More to the right, clear of the phone and HUD
-          top: 120,
+          left: 40, 
+          bottom: 40,
           child: _buildDetailCard(test, themeColor, false),
         ),
       ],
@@ -894,29 +897,119 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
           _buildSimulationAppBar('READING TEST', 'Near Vision Clarity'),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('1. Clinical Passage', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Colors.blue)),
-                  const SizedBox(height: 8),
-                  Text(
-                    'The quick brown fox jumps over the lazy dog. This sentence contains every letter of the English alphabet exactly once. Clinical reading tests often use specialized paragraphs like this to evaluate how well a patient can identify characters at small point sizes.',
-                    style: TextStyle(fontSize: 12, color: Colors.black, height: 1.4),
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+                    ),
+                    child: const Text(
+                      'The quick brown fox jumps over the lazy dog. This sentence contains every letter of the English alphabet exactly once. Clinical reading tests often use specialized paragraphs to assess near vision acuity at standard reading distances (40cm).',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.black,
+                        height: 1.6,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'serif',
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 12),
-                  const Divider(),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Vision assessment is a critical component of primary healthcare. By measuring acuity at both distance and near, clinicians can diagnose refractive errors such as myopia, hyperopia, and presbyopia.',
-                    style: TextStyle(fontSize: 8, color: Colors.black54, height: 1.4),
+                  const SizedBox(height: 32),
+                  const Text(
+                    'READ THE SENTENCE ALOUD',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.blue,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 2,
+                    ),
                   ),
                 ],
               ),
             ),
           ),
+          
+          // Action Buttons (MATCHING CLINICAL SCREEN)
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -5),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildSimulationActionButton(
+                    label: 'CAN READ',
+                    icon: Icons.check_circle_outline,
+                    color: Colors.green,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildSimulationActionButton(
+                    label: 'CANNOT READ',
+                    icon: Icons.highlight_off_rounded,
+                    color: Colors.red,
+                  ),
+                ),
+              ],
+            ),
+          ),
           _buildSimulationFooter(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSimulationActionButton({
+    required String label,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      height: 52,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color, width: 2),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: color, size: 18),
+              const SizedBox(width: 6),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 10,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -970,7 +1063,7 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
 
   Widget _buildRefractionSimulation() {
     return Container(
-      color: Colors.white,
+      color: Colors.white, // Match Visual Acuity (White Chart)
       child: Column(
         children: [
           _buildSimulationAppBar('MOBILE REFRACTOMETRY', 'Adjusting Focus'),
@@ -986,10 +1079,23 @@ class _TestSimulationEngineState extends State<_TestSimulationEngine> with Ticke
                   AnimatedBuilder(
                     animation: _anim,
                     builder: (context, _) {
-                      final blur = (math.sin(_anim.value * math.pi * 2) * 5.0).abs();
-                      return ImageFiltered(
-                        imageFilter: ui.ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-                        child: const Text('E', style: TextStyle(fontSize: 100, fontWeight: FontWeight.w900, color: Colors.black)),
+                      final blur = (math.sin(_anim.value * math.pi * 2) * 4.0).abs();
+                      return Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ImageFiltered(
+                            imageFilter: ui.ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+                            child: Column(
+                                children: [
+                                  const Text('E', style: TextStyle(fontSize: 80, fontWeight: FontWeight.bold, color: Colors.black)),
+                                  const Text('F P', style: TextStyle(fontSize: 50, fontWeight: FontWeight.bold, color: Colors.black)),
+                                  const Text('T O Z', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.black, letterSpacing: 4)),
+                                ]
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          const Text('FOCUSING TEST AREA', style: TextStyle(color: Colors.black38, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 2)),
+                        ],
                       );
                     }
                   ),
